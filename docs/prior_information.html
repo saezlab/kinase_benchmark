@@ -389,7 +389,7 @@ aria-hidden="true"></span> </a>
 <div class="tab-content">
 <div id="summary" class="tab-pane fade in active">
 <p>
-<strong>Last updated:</strong> 2022-08-30
+<strong>Last updated:</strong> 2022-09-12
 </p>
 <p>
 <strong>Checks:</strong> <span
@@ -418,21 +418,18 @@ versions</em> tab lists the development history.
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRMarkdownfilestronguncommittedchanges">
-<span class="glyphicon glyphicon-exclamation-sign text-danger"
-aria-hidden="true"></span> <strong>R Markdown file:</strong> uncommitted
-changes </a>
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRMarkdownfilestronguptodate">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>R Markdown file:</strong> up-to-date
+</a>
 </p>
 </div>
-<div id="strongRMarkdownfilestronguncommittedchanges"
+<div id="strongRMarkdownfilestronguptodate"
 class="panel-collapse collapse">
 <div class="panel-body">
-<p>The R Markdown is untracked by Git. To know which version of the R
-Markdown file created these results, you’ll want to first commit it to
-the Git repo. If you’re still working on the analysis, you can ignore
-this warning. When you’re finished, you can run
-<code>wflow_publish</code> to commit the R Markdown file and build the
-HTML.</p>
+<p>Great! Since the R Markdown file has been committed to the Git
+repository, you know the exact version of the code that produced these
+results.</p>
 </div>
 </div>
 </div>
@@ -508,30 +505,64 @@ run.</p>
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongFilepathsstrongrelative">
-<span class="glyphicon glyphicon-ok text-success"
-aria-hidden="true"></span> <strong>File paths:</strong> relative </a>
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongFilepathsstrongabsolute">
+<span class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> <strong>File paths:</strong> absolute </a>
 </p>
 </div>
-<div id="strongFilepathsstrongrelative" class="panel-collapse collapse">
+<div id="strongFilepathsstrongabsolute" class="panel-collapse collapse">
 <div class="panel-body">
-<p>Great job! Using relative paths to the files within your workflowr
-project makes it easier to run your code on other machines.</p>
+<p>
+Using absolute paths to the files within your workflowr project makes it
+difficult for you and others to run your code on a different machine.
+Change the absolute path(s) below to the suggested relative path(s) to
+make your code more reproducible.
+</p>
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th style="text-align:left;">
+absolute
+</th>
+<th style="text-align:left;">
+relative
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+~/Documents/kinase_review/INKA/PSP_KSR_human_03Jul2016.Rdata
+</td>
+<td style="text-align:left;">
+INKA/PSP_KSR_human_03Jul2016.Rdata
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+~/Documents/kinase_review/INKA/TOP_NWK_nwk_proteome_unprot_ref_2014.Rdata
+</td>
+<td style="text-align:left;">
+INKA/TOP_NWK_nwk_proteome_unprot_ref_2014.Rdata
+</td>
+</tr>
+</tbody>
+</table>
 </div>
 </div>
 </div>
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomsaezlabkinasereviewtree8faca636af48b0e4729e1d55970e3dd2bf998de5targetblank8faca63a">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomsaezlabkinasereviewtreecb69eabab71611fc30a479a4357b6ed288ebed0ftargetblankcb69eaba">
 <span class="glyphicon glyphicon-ok text-success"
 aria-hidden="true"></span> <strong>Repository version:</strong>
-<a href="https://github.com/saezlab/kinase_review/tree/8faca636af48b0e4729e1d55970e3dd2bf998de5" target="_blank">8faca63</a>
+<a href="https://github.com/saezlab/kinase_review/tree/cb69eabab71611fc30a479a4357b6ed288ebed0f" target="_blank">cb69eab</a>
 </a>
 </p>
 </div>
 <div
-id="strongRepositoryversionstrongahrefhttpsgithubcomsaezlabkinasereviewtree8faca636af48b0e4729e1d55970e3dd2bf998de5targetblank8faca63a"
+id="strongRepositoryversionstrongahrefhttpsgithubcomsaezlabkinasereviewtreecb69eabab71611fc30a479a4357b6ed288ebed0ftargetblankcb69eaba"
 class="panel-collapse collapse">
 <div class="panel-body">
 <p>
@@ -541,7 +572,7 @@ reproducibility.
 </p>
 <p>
 The results in this page were generated with repository version
-<a href="https://github.com/saezlab/kinase_review/tree/8faca636af48b0e4729e1d55970e3dd2bf998de5" target="_blank">8faca63</a>.
+<a href="https://github.com/saezlab/kinase_review/tree/cb69eabab71611fc30a479a4357b6ed288ebed0f" target="_blank">cb69eab</a>.
 See the <em>Past versions</em> tab to see a history of the changes made
 to the R Markdown and HTML files.
 </p>
@@ -562,53 +593,19 @@ Ignored files:
     Ignored:    INKA/
     Ignored:    code/.DS_Store
     Ignored:    code/IKAP/.DS_Store
+    Ignored:    code/RoKAI-master/.DS_Store
+    Ignored:    code/RoKAI-master/data/
     Ignored:    code/kinasePA/
     Ignored:    data/CPTAC_estefani_clean_zip/
+    Ignored:    data/KEA3/
     Ignored:    output/CPTAC/
     Ignored:    output/IKAP/
     Ignored:    output/KEA3/
     Ignored:    output/KSEA/
     Ignored:    output/PTM-SEA/
     Ignored:    output/benchmark/
+    Ignored:    output/figures/
     Ignored:    output/rokai/
-
-Untracked files:
-    Untracked:  analysis/prior_information.Rmd
-    Untracked:  code/IKAP/IKAP_input_CPTAC_ccrcc.csv
-    Untracked:  code/IKAP/IKAP_input_CPTAC_luad.csv
-    Untracked:  code/IKAP/IKAP_input_CPTAC_ucec.csv
-    Untracked:  code/IKAP/kinase_act_ccrcc.csv
-    Untracked:  code/IKAP/kinase_act_luad.csv
-    Untracked:  code/IKAP/kinase_act_ucec.csv
-    Untracked:  code/IKAP/kinase_ccrcc.csv
-    Untracked:  code/IKAP/kinase_luad.csv
-    Untracked:  code/IKAP/kinase_ucec.csv
-    Untracked:  code/RoKAI-master/
-    Untracked:  code/method_functions.R
-    Untracked:  code/src/
-    Untracked:  code/support_functions.R
-    Untracked:  scatter_plot_ccrcc.pdf
-
-Unstaged changes:
-    Modified:   code/01_input_preparation.R
-    Modified:   code/02_compare_activities.R
-    Deleted:    code/IKAP/IKAP_input_COLO205.csv
-    Deleted:    code/IKAP/IKAP_input_MDST.csv
-    Deleted:    code/IKAP/IKAP_input_RKO.csv
-    Deleted:    code/IKAP/IKAP_input_SW837.csv
-    Deleted:    code/IKAP/IKAP_input_T84.csv
-    Deleted:    code/IKAP/kinase_COLO205.csv
-    Deleted:    code/IKAP/kinase_MDST.csv
-    Deleted:    code/IKAP/kinase_RKO.csv
-    Deleted:    code/IKAP/kinase_SW837.csv
-    Deleted:    code/IKAP/kinase_T84.csv
-    Deleted:    code/IKAP/kinase_act_COLO205.csv
-    Deleted:    code/IKAP/kinase_act_MDST.csv
-    Deleted:    code/IKAP/kinase_act_RKO.csv
-    Deleted:    code/IKAP/kinase_act_SW837.csv
-    Deleted:    code/IKAP/kinase_act_T84.csv
-    Modified:   code/IKAP/run_IKAP.m
-    Modified:   code/run_KSEA.R
 
 </code></pre>
 <p>
@@ -623,10 +620,74 @@ have uncommitted changes.
 <hr>
 </div>
 <div id="versions" class="tab-pane fade">
+
 <p>
-There are no past versions. Publish this analysis with
-<code>wflow_publish()</code> to start tracking its development.
+These are the previous versions of the repository in which changes were
+made to the R Markdown (<code>analysis/prior_information.Rmd</code>) and
+HTML (<code>docs/prior_information.html</code>) files. If you’ve
+configured a remote Git repository (see <code>?wflow_git_remote</code>),
+click on the hyperlinks in the table below to view the files as they
+were in that past version.
 </p>
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+File
+</th>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+<th>
+Message
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/saezlab/kinase_review/blob/cb69eabab71611fc30a479a4357b6ed288ebed0f/analysis/prior_information.Rmd" target="_blank">cb69eab</a>
+</td>
+<td>
+Sophia Müller-Dott
+</td>
+<td>
+2022-09-12
+</td>
+<td>
+added code for some methods and for comparison of prior knowledge
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/saezlab/kinase_review/cb69eabab71611fc30a479a4357b6ed288ebed0f/docs/prior_information.html" target="_blank">cb69eab</a>
+</td>
+<td>
+Sophia Müller-Dott
+</td>
+<td>
+2022-09-12
+</td>
+<td>
+added code for some methods and for comparison of prior knowledge
+</td>
+</tr>
+</tbody>
+</table>
+</div>
 <hr>
 </div>
 </div>
@@ -653,6 +714,9 @@ methods:</p>
 library(directPA)
 library(KSEAapp)
 library(qusage)
+
+library(ggbreak)
+library(patchwork)
 library(tidyverse)</code></pre>
 </div>
 <div id="prior-knowledge-size" class="section level2">
@@ -964,27 +1028,49 @@ knitr::kable(rbind(CLUe.size.human, IKAP.size, KinasePA.size, KARP.size, KSEA.si
 </table>
 <div id="inka" class="section level3">
 <h3>INKA</h3>
-</div>
-<div id="ptm-sea" class="section level3">
-<h3>PTM-SEA</h3>
-<p>PTMsigDB for PTM-SEA was extracted from the package (<a
-href="https://github.com/broadinstitute/ssGSEA2.0/tree/master/db"
-class="uri">https://github.com/broadinstitute/ssGSEA2.0/tree/master/db</a>)</p>
-<pre class="r"><code>PTMsigDB &lt;- read.gmt(&quot;data/ptm.sig.db.all.uniprot.human.v1.9.0.gmt&quot;)
-PTMsigDB.kinase &lt;- PTMsigDB[str_detect(names(PTMsigDB), &quot;KINASE&quot;)]
+<p>Kinases from KinBase, activation loop from Phomics toolbox,
+PhosphoSitePlus, NetworKIN (&gt;= 2). We only count kinases that are
+listed in the kinome + are listed either in PPS+/NetworKIN. Kinases who
+are only presented in one of them will get a final schore of 0.</p>
+<pre class="r"><code>load(&quot;INKA/Manning.Kinases_20Jan2017.Rdata&quot;)
+load(&quot;~/Documents/kinase_review/INKA/PSP_KSR_human_03Jul2016.Rdata&quot;)
+load(&quot;~/Documents/kinase_review/INKA/TOP_NWK_nwk_proteome_unprot_ref_2014.Rdata&quot;)
 
-PTMsigDB.size &lt;- c(tool = &quot;PTMsigDB&quot;,
-                   kinases = length(unique(names(PTMsigDB.kinase))),
-                   kinases_5 = names(PTMsigDB.kinase)[map(PTMsigDB.kinase, length) &gt;= 5] %&gt;%
-                     unique() %&gt;%
-                     length(),
-                   pps = unlist(PTMsigDB.kinase) %&gt;% 
-                     unique() %&gt;%
-                     length(),
-                   edges = unlist(PTMsigDB.kinase) %&gt;%
-                     length()) 
+kinome &lt;- Kinases
+phomics &lt;- read_tsv(&quot;INKA/phomics_global_output.txt&quot;)</code></pre>
+<pre><code>Rows: 3120 Columns: 5
+── Column specification ────────────────────────────────────────────────────────
+Delimiter: &quot;\t&quot;
+chr (3): Uniprot Entry, Gene Name, Peptide
+dbl (2): Loop Sites, Other Sites
 
-knitr::kable(rbind(CLUe.size.human, IKAP.size, KinasePA.size, KARP.size, KSEA.size, PTMsigDB.size))</code></pre>
+ℹ Use `spec()` to retrieve the full column specification for this data.
+ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+<pre class="r"><code>PSP &lt;- PSP_KSR_human
+NWK &lt;- TOP_NWK
+NWK_filtered &lt;- TOP_NWK %&gt;% filter(NetworKIN.score &gt;= 2)
+
+kinases_PSP_5 &lt;- names(table(PSP$KINASE))[table(PSP$KINASE) &gt;= 5]
+kinases_NKW_5 &lt;- names(table(NWK_filtered$Kinase))[table(NWK_filtered$Kinase) &gt;= 5]
+
+network &lt;- data.frame(kin = c(PSP$KINASE, NWK_filtered$Kinase),
+                                  PSP = c(paste(PSP$SUB_GENE, PSP$SUB_MOD_RSD, sep = &quot;_&quot;),
+                                           paste(NWK_filtered$Target.description, NWK_filtered$Position, sep = &quot;_&quot;)))
+network &lt;- network[!duplicated(network),]
+
+INKA.size &lt;- c(tool = &quot;INKA&quot;,
+               kinases = kinome %&gt;% filter(in_PSP &gt; 0 | in_NWK &gt; 0) %&gt;% 
+                 nrow(),
+               kinases_5 = c(kinases_PSP_5, kinases_NKW_5) %&gt;% 
+                 unique() %&gt;%
+                 length(),
+               pps = c(paste(PSP$SUB_GENE, PSP$SUB_MOD_RSD, sep = &quot;_&quot;), 
+                       paste(NWK_filtered$Target.description, NWK_filtered$Position, sep = &quot;_&quot;)) %&gt;% 
+                 unique() %&gt;%
+                 length(),
+               edges = nrow(network)) 
+
+knitr::kable(rbind(CLUe.size.human, IKAP.size, KinasePA.size, KARP.size, KSEA.size, INKA.size))</code></pre>
 <table>
 <thead>
 <tr class="header">
@@ -1038,6 +1124,97 @@ knitr::kable(rbind(CLUe.size.human, IKAP.size, KinasePA.size, KARP.size, KSEA.si
 <td align="left">10516</td>
 </tr>
 <tr class="even">
+<td align="left">INKA.size</td>
+<td align="left">INKA</td>
+<td align="left">365</td>
+<td align="left">348</td>
+<td align="left">931666</td>
+<td align="left">1115248</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="ptm-sea" class="section level3">
+<h3>PTM-SEA</h3>
+<p>PTMsigDB for PTM-SEA was extracted from the package (<a
+href="https://github.com/broadinstitute/ssGSEA2.0/tree/master/db"
+class="uri">https://github.com/broadinstitute/ssGSEA2.0/tree/master/db</a>)</p>
+<pre class="r"><code>PTMsigDB &lt;- read.gmt(&quot;data/ptm.sig.db.all.uniprot.human.v1.9.0.gmt&quot;)
+PTMsigDB.kinase &lt;- PTMsigDB[str_detect(names(PTMsigDB), &quot;KINASE&quot;)]
+
+PTMsigDB.size &lt;- c(tool = &quot;PTMsigDB&quot;,
+                   kinases = length(unique(names(PTMsigDB.kinase))),
+                   kinases_5 = names(PTMsigDB.kinase)[map(PTMsigDB.kinase, length) &gt;= 5] %&gt;%
+                     unique() %&gt;%
+                     length(),
+                   pps = unlist(PTMsigDB.kinase) %&gt;% 
+                     unique() %&gt;%
+                     length(),
+                   edges = unlist(PTMsigDB.kinase) %&gt;%
+                     length()) 
+
+knitr::kable(rbind(CLUe.size.human, IKAP.size, KinasePA.size, KARP.size, KSEA.size, INKA.size, PTMsigDB.size))</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="left">tool</th>
+<th align="left">kinases</th>
+<th align="left">kinases_5</th>
+<th align="left">pps</th>
+<th align="left">edges</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">CLUe.size.human</td>
+<td align="left">CLUe</td>
+<td align="left">206</td>
+<td align="left">206</td>
+<td align="left">7065</td>
+<td align="left">9830</td>
+</tr>
+<tr class="even">
+<td align="left">IKAP.size</td>
+<td align="left">IKAP</td>
+<td align="left">417</td>
+<td align="left">261</td>
+<td align="left">9511</td>
+<td align="left">13581</td>
+</tr>
+<tr class="odd">
+<td align="left">KinasePA.size</td>
+<td align="left">KinasePA</td>
+<td align="left">206</td>
+<td align="left">206</td>
+<td align="left">7065</td>
+<td align="left">9830</td>
+</tr>
+<tr class="even">
+<td align="left">KARP.size</td>
+<td align="left">KARP</td>
+<td align="left">417</td>
+<td align="left">261</td>
+<td align="left">9511</td>
+<td align="left">13581</td>
+</tr>
+<tr class="odd">
+<td align="left">KSEA.size</td>
+<td align="left">KSEA App</td>
+<td align="left">438</td>
+<td align="left">249</td>
+<td align="left">7516</td>
+<td align="left">10516</td>
+</tr>
+<tr class="even">
+<td align="left">INKA.size</td>
+<td align="left">INKA</td>
+<td align="left">365</td>
+<td align="left">348</td>
+<td align="left">931666</td>
+<td align="left">1115248</td>
+</tr>
+<tr class="odd">
 <td align="left">PTMsigDB.size</td>
 <td align="left">PTMsigDB</td>
 <td align="left">227</td>
@@ -1050,6 +1227,115 @@ knitr::kable(rbind(CLUe.size.human, IKAP.size, KinasePA.size, KARP.size, KSEA.si
 </div>
 <div id="kea3" class="section level3">
 <h3>KEA3</h3>
+<p>PhosD.All, PTMsigDB, Cheng.KSI, BioGRID, mentha, prePPI, MINT,
+HIPPIE, Cheng.PPI, STRING.bind KEA 3 libraries were downloaded from
+here: <a href="https://maayanlab.cloud/kea3/templates/libraries.jsp"
+class="uri">https://maayanlab.cloud/kea3/templates/libraries.jsp</a>.</p>
+<pre class="r"><code>library_files_KEA3 &lt;- list.files(&quot;data/KEA3&quot;, full.names = T)
+KEA3_libraries &lt;- map(library_files_KEA3, read.gmt)
+
+kinases_KEA3 &lt;- map(KEA3_libraries, function(library){
+  kinases &lt;- lapply(str_split(names(library), &quot;_&quot;), &quot;[[&quot;, 1) %&gt;% unlist()
+}) %&gt;% unlist()
+
+kinases_5_KEA3 &lt;- map(KEA3_libraries, function(library){
+  library_5 &lt;- library[map(library, length) &gt;= 5]
+  kinases &lt;- lapply(str_split(names(library_5), &quot;_&quot;), &quot;[[&quot;, 1) %&gt;% unlist()
+}) %&gt;% unlist()
+
+edges_KEA3 &lt;- map(KEA3_libraries, function(library){
+  names(library) &lt;- lapply(str_split(names(library), &quot;_&quot;), &quot;[[&quot;, 1) %&gt;% unlist()
+  edges &lt;- map(names(library), function(kinase){
+    paste(kinase, library[[kinase]], sep = &quot;_&quot;)
+  }) %&gt;% unlist()
+}) %&gt;% unlist()
+
+KEA3.size &lt;- c(tool = &quot;KEA3&quot;,
+               kinases = length(unique(kinases_KEA3)),
+               kinases_5 = length(unique(kinases_5_KEA3)),
+               pps = length(unique(unlist(KEA3_libraries))),
+               edges = unique(edges_KEA3) %&gt;%
+                     length()) 
+
+knitr::kable(rbind(CLUe.size.human, IKAP.size, KinasePA.size, KARP.size, KSEA.size, INKA.size, PTMsigDB.size, KEA3.size))</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="left">tool</th>
+<th align="left">kinases</th>
+<th align="left">kinases_5</th>
+<th align="left">pps</th>
+<th align="left">edges</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">CLUe.size.human</td>
+<td align="left">CLUe</td>
+<td align="left">206</td>
+<td align="left">206</td>
+<td align="left">7065</td>
+<td align="left">9830</td>
+</tr>
+<tr class="even">
+<td align="left">IKAP.size</td>
+<td align="left">IKAP</td>
+<td align="left">417</td>
+<td align="left">261</td>
+<td align="left">9511</td>
+<td align="left">13581</td>
+</tr>
+<tr class="odd">
+<td align="left">KinasePA.size</td>
+<td align="left">KinasePA</td>
+<td align="left">206</td>
+<td align="left">206</td>
+<td align="left">7065</td>
+<td align="left">9830</td>
+</tr>
+<tr class="even">
+<td align="left">KARP.size</td>
+<td align="left">KARP</td>
+<td align="left">417</td>
+<td align="left">261</td>
+<td align="left">9511</td>
+<td align="left">13581</td>
+</tr>
+<tr class="odd">
+<td align="left">KSEA.size</td>
+<td align="left">KSEA App</td>
+<td align="left">438</td>
+<td align="left">249</td>
+<td align="left">7516</td>
+<td align="left">10516</td>
+</tr>
+<tr class="even">
+<td align="left">INKA.size</td>
+<td align="left">INKA</td>
+<td align="left">365</td>
+<td align="left">348</td>
+<td align="left">931666</td>
+<td align="left">1115248</td>
+</tr>
+<tr class="odd">
+<td align="left">PTMsigDB.size</td>
+<td align="left">PTMsigDB</td>
+<td align="left">227</td>
+<td align="left">227</td>
+<td align="left">7317</td>
+<td align="left">10155</td>
+</tr>
+<tr class="even">
+<td align="left">KEA3.size</td>
+<td align="left">KEA3</td>
+<td align="left">519</td>
+<td align="left">519</td>
+<td align="left">18690</td>
+<td align="left">923246</td>
+</tr>
+</tbody>
+</table>
 </div>
 <div id="rokai" class="section level3">
 <h3>RoKAI</h3>
@@ -1074,7 +1360,7 @@ RoKAI.size &lt;- c(tool = &quot;RoKAI&quot;,
                pps = network_size_rokai$n_pps,
                edges = network_size_rokai$n_edges) 
 
-knitr::kable(rbind(CLUe.size.human, IKAP.size, KinasePA.size, KARP.size, KSEA.size, PTMsigDB.size, RoKAI.size))</code></pre>
+knitr::kable(rbind(CLUe.size.human, IKAP.size, KinasePA.size, KARP.size, KSEA.size, INKA.size, PTMsigDB.size, RoKAI.size, KEA3.size))</code></pre>
 <table>
 <thead>
 <tr class="header">
@@ -1128,6 +1414,14 @@ knitr::kable(rbind(CLUe.size.human, IKAP.size, KinasePA.size, KARP.size, KSEA.si
 <td align="left">10516</td>
 </tr>
 <tr class="even">
+<td align="left">INKA.size</td>
+<td align="left">INKA</td>
+<td align="left">365</td>
+<td align="left">348</td>
+<td align="left">931666</td>
+<td align="left">1115248</td>
+</tr>
+<tr class="odd">
 <td align="left">PTMsigDB.size</td>
 <td align="left">PTMsigDB</td>
 <td align="left">227</td>
@@ -1135,7 +1429,7 @@ knitr::kable(rbind(CLUe.size.human, IKAP.size, KinasePA.size, KARP.size, KSEA.si
 <td align="left">7317</td>
 <td align="left">10155</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">RoKAI.size</td>
 <td align="left">RoKAI</td>
 <td align="left">373</td>
@@ -1143,9 +1437,85 @@ knitr::kable(rbind(CLUe.size.human, IKAP.size, KinasePA.size, KARP.size, KSEA.si
 <td align="left">239881</td>
 <td align="left">128463</td>
 </tr>
+<tr class="odd">
+<td align="left">KEA3.size</td>
+<td align="left">KEA3</td>
+<td align="left">519</td>
+<td align="left">519</td>
+<td align="left">18690</td>
+<td align="left">923246</td>
+</tr>
 </tbody>
 </table>
 </div>
+</div>
+<div id="plot-coverage" class="section level2">
+<h2>Plot coverage</h2>
+<pre class="r"><code>size_networks &lt;- data.frame(rbind(CLUe.size.human, IKAP.size, KinasePA.size, KARP.size, KSEA.size, INKA.size, PTMsigDB.size, KEA3.size, RoKAI.size))
+size_networks$kinases &lt;- as.numeric(size_networks$kinases)
+size_networks$kinases_5 &lt;- as.numeric(size_networks$kinases_5)
+size_networks$pps &lt;- as.numeric(size_networks$pps)
+size_networks$edges &lt;- as.numeric(size_networks$edges)
+
+# change structure of df to use ggplot
+size_networks_long &lt;- size_networks %&gt;% 
+  pivot_longer(!tool,
+               names_to = &quot;type&quot;,
+               values_to = &quot;value&quot;) %&gt;% 
+  arrange(desc(value))
+size_networks_long[is.na(size_networks_long)] &lt;- 1
+
+size_networks_long$tool &lt;- factor(size_networks_long$tool, levels = unique(size_networks_long$tool))
+
+size_networks_kin &lt;- size_networks_long %&gt;% filter(type %in% c(&quot;kinases&quot;, &quot;kinases_5&quot;))
+
+size_networks_pps &lt;- size_networks_long %&gt;% filter(type %in% c(&quot;pps&quot;, &quot;edges&quot;))
+
+
+pps_p &lt;- ggplot(size_networks_pps %&gt;% filter(type == &quot;pps&quot;)) + 
+  aes(x = tool, y = value) +
+  geom_bar(stat=&quot;identity&quot;, color=&quot;black&quot;, position=position_dodge(), fill = &quot;#47AD7A&quot;, width=0.7)+
+  scale_y_cut(breaks=c(18000), which=c(1), scales=c(0.5)) +
+  theme_minimal() + xlab(&quot;&quot;) + ylab(&quot;&quot;) + 
+  ggtitle(&quot;unique phosphorylation sites&quot;) + 
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1),
+        text = element_text(size = 10))
+  
+
+edges_p &lt;- ggplot(size_networks_pps %&gt;% filter(type == &quot;edges&quot;)) + 
+  aes(x = tool, y = value) +
+  geom_bar(stat=&quot;identity&quot;, color=&quot;black&quot;, position=position_dodge(), fill = &quot;#AD477A&quot;, width=0.7)+
+  scale_y_cut(breaks=c(18000), which=c(1), scales=c(0.5)) +
+  theme_minimal() + xlab(&quot;&quot;) + ylab(&quot;&quot;) + 
+  ggtitle(&quot;kinase-substrate links&quot;) + 
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1),
+        text = element_text(size = 10))
+
+kin_p &lt;- ggplot(data=size_networks_kin, aes(x=tool, y=value, fill=type)) +
+  geom_bar(stat=&quot;identity&quot;,color=&quot;black&quot;, position=position_dodge(), width=0.7) + 
+  scale_fill_manual(labels = c(&quot;all kinases&quot;, &quot;kinases with \nat least 5 targets&quot;), values=c(&#39;#477AA3&#39;,&#39;#97CAF3&#39;)) +
+  theme_minimal() + xlab(&quot;&quot;) + ylab(&quot;&quot;) + guides(fill=guide_legend(title=&quot;&quot;)) + 
+  ggtitle(&quot;unique kinases&quot;) + 
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1),
+        text = element_text(size = 10),
+        legend.position = &quot;bottom&quot;,
+        legend.key.size = unit(0.5, &#39;cm&#39;)) + 
+  scale_y_continuous(expand = c(0, 0))
+
+# adjusting margins manually to align plots
+merged_p &lt;- (edges_p / pps_p) 
+leg &lt;- cowplot::get_legend(kin_p)
+kin_adj_p &lt;- kin_p + theme(plot.margin=unit(c(0.4,0.6,0.6,0.2), &quot;cm&quot;), 
+                           plot.title = element_text(margin=margin(0,0,10,0)),
+                           legend.position = &quot;none&quot;)
+
+ggpubr::ggarrange(merged_p,kin_adj_p, NULL, leg, nrow = 2, ncol = 2, widths = c(1, 1.2), heights = c(3,0.3))</code></pre>
+<p><img src="figure/prior_information.Rmd/coverage-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>pdf(&quot;output/figures/coverage.pdf&quot;, width = 6.25, height = 6)
+ggpubr::ggarrange(merged_p,kin_adj_p, NULL, leg, nrow = 2, ncol = 2, widths = c(1, 1.2), heights = c(3,0.3))
+dev.off()</code></pre>
+<pre><code>quartz_off_screen 
+                2 </code></pre>
 </div>
 <div id="databases" class="section level2">
 <h2>Databases</h2>
@@ -1192,41 +1562,47 @@ attached base packages:
 other attached packages:
  [1] forcats_0.5.2   stringr_1.4.1   dplyr_1.0.9     purrr_0.3.4    
  [5] readr_2.1.2     tidyr_1.2.0     tibble_3.1.8    ggplot2_3.3.6  
- [9] tidyverse_1.3.2 qusage_2.28.0   limma_3.50.3    KSEAapp_0.99.0 
-[13] directPA_1.5    ClueR_1.4       e1071_1.7-11    workflowr_1.7.0
+ [9] tidyverse_1.3.2 patchwork_1.1.2 ggbreak_0.1.0   qusage_2.28.0  
+[13] limma_3.50.3    KSEAapp_0.99.0  directPA_1.5    ClueR_1.4      
+[17] e1071_1.7-11    workflowr_1.7.0
 
 loaded via a namespace (and not attached):
- [1] nlme_3.1-159        bitops_1.0-7        fs_1.5.2           
- [4] bit64_4.0.5         lubridate_1.8.0     httr_1.4.4         
- [7] rprojroot_2.0.3     tools_4.1.0         backports_1.4.1    
-[10] bslib_0.4.0         utf8_1.2.2          R6_2.5.1           
-[13] KernSmooth_2.23-20  DBI_1.1.3           BiocGenerics_0.40.0
-[16] colorspace_2.0-3    withr_2.5.0         tidyselect_1.1.2   
-[19] processx_3.7.0      emmeans_1.8.0       bit_4.0.4          
-[22] compiler_4.1.0      git2r_0.30.1        rvest_1.0.3        
-[25] cli_3.3.0           Biobase_2.54.0      xml2_1.3.3         
-[28] sass_0.4.2          caTools_1.18.2      scales_1.2.1       
-[31] mvtnorm_1.1-3       callr_3.7.2         proxy_0.4-27       
-[34] digest_0.6.29       rmarkdown_2.16      pkgconfig_2.0.3    
-[37] htmltools_0.5.3     highr_0.9           dbplyr_2.2.1       
-[40] fastmap_1.1.0       readxl_1.4.1        rlang_1.0.4        
-[43] rstudioapi_0.14     jquerylib_0.1.4     generics_0.1.3     
-[46] jsonlite_1.8.0      vroom_1.5.7         gtools_3.9.3       
-[49] googlesheets4_1.0.1 magrittr_2.0.3      Matrix_1.4-1       
-[52] Rcpp_1.0.9          munsell_0.5.0       fansi_1.0.3        
-[55] lifecycle_1.0.1     stringi_1.7.8       whisker_0.4        
-[58] yaml_2.3.5          MASS_7.3-58.1       gplots_3.1.3       
-[61] grid_4.1.0          promises_1.2.0.1    crayon_1.5.1       
-[64] lattice_0.20-45     haven_2.5.1         hms_1.1.2          
-[67] knitr_1.40          ps_1.7.1            pillar_1.8.1       
-[70] fftw_1.0-7          estimability_1.4.1  reprex_2.0.2       
-[73] glue_1.6.2          evaluate_0.16       getPass_0.2-2      
-[76] calibrate_1.7.7     modelr_0.1.9        vctrs_0.4.1        
-[79] tzdb_0.3.0          httpuv_1.6.5        cellranger_1.1.0   
-[82] gtable_0.3.0        assertthat_0.2.1    cachem_1.0.6       
-[85] xfun_0.32           xtable_1.8-4        broom_1.0.0        
-[88] coda_0.19-4         later_1.3.0         class_7.3-20       
-[91] googledrive_2.0.0   gargle_1.2.0        ellipsis_0.3.2     </code></pre>
+  [1] googledrive_2.0.0   colorspace_2.0-3    ggsignif_0.6.3     
+  [4] ellipsis_0.3.2      class_7.3-20        rprojroot_2.0.3    
+  [7] estimability_1.4.1  fs_1.5.2            aplot_0.1.6        
+ [10] rstudioapi_0.14     proxy_0.4-27        ggpubr_0.4.0       
+ [13] farver_2.1.1        bit64_4.0.5         fansi_1.0.3        
+ [16] mvtnorm_1.1-3       lubridate_1.8.0     xml2_1.3.3         
+ [19] cachem_1.0.6        knitr_1.40          jsonlite_1.8.0     
+ [22] broom_1.0.0         dbplyr_2.2.1        compiler_4.1.0     
+ [25] httr_1.4.4          emmeans_1.8.0       backports_1.4.1    
+ [28] assertthat_0.2.1    Matrix_1.4-1        fastmap_1.1.0      
+ [31] gargle_1.2.0        cli_3.3.0           later_1.3.0        
+ [34] htmltools_0.5.3     tools_4.1.0         coda_0.19-4        
+ [37] gtable_0.3.0        glue_1.6.2          Rcpp_1.0.9         
+ [40] carData_3.0-5       Biobase_2.54.0      cellranger_1.1.0   
+ [43] jquerylib_0.1.4     vctrs_0.4.1         nlme_3.1-159       
+ [46] xfun_0.32           ps_1.7.1            rvest_1.0.3        
+ [49] lifecycle_1.0.1     gtools_3.9.3        rstatix_0.7.0      
+ [52] googlesheets4_1.0.1 getPass_0.2-2       MASS_7.3-58.1      
+ [55] scales_1.2.1        vroom_1.5.7         hms_1.1.2          
+ [58] promises_1.2.0.1    yaml_2.3.5          ggfun_0.0.6        
+ [61] yulab.utils_0.0.5   sass_0.4.2          calibrate_1.7.7    
+ [64] stringi_1.7.8       highr_0.9           caTools_1.18.2     
+ [67] BiocGenerics_0.40.0 rlang_1.0.4         pkgconfig_2.0.3    
+ [70] bitops_1.0-7        evaluate_0.16       lattice_0.20-45    
+ [73] labeling_0.4.2      cowplot_1.1.1       bit_4.0.4          
+ [76] processx_3.7.0      tidyselect_1.1.2    magrittr_2.0.3     
+ [79] R6_2.5.1            fftw_1.0-7          gplots_3.1.3       
+ [82] generics_0.1.3      DBI_1.1.3           pillar_1.8.1       
+ [85] haven_2.5.1         whisker_0.4         withr_2.5.0        
+ [88] abind_1.4-5         car_3.1-0           modelr_0.1.9       
+ [91] crayon_1.5.1        KernSmooth_2.23-20  utf8_1.2.2         
+ [94] tzdb_0.3.0          rmarkdown_2.16      grid_4.1.0         
+ [97] readxl_1.4.1        callr_3.7.2         git2r_0.30.1       
+[100] reprex_2.0.2        digest_0.6.29       xtable_1.8-4       
+[103] httpuv_1.6.5        gridGraphics_0.5-1  munsell_0.5.0      
+[106] ggplotify_0.1.0     bslib_0.4.0        </code></pre>
 </div>
 </div>
 </div>

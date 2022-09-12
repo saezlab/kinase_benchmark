@@ -158,8 +158,8 @@ Kinases from KinBase, activation loop from Phomics toolbox, PhosphoSitePlus, Net
 
 ```{r}
 load("INKA/Manning.Kinases_20Jan2017.Rdata")
-load("~/Documents/kinase_review/INKA/PSP_KSR_human_03Jul2016.Rdata")
-load("~/Documents/kinase_review/INKA/TOP_NWK_nwk_proteome_unprot_ref_2014.Rdata")
+load("INKA/PSP_KSR_human_03Jul2016.Rdata")
+load("INKA/TOP_NWK_nwk_proteome_unprot_ref_2014.Rdata")
 
 kinome <- Kinases
 phomics <- read_tsv("INKA/phomics_global_output.txt")
