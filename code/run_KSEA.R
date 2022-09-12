@@ -1,6 +1,6 @@
 library("KSEAapp")
 
-KSEA_input_files <- list.files(path = "output/KSEA", pattern = "input", full.names = T)
+KSEA_input_files <- list.files(path = "output/CPTAC/KSEA", pattern = "input", full.names = T)
 
 map(KSEA_input_files, function(file_path){
   KSEA_input <- read.csv(file_path)

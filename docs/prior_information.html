@@ -1,0 +1,1325 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="Sophia Müller-Dott" />
+
+<meta name="date" content="2022-08-30" />
+
+<title>Prior knowledge</title>
+
+<script src="site_libs/header-attrs-2.16/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+
+<link rel="icon" href="https://github.com/workflowr/workflowr-assets/raw/main/img/reproducible.png">
+<!-- Add a small amount of space between sections. -->
+<style type="text/css">
+div.section {
+  padding-top: 12px;
+}
+</style>
+
+
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">kinase_review</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="about.html">About</a>
+</li>
+<li>
+  <a href="license.html">License</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+
+
+<h1 class="title toc-ignore">Prior knowledge</h1>
+<h4 class="author">Sophia Müller-Dott</h4>
+<h4 class="date">2022-08-30</h4>
+
+</div>
+
+
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-report" data-toggle="collapse" data-target="#workflowr-report">
+<span class="glyphicon glyphicon-list" aria-hidden="true"></span>
+workflowr <span class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span>
+</button>
+</p>
+<div id="workflowr-report" class="collapse">
+<ul class="nav nav-tabs">
+<li class="active">
+<a data-toggle="tab" href="#summary">Summary</a>
+</li>
+<li>
+<a data-toggle="tab" href="#checks"> Checks <span
+class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> </a>
+</li>
+<li>
+<a data-toggle="tab" href="#versions">Past versions</a>
+</li>
+</ul>
+<div class="tab-content">
+<div id="summary" class="tab-pane fade in active">
+<p>
+<strong>Last updated:</strong> 2022-08-30
+</p>
+<p>
+<strong>Checks:</strong> <span
+class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 6
+<span class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> 1
+</p>
+<p>
+<strong>Knit directory:</strong> <code>kinase_review/</code> <span
+class="glyphicon glyphicon-question-sign" aria-hidden="true"
+title="This is the local directory in which the code in this file was executed.">
+</span>
+</p>
+<p>
+This reproducible <a href="https://rmarkdown.rstudio.com">R Markdown</a>
+analysis was created with <a
+  href="https://github.com/workflowr/workflowr">workflowr</a> (version
+1.7.0). The <em>Checks</em> tab describes the reproducibility checks
+that were applied when the results were created. The <em>Past
+versions</em> tab lists the development history.
+</p>
+<hr>
+</div>
+<div id="checks" class="tab-pane fade">
+<div id="workflowr-checks" class="panel-group">
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRMarkdownfilestronguncommittedchanges">
+<span class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> <strong>R Markdown file:</strong> uncommitted
+changes </a>
+</p>
+</div>
+<div id="strongRMarkdownfilestronguncommittedchanges"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>The R Markdown is untracked by Git. To know which version of the R
+Markdown file created these results, you’ll want to first commit it to
+the Git repo. If you’re still working on the analysis, you can ignore
+this warning. When you’re finished, you can run
+<code>wflow_publish</code> to commit the R Markdown file and build the
+HTML.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongEnvironmentstrongempty">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Environment:</strong> empty </a>
+</p>
+</div>
+<div id="strongEnvironmentstrongempty" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! The global environment was empty. Objects defined in the
+global environment can affect the analysis in your R Markdown file in
+unknown ways. For reproduciblity it’s best to always run the code in an
+empty environment.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSeedstrongcodesetseed20220620code">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Seed:</strong>
+<code>set.seed(20220620)</code> </a>
+</p>
+</div>
+<div id="strongSeedstrongcodesetseed20220620code"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>The command <code>set.seed(20220620)</code> was run prior to running
+the code in the R Markdown file. Setting a seed ensures that any results
+that rely on randomness, e.g. subsampling or permutations, are
+reproducible.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSessioninformationstrongrecorded">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Session information:</strong>
+recorded </a>
+</p>
+</div>
+<div id="strongSessioninformationstrongrecorded"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Recording the operating system, R version, and package
+versions is critical for reproducibility.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongCachestrongnone">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Cache:</strong> none </a>
+</p>
+</div>
+<div id="strongCachestrongnone" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Nice! There were no cached chunks for this analysis, so you can be
+confident that you successfully produced the results during this
+run.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongFilepathsstrongrelative">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>File paths:</strong> relative </a>
+</p>
+</div>
+<div id="strongFilepathsstrongrelative" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Using relative paths to the files within your workflowr
+project makes it easier to run your code on other machines.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomsaezlabkinasereviewtree8faca636af48b0e4729e1d55970e3dd2bf998de5targetblank8faca63a">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Repository version:</strong>
+<a href="https://github.com/saezlab/kinase_review/tree/8faca636af48b0e4729e1d55970e3dd2bf998de5" target="_blank">8faca63</a>
+</a>
+</p>
+</div>
+<div
+id="strongRepositoryversionstrongahrefhttpsgithubcomsaezlabkinasereviewtree8faca636af48b0e4729e1d55970e3dd2bf998de5targetblank8faca63a"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>
+Great! You are using Git for version control. Tracking code development
+and connecting the code version to the results is critical for
+reproducibility.
+</p>
+<p>
+The results in this page were generated with repository version
+<a href="https://github.com/saezlab/kinase_review/tree/8faca636af48b0e4729e1d55970e3dd2bf998de5" target="_blank">8faca63</a>.
+See the <em>Past versions</em> tab to see a history of the changes made
+to the R Markdown and HTML files.
+</p>
+<p>
+Note that you need to be careful to ensure that all relevant files for
+the analysis have been committed to Git prior to generating the results
+(you can use <code>wflow_publish</code> or
+<code>wflow_git_commit</code>). workflowr only checks the R Markdown
+file, but you know if there are other scripts or data files that it
+depends on. Below is the status of the Git repository when the results
+were generated:
+</p>
+<pre><code>
+Ignored files:
+    Ignored:    .DS_Store
+    Ignored:    .Rhistory
+    Ignored:    .Rproj.user/
+    Ignored:    INKA/
+    Ignored:    code/.DS_Store
+    Ignored:    code/IKAP/.DS_Store
+    Ignored:    code/kinasePA/
+    Ignored:    data/CPTAC_estefani_clean_zip/
+    Ignored:    output/CPTAC/
+    Ignored:    output/IKAP/
+    Ignored:    output/KEA3/
+    Ignored:    output/KSEA/
+    Ignored:    output/PTM-SEA/
+    Ignored:    output/benchmark/
+    Ignored:    output/rokai/
+
+Untracked files:
+    Untracked:  analysis/prior_information.Rmd
+    Untracked:  code/IKAP/IKAP_input_CPTAC_ccrcc.csv
+    Untracked:  code/IKAP/IKAP_input_CPTAC_luad.csv
+    Untracked:  code/IKAP/IKAP_input_CPTAC_ucec.csv
+    Untracked:  code/IKAP/kinase_act_ccrcc.csv
+    Untracked:  code/IKAP/kinase_act_luad.csv
+    Untracked:  code/IKAP/kinase_act_ucec.csv
+    Untracked:  code/IKAP/kinase_ccrcc.csv
+    Untracked:  code/IKAP/kinase_luad.csv
+    Untracked:  code/IKAP/kinase_ucec.csv
+    Untracked:  code/RoKAI-master/
+    Untracked:  code/method_functions.R
+    Untracked:  code/src/
+    Untracked:  code/support_functions.R
+    Untracked:  scatter_plot_ccrcc.pdf
+
+Unstaged changes:
+    Modified:   code/01_input_preparation.R
+    Modified:   code/02_compare_activities.R
+    Deleted:    code/IKAP/IKAP_input_COLO205.csv
+    Deleted:    code/IKAP/IKAP_input_MDST.csv
+    Deleted:    code/IKAP/IKAP_input_RKO.csv
+    Deleted:    code/IKAP/IKAP_input_SW837.csv
+    Deleted:    code/IKAP/IKAP_input_T84.csv
+    Deleted:    code/IKAP/kinase_COLO205.csv
+    Deleted:    code/IKAP/kinase_MDST.csv
+    Deleted:    code/IKAP/kinase_RKO.csv
+    Deleted:    code/IKAP/kinase_SW837.csv
+    Deleted:    code/IKAP/kinase_T84.csv
+    Deleted:    code/IKAP/kinase_act_COLO205.csv
+    Deleted:    code/IKAP/kinase_act_MDST.csv
+    Deleted:    code/IKAP/kinase_act_RKO.csv
+    Deleted:    code/IKAP/kinase_act_SW837.csv
+    Deleted:    code/IKAP/kinase_act_T84.csv
+    Modified:   code/IKAP/run_IKAP.m
+    Modified:   code/run_KSEA.R
+
+</code></pre>
+<p>
+Note that any generated files, e.g. HTML, png, CSS, etc., are not
+included in this status report because it is ok for generated content to
+have uncommitted changes.
+</p>
+</div>
+</div>
+</div>
+</div>
+<hr>
+</div>
+<div id="versions" class="tab-pane fade">
+<p>
+There are no past versions. Publish this analysis with
+<code>wflow_publish()</code> to start tracking its development.
+</p>
+<hr>
+</div>
+</div>
+</div>
+<div id="introduction" class="section level2">
+<h2>Introduction</h2>
+<p>Here we will compare the amount of information from the pior
+knowledge network of the tools. The goal is to see for how many kinases
+we can estimate activities for each tool and how many phosphorylation
+sites can be considered in an optimal case. We will look at these
+methods:</p>
+<ul>
+<li>CLUE (PhosphoSitePlus) PPS+</li>
+<li>IKAP PPS+</li>
+<li>KinasePA PPS+</li>
+<li>KARP PPS+</li>
+<li>KSEA App PPS+ + NetworKIN (score &gt;= 5)</li>
+<li>INKA</li>
+<li>PTM-SEA PTMsigDB</li>
+<li>KEA3</li>
+<li>RoKAI</li>
+</ul>
+<pre class="r"><code>library(ClueR) 
+library(directPA)
+library(KSEAapp)
+library(qusage)
+library(tidyverse)</code></pre>
+</div>
+<div id="prior-knowledge-size" class="section level2">
+<h2>Prior knowledge size</h2>
+<p>For each tool we will extract the number of interactions, unique
+kinases, kinases with at least 5 targets and unique pps.</p>
+<div id="clue" class="section level3">
+<h3>Clue</h3>
+<p>ClueR provides a package containing the data from PhosphoSitePlus
+which they use in their method. (This is not the most updated version
+see IKAP)</p>
+<pre class="r"><code>data(PhosphoSite)
+CLUe.network.human &lt;- PhosphoSite.human
+CLUe.size.human &lt;- c(tool = &quot;CLUe&quot;,
+                     kinases = unique(names(CLUe.network.human)) %&gt;% 
+                       length(),
+                     kinases_5 = names(CLUe.network.human)[map(CLUe.network.human, length) &gt;= 5] %&gt;% 
+                       unique() %&gt;%
+                       length(),
+                     pps = unlist(CLUe.network.human) %&gt;% 
+                       unique() %&gt;%
+                       length(),
+                     edges = unlist(CLUe.network.human) %&gt;%
+                       length()) 
+CLUe.network.mouse &lt;- PhosphoSite.mouse
+CLUe.size.mouse &lt;- c(tool = &quot;CLUe.mouse&quot;,
+                     kinases = unique(names(CLUe.network.mouse)) %&gt;% 
+                       length(),
+                     kinases_5 = names(CLUe.network.mouse)[map(CLUe.network.mouse, length) &gt;= 5] %&gt;% 
+                       unique() %&gt;%
+                       length(),
+                     pps = unlist(CLUe.network.mouse) %&gt;% 
+                       unique() %&gt;%
+                       length(),
+                     edges = unlist(CLUe.network.mouse) %&gt;%
+                       length()) 
+
+knitr::kable(rbind(CLUe.size.human, CLUe.size.mouse))</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="left">tool</th>
+<th align="left">kinases</th>
+<th align="left">kinases_5</th>
+<th align="left">pps</th>
+<th align="left">edges</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">CLUe.size.human</td>
+<td align="left">CLUe</td>
+<td align="left">206</td>
+<td align="left">206</td>
+<td align="left">7065</td>
+<td align="left">9830</td>
+</tr>
+<tr class="even">
+<td align="left">CLUe.size.mouse</td>
+<td align="left">CLUe.mouse</td>
+<td align="left">235</td>
+<td align="left">235</td>
+<td align="left">12050</td>
+<td align="left">17532</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="ikap" class="section level3">
+<h3>IKAP</h3>
+<p>IKAP also uses PPS+. Following the instructions on GitHub (<a
+href="https://github.com/marcel-mischnik/IKAP"
+class="uri">https://github.com/marcel-mischnik/IKAP</a>) this will be
+manually downloaded before running IKAP.</p>
+<pre class="r"><code>PPS.plus &lt;- read_tsv(file = &quot;data/PPSp_20220830&quot;, skip = 2)
+PPS.plus.human &lt;- PPS.plus %&gt;% 
+  dplyr::filter(KIN_ORGANISM == &quot;human&quot; &amp; SUB_ORGANISM == &quot;human&quot;) %&gt;%
+  dplyr::select(KINASE, SUB_GENE, SUB_MOD_RSD)
+PPS.plus.human &lt;- PPS.plus.human %&gt;% filter(!duplicated(PPS.plus.human))
+
+IKAP.size &lt;- c(tool = &quot;IKAP&quot;,
+               kinases = unique(PPS.plus.human$KINASE) %&gt;% 
+                 length(),
+               kinases_5 = names(table(PPS.plus.human$KINASE))[table(PPS.plus.human$KINASE) &gt;= 5] %&gt;% 
+                 unique() %&gt;%
+                 length(),
+               pps = paste(PPS.plus.human$SUB_GENE, PPS.plus.human$SUB_MOD_RSD, sep = &quot;_&quot;) %&gt;% 
+                 unique() %&gt;%
+                 length(),
+               edges = nrow(PPS.plus.human)) 
+
+knitr::kable(rbind(CLUe.size.human, IKAP.size))</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="left">tool</th>
+<th align="left">kinases</th>
+<th align="left">kinases_5</th>
+<th align="left">pps</th>
+<th align="left">edges</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">CLUe.size.human</td>
+<td align="left">CLUe</td>
+<td align="left">206</td>
+<td align="left">206</td>
+<td align="left">7065</td>
+<td align="left">9830</td>
+</tr>
+<tr class="even">
+<td align="left">IKAP.size</td>
+<td align="left">IKAP</td>
+<td align="left">417</td>
+<td align="left">261</td>
+<td align="left">9511</td>
+<td align="left">13581</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="kinasepa" class="section level3">
+<h3>KinasePA</h3>
+<p>KinasePA also uses the annotations from PhosphoSite Plus</p>
+<pre class="r"><code>data(PhosphoSite)
+
+KinasePA.network.human &lt;- PhosphoSite.human
+KinasePA.size &lt;- c(tool = &quot;KinasePA&quot;,
+                   kinases = unique(names(KinasePA.network.human)) %&gt;% 
+                     length(),
+                   kinases_5 = names(KinasePA.network.human)[map(KinasePA.network.human, length) &gt;= 5] %&gt;% 
+                     unique() %&gt;%
+                     length(),
+                   pps = unlist(KinasePA.network.human) %&gt;% 
+                     unique() %&gt;%
+                     length(),
+                   edges = unlist(KinasePA.network.human) %&gt;%
+                     length()) 
+
+knitr::kable(rbind(CLUe.size.human, IKAP.size, KinasePA.size))</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="left">tool</th>
+<th align="left">kinases</th>
+<th align="left">kinases_5</th>
+<th align="left">pps</th>
+<th align="left">edges</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">CLUe.size.human</td>
+<td align="left">CLUe</td>
+<td align="left">206</td>
+<td align="left">206</td>
+<td align="left">7065</td>
+<td align="left">9830</td>
+</tr>
+<tr class="even">
+<td align="left">IKAP.size</td>
+<td align="left">IKAP</td>
+<td align="left">417</td>
+<td align="left">261</td>
+<td align="left">9511</td>
+<td align="left">13581</td>
+</tr>
+<tr class="odd">
+<td align="left">KinasePA.size</td>
+<td align="left">KinasePA</td>
+<td align="left">206</td>
+<td align="left">206</td>
+<td align="left">7065</td>
+<td align="left">9830</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="karp" class="section level3">
+<h3>KARP</h3>
+<p>No source code available. In the publication they also use
+PhosphoSitePlus.</p>
+<pre class="r"><code>KARP.size &lt;- IKAP.size #(PhosphoSitePlus from 2022-08-30)
+KARP.size[&quot;tool&quot;] &lt;- &quot;KARP&quot;
+
+knitr::kable(rbind(CLUe.size.human, IKAP.size, KinasePA.size, KARP.size))</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="left">tool</th>
+<th align="left">kinases</th>
+<th align="left">kinases_5</th>
+<th align="left">pps</th>
+<th align="left">edges</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">CLUe.size.human</td>
+<td align="left">CLUe</td>
+<td align="left">206</td>
+<td align="left">206</td>
+<td align="left">7065</td>
+<td align="left">9830</td>
+</tr>
+<tr class="even">
+<td align="left">IKAP.size</td>
+<td align="left">IKAP</td>
+<td align="left">417</td>
+<td align="left">261</td>
+<td align="left">9511</td>
+<td align="left">13581</td>
+</tr>
+<tr class="odd">
+<td align="left">KinasePA.size</td>
+<td align="left">KinasePA</td>
+<td align="left">206</td>
+<td align="left">206</td>
+<td align="left">7065</td>
+<td align="left">9830</td>
+</tr>
+<tr class="even">
+<td align="left">KARP.size</td>
+<td align="left">KARP</td>
+<td align="left">417</td>
+<td align="left">261</td>
+<td align="left">9511</td>
+<td align="left">13581</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div id="ksea-app" class="section level2">
+<h2>KSEA App</h2>
+<pre class="r"><code>KSEA.network &lt;- KSEAapp::KSData
+KSEA.network.filtered &lt;- KSEA.network %&gt;% filter(networkin_score &gt;= 5)
+
+KSEA.size &lt;- c(tool = &quot;KSEA App&quot;,
+               kinases = unique(KSEA.network.filtered$KINASE) %&gt;% 
+                 length(),
+               kinases_5 = names(table(KSEA.network.filtered$KINASE))[table(KSEA.network.filtered$KINASE) &gt;= 5] %&gt;% 
+                 unique() %&gt;%
+                 length(),
+               pps = paste(KSEA.network.filtered$SUB_GENE, KSEA.network.filtered$SUB_MOD_RSD, sep = &quot;_&quot;) %&gt;% 
+                 unique() %&gt;%
+                 length(),
+               edges = nrow(KSEA.network.filtered)) 
+
+knitr::kable(rbind(CLUe.size.human, IKAP.size, KinasePA.size, KARP.size, KSEA.size))</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="left">tool</th>
+<th align="left">kinases</th>
+<th align="left">kinases_5</th>
+<th align="left">pps</th>
+<th align="left">edges</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">CLUe.size.human</td>
+<td align="left">CLUe</td>
+<td align="left">206</td>
+<td align="left">206</td>
+<td align="left">7065</td>
+<td align="left">9830</td>
+</tr>
+<tr class="even">
+<td align="left">IKAP.size</td>
+<td align="left">IKAP</td>
+<td align="left">417</td>
+<td align="left">261</td>
+<td align="left">9511</td>
+<td align="left">13581</td>
+</tr>
+<tr class="odd">
+<td align="left">KinasePA.size</td>
+<td align="left">KinasePA</td>
+<td align="left">206</td>
+<td align="left">206</td>
+<td align="left">7065</td>
+<td align="left">9830</td>
+</tr>
+<tr class="even">
+<td align="left">KARP.size</td>
+<td align="left">KARP</td>
+<td align="left">417</td>
+<td align="left">261</td>
+<td align="left">9511</td>
+<td align="left">13581</td>
+</tr>
+<tr class="odd">
+<td align="left">KSEA.size</td>
+<td align="left">KSEA App</td>
+<td align="left">438</td>
+<td align="left">249</td>
+<td align="left">7516</td>
+<td align="left">10516</td>
+</tr>
+</tbody>
+</table>
+<div id="inka" class="section level3">
+<h3>INKA</h3>
+</div>
+<div id="ptm-sea" class="section level3">
+<h3>PTM-SEA</h3>
+<p>PTMsigDB for PTM-SEA was extracted from the package (<a
+href="https://github.com/broadinstitute/ssGSEA2.0/tree/master/db"
+class="uri">https://github.com/broadinstitute/ssGSEA2.0/tree/master/db</a>)</p>
+<pre class="r"><code>PTMsigDB &lt;- read.gmt(&quot;data/ptm.sig.db.all.uniprot.human.v1.9.0.gmt&quot;)
+PTMsigDB.kinase &lt;- PTMsigDB[str_detect(names(PTMsigDB), &quot;KINASE&quot;)]
+
+PTMsigDB.size &lt;- c(tool = &quot;PTMsigDB&quot;,
+                   kinases = length(unique(names(PTMsigDB.kinase))),
+                   kinases_5 = names(PTMsigDB.kinase)[map(PTMsigDB.kinase, length) &gt;= 5] %&gt;%
+                     unique() %&gt;%
+                     length(),
+                   pps = unlist(PTMsigDB.kinase) %&gt;% 
+                     unique() %&gt;%
+                     length(),
+                   edges = unlist(PTMsigDB.kinase) %&gt;%
+                     length()) 
+
+knitr::kable(rbind(CLUe.size.human, IKAP.size, KinasePA.size, KARP.size, KSEA.size, PTMsigDB.size))</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="left">tool</th>
+<th align="left">kinases</th>
+<th align="left">kinases_5</th>
+<th align="left">pps</th>
+<th align="left">edges</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">CLUe.size.human</td>
+<td align="left">CLUe</td>
+<td align="left">206</td>
+<td align="left">206</td>
+<td align="left">7065</td>
+<td align="left">9830</td>
+</tr>
+<tr class="even">
+<td align="left">IKAP.size</td>
+<td align="left">IKAP</td>
+<td align="left">417</td>
+<td align="left">261</td>
+<td align="left">9511</td>
+<td align="left">13581</td>
+</tr>
+<tr class="odd">
+<td align="left">KinasePA.size</td>
+<td align="left">KinasePA</td>
+<td align="left">206</td>
+<td align="left">206</td>
+<td align="left">7065</td>
+<td align="left">9830</td>
+</tr>
+<tr class="even">
+<td align="left">KARP.size</td>
+<td align="left">KARP</td>
+<td align="left">417</td>
+<td align="left">261</td>
+<td align="left">9511</td>
+<td align="left">13581</td>
+</tr>
+<tr class="odd">
+<td align="left">KSEA.size</td>
+<td align="left">KSEA App</td>
+<td align="left">438</td>
+<td align="left">249</td>
+<td align="left">7516</td>
+<td align="left">10516</td>
+</tr>
+<tr class="even">
+<td align="left">PTMsigDB.size</td>
+<td align="left">PTMsigDB</td>
+<td align="left">227</td>
+<td align="left">227</td>
+<td align="left">7317</td>
+<td align="left">10155</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="kea3" class="section level3">
+<h3>KEA3</h3>
+</div>
+<div id="rokai" class="section level3">
+<h3>RoKAI</h3>
+<p>RoKAI combines information from PhosphositePlus, PTMcode and STRING.
+The final network was extracted from here: <a
+href="https://github.com/serhan-yilmaz/RoKAI/tree/master/data"
+class="uri">https://github.com/serhan-yilmaz/RoKAI/tree/master/data</a>.</p>
+<pre class="r"><code>network_size_rokai &lt;- read_csv(&quot;code/RoKAI-master/data/nerwork_size_rokai.csv&quot;, 
+    col_names = FALSE)</code></pre>
+<pre><code>Rows: 1 Columns: 7
+── Column specification ────────────────────────────────────────────────────────
+Delimiter: &quot;,&quot;
+dbl (7): X1, X2, X3, X4, X5, X6, X7
+
+ℹ Use `spec()` to retrieve the full column specification for this data.
+ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+<pre class="r"><code>colnames(network_size_rokai) &lt;- c(&quot;n_KSedges&quot;,&quot;n_KKedges&quot;, &quot;n_SSedges_coec&quot;, &quot;n_SSedges_sd&quot;, &quot;n_edges&quot;, &quot;n_pps&quot;, &quot;n_kin&quot;)
+
+RoKAI.size &lt;- c(tool = &quot;RoKAI&quot;,
+               kinases = network_size_rokai$n_kin,
+               kinases_5 = NA,
+               pps = network_size_rokai$n_pps,
+               edges = network_size_rokai$n_edges) 
+
+knitr::kable(rbind(CLUe.size.human, IKAP.size, KinasePA.size, KARP.size, KSEA.size, PTMsigDB.size, RoKAI.size))</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="left">tool</th>
+<th align="left">kinases</th>
+<th align="left">kinases_5</th>
+<th align="left">pps</th>
+<th align="left">edges</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">CLUe.size.human</td>
+<td align="left">CLUe</td>
+<td align="left">206</td>
+<td align="left">206</td>
+<td align="left">7065</td>
+<td align="left">9830</td>
+</tr>
+<tr class="even">
+<td align="left">IKAP.size</td>
+<td align="left">IKAP</td>
+<td align="left">417</td>
+<td align="left">261</td>
+<td align="left">9511</td>
+<td align="left">13581</td>
+</tr>
+<tr class="odd">
+<td align="left">KinasePA.size</td>
+<td align="left">KinasePA</td>
+<td align="left">206</td>
+<td align="left">206</td>
+<td align="left">7065</td>
+<td align="left">9830</td>
+</tr>
+<tr class="even">
+<td align="left">KARP.size</td>
+<td align="left">KARP</td>
+<td align="left">417</td>
+<td align="left">261</td>
+<td align="left">9511</td>
+<td align="left">13581</td>
+</tr>
+<tr class="odd">
+<td align="left">KSEA.size</td>
+<td align="left">KSEA App</td>
+<td align="left">438</td>
+<td align="left">249</td>
+<td align="left">7516</td>
+<td align="left">10516</td>
+</tr>
+<tr class="even">
+<td align="left">PTMsigDB.size</td>
+<td align="left">PTMsigDB</td>
+<td align="left">227</td>
+<td align="left">227</td>
+<td align="left">7317</td>
+<td align="left">10155</td>
+</tr>
+<tr class="odd">
+<td align="left">RoKAI.size</td>
+<td align="left">RoKAI</td>
+<td align="left">373</td>
+<td align="left">NA</td>
+<td align="left">239881</td>
+<td align="left">128463</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div id="databases" class="section level2">
+<h2>Databases</h2>
+<p>Here we will list the raw data bases used in the methods (as of
+2022-08-30) - PhosphoSitePlus - NetworKin - PTMcode - STRING</p>
+<div id="phosphositeplus" class="section level3">
+<h3>PhosphoSitePlus</h3>
+<pre class="r"><code>PPS.plus &lt;- read_tsv(file = &quot;data/PPSp_20220830&quot;, skip = 2)</code></pre>
+<pre><code>Rows: 22291 Columns: 16
+── Column specification ────────────────────────────────────────────────────────
+Delimiter: &quot;\t&quot;
+chr (14): GENE, KINASE, KIN_ACC_ID, KIN_ORGANISM, SUBSTRATE, SUB_ACC_ID, SUB...
+dbl  (2): SUB_GENE_ID, SITE_GRP_ID
+
+ℹ Use `spec()` to retrieve the full column specification for this data.
+ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+</div>
+<div id="networkin" class="section level3">
+<h3>NetworKin</h3>
+<br>
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
+<span class="glyphicon glyphicon-wrench" aria-hidden="true"></span>
+Session information
+</button>
+</p>
+<div id="workflowr-sessioninfo" class="collapse">
+<pre class="r"><code>sessionInfo()</code></pre>
+<pre><code>R version 4.1.0 (2021-05-18)
+Platform: x86_64-apple-darwin17.0 (64-bit)
+Running under: macOS Big Sur 10.16
+
+Matrix products: default
+BLAS:   /Library/Frameworks/R.framework/Versions/4.1/Resources/lib/libRblas.dylib
+LAPACK: /Library/Frameworks/R.framework/Versions/4.1/Resources/lib/libRlapack.dylib
+
+locale:
+[1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+
+attached base packages:
+[1] parallel  stats     graphics  grDevices utils     datasets  methods  
+[8] base     
+
+other attached packages:
+ [1] forcats_0.5.2   stringr_1.4.1   dplyr_1.0.9     purrr_0.3.4    
+ [5] readr_2.1.2     tidyr_1.2.0     tibble_3.1.8    ggplot2_3.3.6  
+ [9] tidyverse_1.3.2 qusage_2.28.0   limma_3.50.3    KSEAapp_0.99.0 
+[13] directPA_1.5    ClueR_1.4       e1071_1.7-11    workflowr_1.7.0
+
+loaded via a namespace (and not attached):
+ [1] nlme_3.1-159        bitops_1.0-7        fs_1.5.2           
+ [4] bit64_4.0.5         lubridate_1.8.0     httr_1.4.4         
+ [7] rprojroot_2.0.3     tools_4.1.0         backports_1.4.1    
+[10] bslib_0.4.0         utf8_1.2.2          R6_2.5.1           
+[13] KernSmooth_2.23-20  DBI_1.1.3           BiocGenerics_0.40.0
+[16] colorspace_2.0-3    withr_2.5.0         tidyselect_1.1.2   
+[19] processx_3.7.0      emmeans_1.8.0       bit_4.0.4          
+[22] compiler_4.1.0      git2r_0.30.1        rvest_1.0.3        
+[25] cli_3.3.0           Biobase_2.54.0      xml2_1.3.3         
+[28] sass_0.4.2          caTools_1.18.2      scales_1.2.1       
+[31] mvtnorm_1.1-3       callr_3.7.2         proxy_0.4-27       
+[34] digest_0.6.29       rmarkdown_2.16      pkgconfig_2.0.3    
+[37] htmltools_0.5.3     highr_0.9           dbplyr_2.2.1       
+[40] fastmap_1.1.0       readxl_1.4.1        rlang_1.0.4        
+[43] rstudioapi_0.14     jquerylib_0.1.4     generics_0.1.3     
+[46] jsonlite_1.8.0      vroom_1.5.7         gtools_3.9.3       
+[49] googlesheets4_1.0.1 magrittr_2.0.3      Matrix_1.4-1       
+[52] Rcpp_1.0.9          munsell_0.5.0       fansi_1.0.3        
+[55] lifecycle_1.0.1     stringi_1.7.8       whisker_0.4        
+[58] yaml_2.3.5          MASS_7.3-58.1       gplots_3.1.3       
+[61] grid_4.1.0          promises_1.2.0.1    crayon_1.5.1       
+[64] lattice_0.20-45     haven_2.5.1         hms_1.1.2          
+[67] knitr_1.40          ps_1.7.1            pillar_1.8.1       
+[70] fftw_1.0-7          estimability_1.4.1  reprex_2.0.2       
+[73] glue_1.6.2          evaluate_0.16       getPass_0.2-2      
+[76] calibrate_1.7.7     modelr_0.1.9        vctrs_0.4.1        
+[79] tzdb_0.3.0          httpuv_1.6.5        cellranger_1.1.0   
+[82] gtable_0.3.0        assertthat_0.2.1    cachem_1.0.6       
+[85] xfun_0.32           xtable_1.8-4        broom_1.0.0        
+[88] coda_0.19-4         later_1.3.0         class_7.3-20       
+[91] googledrive_2.0.0   gargle_1.2.0        ellipsis_0.3.2     </code></pre>
+</div>
+</div>
+</div>
+
+
+<!-- Adjust MathJax settings so that all math formulae are shown using
+TeX fonts only; see
+https://docs.mathjax.org/en/latest/web/configuration.html. This will make
+the presentation more consistent at the cost of the webpage sometimes
+taking slightly longer to load. Note that this only works because the
+footer is added to webpages before the MathJax javascript. -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script>
+
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
