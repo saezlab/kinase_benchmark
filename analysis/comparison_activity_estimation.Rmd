@@ -337,7 +337,66 @@ map(corr_df, function(corr_cohort){
   get_mat_plot(corr_cohort, main = 'Pearson correlation', palette = "Greens")
 })
 
+mean_corr_matrix <- matrix(ncol = ncol(corr_df$ccrcc),
+                           nrow = nrow(corr_df$ccrcc))
+
+for (i in 1:ncol(corr_df$ccrcc)){
+  for (j in 1:nrow(corr_df$ccrcc)){
+    mean_corr_matrix[j,i] <-  mean(c(corr_df$ccrcc[j,i],
+                                  corr_df$luad[j,i],
+                                  corr_df$ucec[j,i]))
+
+  }
+
+}
+
+colnames(mean_corr_matrix) <- colnames(corr_df$ccrcc)
+rownames(mean_corr_matrix) <- rownames(corr_df$ccrcc)
+corr_p <- get_mat_plot(mean_corr_matrix, main = 'Pearson correlation', palette = "Greens")
+
+paletteLength <- 100
+myColor <- 
+  colorRampPalette(c("whitesmoke","#AD4747"))(paletteLength)
+
+# #AD4747
+
 ```
+### Scatter plots
+
+```{r}
+results_long_list <- map(names(results_df), function(x){
+  results_df[[x]] %>% 
+  rownames_to_column("Kinase") %>%
+    add_column(dataset = x)
+})
+results_long <- do.call("rbind", results_long_list)
+
+methods <- c("KSEA", "RoKAI", "PTM", "IKAP", "KARP")
+combinations <- apply(combn(methods,2),2,paste,collapse='_')
+
+scatter_p <- map(combinations, function(method_comp){
+  meth_id <- str_split(method_comp, "_") %>% unlist()
+  
+  df_plot <- results_long[c("Kinase", meth_id, "dataset")]
+  colnames(df_plot) <- c("Kinase", "Method1", "Method2", "dataset")
+  
+  ggplot(df_plot) + 
+  geom_point(aes(x=Method1, y=Method2, color=dataset), size=0.5) +
+  geom_smooth(aes(x=Method1, y=Method2), method=lm, fullrange=TRUE, color = "darkgrey", fill = "lightgrey", size=0.3) + 
+  scale_color_manual(values=c('#47ADAD','#477AAD', '#ADAD47'), name = "") +
+  theme_minimal() + xlab(meth_id[1]) + ylab(meth_id[2]) + 
+  theme(text = element_text(size = 10)) 
+  
+})
+```
+```{r}
+pdf("output/figures/scatter_plots.pdf", width = 6.25, height = 7.5)
+do.call(ggpubr::ggarrange, c(append(list(NULL, NULL), scatter_p),  ncol = 3, nrow = 4, common.legend = T, legend = "bottom"))
+dev.off()
+
+```
+
+
 
 
 ### Top kinases
@@ -354,13 +413,22 @@ top_kinases <- map(results, function(activities){
   })
 })
 
-map(top_kinases, function(x){
+venn_p <- map(top_kinases, function(x){
   m <- data.frame(elements = unlist(x), sets = rep(names(x), each = n))
   v <- venneuler::venneuler(m)
-  plot(v)
-
 })
 
+for(cptac in names(venn_p)) {
+  venn <- venn_p[[cptac]]
+  venn$labels <- rep("", length(v$labels))
+  pdf(paste0("output/figures/venn_", cptac,".pdf"), width = 2.1, height = 2.1)
+  par(mar=c(0.5,0.5,0.5, 0.5))
+  plot(venn)
+  for (i in 1:nrow(venn$centers)) {
+    text(venn$centers[i,1], venn$centers[i,2], rownames(venn$centers)[i], cex = 0.85)
+  }
+  dev.off()
+}
 
 ```
 
