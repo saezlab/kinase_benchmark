@@ -315,8 +315,22 @@ results_df <- map(results, function(res){
   res_df
 })
 
+
 corr_df <- map(results_df, function(act_df){
-  cor(act_df, method = "pearson", use = "complete.obs")
+  corr_matrix <- matrix(nrow = ncol(act_df),
+                        ncol = ncol(act_df))
+  
+  for (i in 1:ncol(act_df)) {
+    for (j in 1:ncol(act_df)) {
+      pearson.cor <- stats::cor.test(act_df[,i], act_df[,j])
+      corr_matrix[i,j] <- pearson.cor$estimate
+    }
+  }
+  corr_df <- as.data.frame(corr_matrix)
+  colnames(corr_df) <- colnames(act_df)
+  rownames(corr_df) <- colnames(act_df)
+  
+  corr_df
 })
 
 map(corr_df, function(corr_cohort){
