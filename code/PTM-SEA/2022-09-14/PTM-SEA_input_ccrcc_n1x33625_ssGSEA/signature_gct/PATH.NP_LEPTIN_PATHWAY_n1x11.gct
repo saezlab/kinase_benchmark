@@ -1,0 +1,17 @@
+#1.3
+11	1	2	3
+id	signature.direction	gene.descs.gene.names.tmp.idx...	t
+signature.score	na	na	2.2841
+signature.pvalue	na	na	0.0613
+signature.fdr.pvalue	na	na	0.1191
+O43524;S253-p	u	10664	5.2808
+P05412;S243-p	u	13424	3.4602
+P05412;S63-p	u	13426	1.723
+P36507;S222-p	u	15660	2.1489
+P28482;T185-p	u	15925	-0.3553
+P28482;Y187-p	u	15926	3.3289
+P27361;T202-p	u	15933	2.3435
+P27361;Y204-p	u	15934	4.6834
+P24844;S20-p	u	17396	-0.2552
+P24844;T19-p	u	17399	-0.2552
+P17252;T638-p	u	22350	-4.5562

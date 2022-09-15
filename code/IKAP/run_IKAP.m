@@ -1,4 +1,4 @@
-data = readtable('IKAP_input_CPTAC_ccrcc.csv');
+data = readtable('IKAP_input_CPTAC_luad.csv');
 data = table2cell(data);
 
 PSP = readtable('phosphositeplus.csv');
@@ -12,5 +12,5 @@ PSP = table2cell(PSP);
 
 [AP,AP_tab,K,cost,mincost]=FitActivities(a,data_red,kin,1,50);
 
-writematrix(K,'kinase_act_ccrcc.csv')
-writecell(kin,'kinase_ccrcc.csv')
+writematrix(K,'kinase_act_luad.csv')
+writecell(kin,'kinase_luad.csv')

@@ -23,7 +23,7 @@ calcJaccard <- function(listNodes){
 
 get_mat_plot <- function(mat, main = 'Jaccard index', palette = 'Reds', reverse = F, cellwidth = 22, cellheight = 22, rownames = T, breaks = NA){
   # Get order of clustered methods
-  cor_heat <- pheatmap(mat, cluster_rows = T,
+  cor_heat <- pheatmap::pheatmap(mat, cluster_rows = T,
                        cluster_cols = T, silent=T)
   idxRows <- cor_heat$tree_row$order
   idxCols <- cor_heat$tree_col$order
@@ -43,11 +43,11 @@ get_mat_plot <- function(mat, main = 'Jaccard index', palette = 'Reds', reverse 
   }
 
 
-  mat_heat <- pheatmap(mat, color = color,
+  mat_heat <- pheatmap::pheatmap(mat, color = color,
                        display_numbers=F, cluster_rows = F, number_color='black', border_color=NA,
                        cluster_cols = T, na_col=NA, cellwidth = cellwidth, cellheight = cellheight,
                        legend=T, breaks=breaks,
                        show_rownames = rownames, show_colnames = T, main=main,
                        silent=T)
-  return(as.ggplot(mat_heat))
+  return(ggplotify::as.ggplot(mat_heat))
 }

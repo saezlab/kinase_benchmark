@@ -368,7 +368,7 @@ div.tocify {
 <p>
 <button type="button" class="btn btn-default btn-workflowr btn-workflowr-report" data-toggle="collapse" data-target="#workflowr-report">
 <span class="glyphicon glyphicon-list" aria-hidden="true"></span>
-workflowr <span class="glyphicon glyphicon-exclamation-sign text-danger"
+workflowr <span class="glyphicon glyphicon-ok text-success"
 aria-hidden="true"></span>
 </button>
 </p>
@@ -379,8 +379,8 @@ aria-hidden="true"></span>
 </li>
 <li>
 <a data-toggle="tab" href="#checks"> Checks <span
-class="glyphicon glyphicon-exclamation-sign text-danger"
-aria-hidden="true"></span> </a>
+class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span>
+</a>
 </li>
 <li>
 <a data-toggle="tab" href="#versions">Past versions</a>
@@ -393,9 +393,9 @@ aria-hidden="true"></span> </a>
 </p>
 <p>
 <strong>Checks:</strong> <span
-class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 6
+class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 7
 <span class="glyphicon glyphicon-exclamation-sign text-danger"
-aria-hidden="true"></span> 1
+aria-hidden="true"></span> 0
 </p>
 <p>
 <strong>Knit directory:</strong> <code>kinase_review/</code> <span
@@ -505,64 +505,30 @@ run.</p>
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongFilepathsstrongabsolute">
-<span class="glyphicon glyphicon-exclamation-sign text-danger"
-aria-hidden="true"></span> <strong>File paths:</strong> absolute </a>
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongFilepathsstrongrelative">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>File paths:</strong> relative </a>
 </p>
 </div>
-<div id="strongFilepathsstrongabsolute" class="panel-collapse collapse">
+<div id="strongFilepathsstrongrelative" class="panel-collapse collapse">
 <div class="panel-body">
-<p>
-Using absolute paths to the files within your workflowr project makes it
-difficult for you and others to run your code on a different machine.
-Change the absolute path(s) below to the suggested relative path(s) to
-make your code more reproducible.
-</p>
-<table class="table table-condensed table-hover">
-<thead>
-<tr>
-<th style="text-align:left;">
-absolute
-</th>
-<th style="text-align:left;">
-relative
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align:left;">
-~/Documents/kinase_review/INKA/PSP_KSR_human_03Jul2016.Rdata
-</td>
-<td style="text-align:left;">
-INKA/PSP_KSR_human_03Jul2016.Rdata
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-~/Documents/kinase_review/INKA/TOP_NWK_nwk_proteome_unprot_ref_2014.Rdata
-</td>
-<td style="text-align:left;">
-INKA/TOP_NWK_nwk_proteome_unprot_ref_2014.Rdata
-</td>
-</tr>
-</tbody>
-</table>
+<p>Great job! Using relative paths to the files within your workflowr
+project makes it easier to run your code on other machines.</p>
 </div>
 </div>
 </div>
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomsaezlabkinasereviewtreecb69eabab71611fc30a479a4357b6ed288ebed0ftargetblankcb69eaba">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomsaezlabkinasereviewtree752459d53f330f5daf10e275720df6368bf87d33targetblank752459da">
 <span class="glyphicon glyphicon-ok text-success"
 aria-hidden="true"></span> <strong>Repository version:</strong>
-<a href="https://github.com/saezlab/kinase_review/tree/cb69eabab71611fc30a479a4357b6ed288ebed0f" target="_blank">cb69eab</a>
+<a href="https://github.com/saezlab/kinase_review/tree/752459d53f330f5daf10e275720df6368bf87d33" target="_blank">752459d</a>
 </a>
 </p>
 </div>
 <div
-id="strongRepositoryversionstrongahrefhttpsgithubcomsaezlabkinasereviewtreecb69eabab71611fc30a479a4357b6ed288ebed0ftargetblankcb69eaba"
+id="strongRepositoryversionstrongahrefhttpsgithubcomsaezlabkinasereviewtree752459d53f330f5daf10e275720df6368bf87d33targetblank752459da"
 class="panel-collapse collapse">
 <div class="panel-body">
 <p>
@@ -572,7 +538,7 @@ reproducibility.
 </p>
 <p>
 The results in this page were generated with repository version
-<a href="https://github.com/saezlab/kinase_review/tree/cb69eabab71611fc30a479a4357b6ed288ebed0f" target="_blank">cb69eab</a>.
+<a href="https://github.com/saezlab/kinase_review/tree/752459d53f330f5daf10e275720df6368bf87d33" target="_blank">752459d</a>.
 See the <em>Past versions</em> tab to see a history of the changes made
 to the R Markdown and HTML files.
 </p>
@@ -651,6 +617,40 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/saezlab/kinase_review/blob/752459d53f330f5daf10e275720df6368bf87d33/analysis/prior_information.Rmd" target="_blank">752459d</a>
+</td>
+<td>
+Sophia Müller-Dott
+</td>
+<td>
+2022-09-12
+</td>
+<td>
+changed absolute to relative paths
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/saezlab/kinase_review/752459d53f330f5daf10e275720df6368bf87d33/docs/prior_information.html" target="_blank">752459d</a>
+</td>
+<td>
+Sophia Müller-Dott
+</td>
+<td>
+2022-09-12
+</td>
+<td>
+changed absolute to relative paths
+</td>
+</tr>
 <tr>
 <td>
 Rmd
@@ -1033,8 +1033,8 @@ PhosphoSitePlus, NetworKIN (&gt;= 2). We only count kinases that are
 listed in the kinome + are listed either in PPS+/NetworKIN. Kinases who
 are only presented in one of them will get a final schore of 0.</p>
 <pre class="r"><code>load(&quot;INKA/Manning.Kinases_20Jan2017.Rdata&quot;)
-load(&quot;~/Documents/kinase_review/INKA/PSP_KSR_human_03Jul2016.Rdata&quot;)
-load(&quot;~/Documents/kinase_review/INKA/TOP_NWK_nwk_proteome_unprot_ref_2014.Rdata&quot;)
+load(&quot;INKA/PSP_KSR_human_03Jul2016.Rdata&quot;)
+load(&quot;INKA/TOP_NWK_nwk_proteome_unprot_ref_2014.Rdata&quot;)
 
 kinome &lt;- Kinases
 phomics &lt;- read_tsv(&quot;INKA/phomics_global_output.txt&quot;)</code></pre>
@@ -1511,6 +1511,43 @@ kin_adj_p &lt;- kin_p + theme(plot.margin=unit(c(0.4,0.6,0.6,0.2), &quot;cm&quot
 
 ggpubr::ggarrange(merged_p,kin_adj_p, NULL, leg, nrow = 2, ncol = 2, widths = c(1, 1.2), heights = c(3,0.3))</code></pre>
 <p><img src="figure/prior_information.Rmd/coverage-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-coverage-1">
+Past versions of coverage-1.png
+</button>
+</p>
+<div id="fig-coverage-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/saezlab/kinase_review/blob/752459d53f330f5daf10e275720df6368bf87d33/docs/figure/prior_information.Rmd/coverage-1.png" target="_blank">752459d</a>
+</td>
+<td>
+Sophia Müller-Dott
+</td>
+<td>
+2022-09-12
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre class="r"><code>pdf(&quot;output/figures/coverage.pdf&quot;, width = 6.25, height = 6)
 ggpubr::ggarrange(merged_p,kin_adj_p, NULL, leg, nrow = 2, ncol = 2, widths = c(1, 1.2), heights = c(3,0.3))
 dev.off()</code></pre>

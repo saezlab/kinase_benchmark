@@ -1,0 +1,352 @@
+---
+title: "Comparison methods"
+author: "Sophia Müller-Dott"
+date: '2022-09-14'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, warning=FALSE, message=FALSE}
+library(cmapR)
+library(org.Hs.eg.db)
+library(KSEAapp)
+library(tidyverse)
+source("code/method_functions.R")
+source("code/support_functions.R")
+```
+
+## Introduction
+
+Here we will compare the kinase actvities of each method. From the methods in the review these will be considered in the compatison:
+
+Considered:
+- IKAP
+- KARP
+- KSEA App
+- PTM-SEA
+- RoKAI
+- KEA3 (only for Venn diagramm)
+
+Not considered:
+- CLUE: time-series
+- KinasePA: multi-condition studies
+- INKA: code only available for MaxQuant files
+
+We tried to run the methods with their default settings. The methods were run for three CPTAC studies (ccrcc, luad, ucec)
+
+## Kinase activity estimation
+For the methods we used comparison between tumor samples and normal samples from three CPTAC studies (ccrcc, luad, ucec).
+
+```{r}
+## Load data ---------------------------
+CPTAC_data <- list(ccrcc = read.csv("data/CPTAC_estefani_clean_zip/ccrcc/ccrcc_phospho_tvalues.csv"),
+                   luad = read.csv("data/CPTAC_estefani_clean_zip/luad/luad_phospho_tvalues.csv"),
+                   ucec = read.csv("data/CPTAC_estefani_clean_zip/ucec/ucec_phospho_tvalues.csv"))
+
+CPTAC_data <- map(CPTAC_data, function(CPTAC_cohort){
+  cbind(protein_symbol =  map_chr(str_split(CPTAC_cohort$ID, "_"), function(x) x[1]),
+        pps =  map_chr(str_split(CPTAC_cohort$ID, "_"), function(x) x[2]),
+        CPTAC_cohort)
+})
+
+## Add uniprot ID, filter NAs in t-values, filter peptides with multipls pps
+CPTAC_data_filtered <- map(CPTAC_data, function(CPTAC_cohort){
+  mapped <- mapIds(org.Hs.eg.db,
+                   keys = CPTAC_cohort$protein_symbol,
+                   keytype = "SYMBOL",
+                   column = c("UNIPROT"))
+
+  CPTAC_cohort <- CPTAC_cohort %>%
+    add_column(protein_uniprot = mapped, .after = "protein_symbol") %>%
+    filter(rowSums(is.na(.)) == 0) %>%
+    filter(str_count(pps, "[A-Z]") == 1)
+
+  CPTAC_cohort %>% add_column(uniprot_ID = paste0(CPTAC_cohort$protein_uniprot, "_", CPTAC_cohort$pps), .after = "ID")
+
+})
+
+```
+
+
+### IKAP
+t values
+input preparation
+```{r}
+# Network
+PPS.plus <- read_tsv(file = "data/PPSp_20220830", skip = 2)
+IKAP.network <- PPS.plus %>% 
+  dplyr::filter(KIN_ORGANISM == "human" & SUB_ORGANISM == "human") %>%
+  dplyr::select(KINASE, SUB_GENE, SUB_MOD_RSD) %>%
+  dplyr::mutate(PSP = paste(SUB_GENE, SUB_MOD_RSD, sep = "_")) %>%
+  dplyr::rename("GENE" = "KINASE") %>%
+  dplyr::select(GENE, PSP)
+
+# Samples
+map(names(CPTAC_data_filtered), function(cohort){
+ cohort_data <- CPTAC_data_filtered[[cohort]]
+ 
+  IKAP_data <- data.frame(str_split_fixed(cohort_data$ID, "_", 2)[,1]) %>%
+    add_column(peptide =cohort_data$ID,
+      logFC =cohort_data$NATvsTUM_t)
+
+  colnames(IKAP_data)[1] <- "protein"
+  write.csv(IKAP_data, paste0("code/IKAP/IKAP_input_CPTAC_",cohort, ".csv"), row.names = F)
+})
+
+write.csv(IKAP.network, paste0("code/IKAP/phosphositeplus.csv"), row.names = F)
+```
+
+IKAP was run in MATLAB and the results were processed in R 
+```{r}
+IKAP_act_files <- list.files("code/IKAP", pattern = "kinase", full.names = T)
+IKAP_names <- str_remove(str_remove(IKAP_act_files, "code/IKAP/kinase_act_"), ".csv")
+IKAP_names <- str_remove(IKAP_names, "code/IKAP/kinase_")
+
+IKAP_act <- map(unique(IKAP_names), function(cohort){
+  files <- list.files("code/IKAP", pattern = cohort, full.names = T)
+  act_df <- cbind(read_csv(files[3], col_names = F), read_csv(files[2], col_names = F))
+  names(act_df) <- c("Kinase", "Score")
+  act_df %>%
+    arrange(desc(abs(Score)))
+})
+
+names(IKAP_act) <- unique(IKAP_names)
+
+head(IKAP_act$ccrcc)
+```
+
+### KARP
+t values
+input preparation
+```{r}
+# Network
+PPS.plus.KARP <- read_tsv(file = "data/PPSp_20220830", skip = 2)  %>% 
+  dplyr::filter(KIN_ORGANISM == "human" & SUB_ORGANISM == "human") %>%
+  dplyr::select(KINASE, SUB_GENE, SUB_MOD_RSD) %>%
+  dplyr::mutate(TARGET = paste(SUB_GENE, SUB_MOD_RSD, sep = "_")) %>%
+  dplyr::rename("GENE" = "KINASE") %>%
+  dplyr::select(GENE, TARGET)
+
+# Samples
+KARP.input <- map(names(CPTAC_data_filtered), function(cohort){
+ cohort_data <- CPTAC_data_filtered[[cohort]]
+ 
+ cohort_data <- cohort_data %>% 
+   dplyr::select(ID, NATvsTUM_t)
+})
+```
+
+```{r}
+KARP_act <- map(KARP.input, function(sample){
+  act_df <- runKARP(t.values = sample, PKN = PPS.plus.KARP, min.targets = 1)
+  names(act_df) <- c("Kinase", "Score")
+  act_df %>%
+    arrange(desc(abs(Score)))})
+
+names(KARP_act) <- names(CPTAC_data_filtered)
+
+head(KARP_act$ccrcc)
+```
+
+### KSEA App
+t values
+input preparation
+```{r}
+KSEA.input <- map(names(CPTAC_data_filtered), function(cohort){
+ cohort_data <- CPTAC_data_filtered[[cohort]]
+  KSEA_data <- data.frame(str_split_fixed(cohort_data$ID, "_", 2)) %>%
+    tibble::add_column(p =cohort_data$NATvsTUM_adj.P.Val,
+               FC = (2^cohort_data$NATvsTUM_t),
+               Protein = str_split_fixed(cohort_data$uniprot_ID, "_", 2)[,1],
+               Peptide = "NULL") %>%
+    dplyr::rename("Gene" = "X1", "Residue.Both" = "X2")
+
+  KSEA_data <- KSEA_data[c(5,1,6,2,3,4)]
+})
+```
+
+```{r}
+KSEA_act <- map(KSEA.input, function(sample){
+  KSEA.network <- KSEAapp::KSData
+
+  KSEA_scores <- KSEA.Scores(KSData = KSEA.network,
+                             PX = sample,
+                             NetworKIN = T,
+                             NetworKIN.cutoff = 5)
+
+  KSEA_scores %>%
+    dplyr::select(Kinase.Gene, z.score) %>%
+    dplyr::rename(c("Kinase" = "Kinase.Gene", "Score" = "z.score")) %>%
+    arrange(desc(abs(Score)))
+    
+})
+
+names(KSEA_act) <- names(CPTAC_data_filtered)
+
+head(KSEA_act$ccrcc)
+```
+
+### PTM-SEA
+t values
+input preparation
+```{r}
+map(names(CPTAC_data_filtered), function(cohort){
+ cohort_data <- CPTAC_data_filtered[[cohort]]
+ cohort_data <- cohort_data %>%
+    dplyr::mutate(rid = paste0(str_replace(uniprot_ID, "_", ";"), "-p")) %>%
+    dplyr::select(c("rid", "NATvsTUM_t")) %>%
+    dplyr::rename("t" = "NATvsTUM_t") %>%
+    column_to_rownames("rid")
+ cohort_data_m <- as.matrix(cohort_data)
+
+ cohort_data_gct <- new("GCT", mat=cohort_data_m)
+ write_gct(cohort_data_gct, paste0("code/PTM-SEA/PTM-SEA_input_",cohort))
+})
+
+```
+```{r}
+PTM_act_files <- list.files("code/PTM-SEA/2022-09-14", pattern = "ssGSEA-scores.gct", full.names = T, recursive = TRUE)
+PTM_names <- map_chr(str_split(PTM_act_files, "_"), function(x) x[3])
+PTM_act <- map(PTM_act_files, function(x){
+  act <- read.delim(file = x, skip=2)
+  PTM <- act[str_detect(act$id, "KINASE"), c("id", "t")] %>%
+    dplyr::rename(c("Kinase" = "id", "Score" = "t"))
+  PTM$Kinase <- map_chr(str_split(PTM$Kinase, "_"), function(x) x[2])
+  PTM$Kinase <-  map_chr(str_split(PTM$Kinase, "/"), function(x) x[length(x)])
+  PTM %>%
+    arrange(desc(abs(Score)))
+})
+names(PTM_act) <- PTM_names
+
+head(PTM_act$ccrcc)
+```
+
+
+### RoKAI
+t value
+input preparation
+```{r}
+map(names(CPTAC_data_filtered), function(cohort){
+ cohort_data <- CPTAC_data_filtered[[cohort]]
+  rokai_data <- data.frame(str_split_fixed(cohort_data$uniprot_ID, "_", 2)) %>%
+    add_column(Quantification = cohort_data$NATvsTUM_t)
+
+  colnames(rokai_data) <- c("Protein", "Position", "Quantification")
+
+  write.csv(rokai_data, paste0("code/RoKAI/rokai_input_",cohort, ".csv"))
+})
+```
+RoKAI kinase activity estimation was run using the web application https://rokai.io/
+```{r}
+rokai_act_files <- list.files("code/rokai", pattern = "kinase_table", full.names = T)
+rokai_names <- str_remove(str_remove(rokai_act_files, "code/rokai/kinase_table_"), ".csv")
+rokai_act <- map(rokai_act_files, function(file){
+  res <- read_csv(file)
+  res %>% 
+    dplyr::select(Gene, ZScore) %>%
+    dplyr::rename(c("Kinase" = "Gene", "Score" = ZScore)) %>%
+    arrange(desc(abs(Score)))
+  }
+  )
+names(rokai_act) <- rokai_names
+
+head(rokai_act$ccrcc)
+```
+
+
+### KEA3
+```{r}
+map(names(CPTAC_data_filtered), function(cohort){
+ cohort_data <- CPTAC_data_filtered[[cohort]]
+
+  KEA3_data <-cohort_data %>%
+    filter(NATvsTUM_adj.P.Val <= 0.05) %>%
+    filter(abs(NATvsTUM_logFC) >= 2)
+
+  KEA3_data <- unique(KEA3_data$protein_symbol)
+
+  write.table(KEA3_data,  paste0("code/KEA3/KEA3_input_", cohort, ".txt"), row.names = F, col.names = F,  quote = FALSE)
+
+})
+```
+We also used the web application of KEA3 (https://maayanlab.cloud/kea3/)
+```{r}
+KEA3_act_files <- list.files("code/KEA3", pattern = "mean_rank", full.names = T)
+KEA3_names <- str_remove(str_remove(KEA3_act_files, "code/KEA3/mean_rank_"), ".tsv")
+KEA3_act <- map(KEA3_act_files, function(file){
+  res <- read_tsv(file)
+  res$Protein <- str_remove(res$Protein, "\\*")
+  res %>% 
+    dplyr::select(Rank, Protein) %>%
+    dplyr::rename("Kinase" = "Protein", "Score" = "Rank")
+})
+
+names(KEA3_act) <- KEA3_names
+
+head(KEA3_act$ccrcc)
+```
+
+
+## Comparison
+### Correlation
+```{r}
+cohort <- c("ccrcc", "luad", "ucec")
+results <- map(cohort, function(i){
+           list(IKAP = IKAP_act[[i]],
+                KARP = KARP_act[[i]],
+                KSEA = KSEA_act[[i]],
+                PTM = PTM_act[[i]],
+                RoKAI = rokai_act[[i]],
+                KEA3 = KEA3_act[[i]])
+})
+names(results) <- cohort
+
+results_df <- map(results, function(res){
+  sel <- names(res)[! names(res) == "KEA3"]
+  res_df <- res[sel] %>% 
+    purrr::reduce(full_join, by = "Kinase") %>%
+    filter(!base::duplicated(Kinase)) %>%
+    column_to_rownames("Kinase") 
+  colnames(res_df) <- sel
+  
+  res_df
+})
+
+corr_df <- map(results_df, function(act_df){
+  cor(act_df, method = "pearson", use = "complete.obs")
+})
+
+map(corr_df, function(corr_cohort){
+  get_mat_plot(corr_cohort, main = 'Pearson correlation', palette = "Greens")
+})
+
+```
+
+
+### Top kinases
+Here we will select top n kinases based on the absolute score and check how much they overlap between the methods
+```{r}
+n <- 10
+
+top_kinases <- map(results, function(activities){
+  map(activities, function(method){
+    method %>% 
+      dplyr::slice(1:n) %>%
+      dplyr::pull(Kinase) %>%
+      as.character()
+  })
+})
+
+map(top_kinases, function(x){
+  m <- data.frame(elements = unlist(x), sets = rep(names(x), each = n))
+  v <- venneuler::venneuler(m)
+  plot(v)
+
+})
+
+
+```
+
