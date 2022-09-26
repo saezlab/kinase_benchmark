@@ -315,6 +315,8 @@ results_df <- map(results, function(res){
   res_df
 })
 
+results_df <- append(results_df, list(all = bind_rows(results_df)))
+
 
 corr_df <- map(results_df, function(act_df){
   corr_matrix <- matrix(nrow = ncol(act_df),
@@ -352,14 +354,40 @@ for (i in 1:ncol(corr_df$ccrcc)){
 
 colnames(mean_corr_matrix) <- colnames(corr_df$ccrcc)
 rownames(mean_corr_matrix) <- rownames(corr_df$ccrcc)
-corr_p <- get_mat_plot(mean_corr_matrix, main = 'Pearson correlation', palette = "Greens")
+```
 
+
+```{r}
+mat <- corr_df$all
+# Get order of clustered methods
+cor_heat <- pheatmap::pheatmap(mat, cluster_rows = T,
+                              cluster_cols = T, silent=T)
+idxRows <- cor_heat$tree_row$order
+idxCols <- cor_heat$tree_col$order
+mat <- mat[idxRows,idxCols]
+  
+# Plot
 paletteLength <- 100
-myColor <- 
-  colorRampPalette(c("whitesmoke","#AD4747"))(paletteLength)
+color <- colorRampPalette(c("whitesmoke","#AD4747"))(paletteLength)
 
-# #AD4747
+heat_p <- ComplexHeatmap::Heatmap(mat, col = color, 
+                                  show_column_dend = FALSE, 
+                                  row_names_gp = grid::gpar(fontsize = 10), 
+                                  column_names_gp = grid::gpar(fontsize = 10),
+                                  row_dend_width = unit(0.4, "inch"), show_heatmap_legend = FALSE
+                                  )
 
+col_fun <- circlize::colorRamp2(c(0,  1), c("whitesmoke","#AD4747"))
+lgd <- ComplexHeatmap::Legend(col_fun = col_fun, title = "PCC", legend_height = unit(1.1, "inch"), 
+                              title_gp = gpar(fontsize = 8, fontface = "plain"), labels_gp = gpar(fontsize = 8))
+
+pdf("output/figures/legend_heatmap.pdf", width = 0.8, height = 1.7)
+draw(lgd)
+dev.off()
+
+pdf("output/figures/correlation_heatmap.pdf", width = 2.0, height = 1.7)
+heat_p
+dev.off()
 ```
 ### Scatter plots
 
@@ -369,7 +397,8 @@ results_long_list <- map(names(results_df), function(x){
   rownames_to_column("Kinase") %>%
     add_column(dataset = x)
 })
-results_long <- do.call("rbind", results_long_list)
+results_long <- do.call("rbind", results_long_list) %>%
+  filter(!dataset == "all")
 
 methods <- c("KSEA", "RoKAI", "PTM", "IKAP", "KARP")
 combinations <- apply(combn(methods,2),2,paste,collapse='_')
@@ -388,9 +417,12 @@ scatter_p <- map(combinations, function(method_comp){
   theme(text = element_text(size = 10)) 
   
 })
+
+leg <- ggpubr::get_legend(scatter_p[[1]])
 ```
 ```{r}
 pdf("output/figures/scatter_plots.pdf", width = 6.25, height = 7.5)
+do.call(ggpubr::ggarrange, c(append(list(NULL, ggpubr::as_ggplot(leg)), scatter_p),  ncol = 3, nrow = 4, common.legend = T, legend = "bottom"))
 do.call(ggpubr::ggarrange, c(append(list(NULL, NULL), scatter_p),  ncol = 3, nrow = 4, common.legend = T, legend = "bottom"))
 dev.off()
 
@@ -420,7 +452,7 @@ venn_p <- map(top_kinases, function(x){
 
 for(cptac in names(venn_p)) {
   venn <- venn_p[[cptac]]
-  venn$labels <- rep("", length(v$labels))
+  venn$labels <- rep("", length(venn$labels))
   pdf(paste0("output/figures/venn_", cptac,".pdf"), width = 2.1, height = 2.1)
   par(mar=c(0.5,0.5,0.5, 0.5))
   plot(venn)
