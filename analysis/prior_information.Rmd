@@ -171,8 +171,8 @@ kinases_PSP_5 <- names(table(PSP$KINASE))[table(PSP$KINASE) >= 5]
 kinases_NKW_5 <- names(table(NWK_filtered$Kinase))[table(NWK_filtered$Kinase) >= 5]
 
 network <- data.frame(kin = c(PSP$KINASE, NWK_filtered$Kinase),
-                                  PSP = c(paste(PSP$SUB_GENE, PSP$SUB_MOD_RSD, sep = "_"),
-                                           paste(NWK_filtered$Target.description, NWK_filtered$Position, sep = "_")))
+                      PSP = c(paste(PSP$SUB_GENE, PSP$SUB_MOD_RSD, sep = "_"),
+                              paste(NWK_filtered$Target.description, NWK_filtered$Position, sep = "_")))
 network <- network[!duplicated(network),]
 
 INKA.size <- c(tool = "INKA",
@@ -289,9 +289,9 @@ size_networks_pps <- size_networks_long %>% filter(type %in% c("pps", "edges"))
 pps_p <- ggplot(size_networks_pps %>% filter(type == "pps")) + 
   aes(x = tool, y = value) +
   geom_bar(stat="identity", color="black", position=position_dodge(), fill = "#47AD7A", width=0.7)+
-  scale_y_cut(breaks=c(18000), which=c(1), scales=c(0.5)) +
+  scale_y_cut(breaks=c(21000), which=c(1), scales=c(0.5)) +
   theme_minimal() + xlab("") + ylab("") + 
-  ggtitle("unique phosphorylation sites") + 
+  ggtitle("unique targets") + 
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1),
         text = element_text(size = 10))
   
@@ -301,7 +301,7 @@ edges_p <- ggplot(size_networks_pps %>% filter(type == "edges")) +
   geom_bar(stat="identity", color="black", position=position_dodge(), fill = "#AD477A", width=0.7)+
   scale_y_cut(breaks=c(18000), which=c(1), scales=c(0.5)) +
   theme_minimal() + xlab("") + ylab("") + 
-  ggtitle("kinase-substrate links") + 
+  ggtitle("kinase-target links") + 
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1),
         text = element_text(size = 10))
 
