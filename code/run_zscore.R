@@ -30,11 +30,11 @@
 #'
 #' run_zscore_RoKAI(mat, net, minsize=0)
 run_zscore_RoKAI <- function(mat,
-                     network,
-                     .source = .data$source,
-                     .target = .data$target,
-                     .mor = .data$mor,
-                     minsize = 5
+                             network,
+                             .source = .data$source,
+                             .target = .data$target,
+                             .mor = .data$mor,
+                             minsize = 5
 ) {
   # Check for NAs/Infs in mat
   check_nas_infs(mat)
@@ -48,37 +48,35 @@ run_zscore_RoKAI <- function(mat,
     dplyr::filter(dplyr::n() >= minsize)
 
   # Analysis ----------------------------------------------------------------
-  kinases <- network_filtered$source %>%
-    base::unique()
-  scores <- purrr::map_dfr(kinases, function(kinase){
-    S <- network_filtered %>%
-      dplyr::filter(source == kinase) %>%
-      base::nrow()
+  kin_sub <- network_filtered %>%
+    pivot_wider(values_from = mor, names_from = target, values_fill = 0) %>%
+    column_to_rownames("source")
 
-    mor_targets <- mat %>%
-      dplyr::filter(rownames(mat) %in% network_filtered$target[network_filtered$source == kinase]) %>%
-      rownames_to_column("target") %>%
-      left_join(network_filtered %>%
-                  dplyr::filter(source == kinase), by = "target") %>%
-      pull(mor)
+  scores <- purrr::map_dfr(1:ncol(mat), function(i_mat){
+    V <- mat[i_mat] %>%
+      drop_na()
 
-    mat_mor <- (mat %>%
-      dplyr::filter(rownames(mat) %in% network_filtered$target[network_filtered$source == kinase])) * mor_targets
+    S <- sd(V[,1])
 
-    mean_targets <- mat_mor %>%
-      base::colMeans()
+    valid_pps <- intersect(rownames(V), colnames(kin_sub))
 
-    sdv_all <- mat_mor %>%
-      summarise_if(is.numeric, sd)
+    kin_sub_f <- kin_sub[, valid_pps]
+    V_f <- V %>%
+      filter(rownames(V) %in% valid_pps)
+    V_f <- V_f[valid_pps,] %>%
+      as.matrix()
 
-    z.score <- (sqrt(S)/sdv_all) * mean_targets
+    kinaseScores <- (as.matrix(kin_sub_f) %*% V_f) / (S * sqrt(abs(as.matrix(kin_sub_f)) %*% rep(1, length(V_f))))
+    kinaseScores <- kinaseScores[!is.na(kinaseScores),]
 
-    data.frame(source = kinase, condition = colnames(mat), score = as.numeric(as.vector(z.score[1,])), method ="RoKAI_z")
+    data.frame(source = names(kinaseScores), condition = colnames(V), score = as.numeric(as.vector(kinaseScores)), method ="RoKAI_z")
   })
 
   rownames(scores) <- NULL
   return(scores)
+
 }
+
 
 
 #' KSEA_zscore
