@@ -129,38 +129,38 @@ run_zscore_KSEA <- function(mat,
     dplyr::filter(dplyr::n() >= minsize)
 
   # Analysis ----------------------------------------------------------------
-  kinases <- network_filtered$source %>%
-    base::unique()
-  scores <- purrr::map_dfr(kinases, function(kinase){
-    S <- network_filtered %>%
-      dplyr::filter(source == kinase) %>%
-      base::nrow()
+  # Code is taken from KSEAapp::KSEA.Scores and adjusted to include mode of regulation
+  # and different structure of data inputs
+  scores <- purrr::map_dfr(1:ncol(mat), function(i_mat){
+    mat_c <- mat[i_mat] %>%
+      drop_na() %>%
+      rownames_to_column("target")
 
-    mor_targets <- mat %>%
-      dplyr::filter(rownames(mat) %in% network_filtered$target[network_filtered$source == kinase]) %>%
-      rownames_to_column("target") %>%
-      left_join(network_filtered %>%
-                  dplyr::filter(source == kinase), by = "target") %>%
-      pull(mor)
+    KSdata <- full_join(network_filtered, mat_c, by = "target") %>%
+      drop_na()
 
-    mat_mor <- (mat %>%
-                  dplyr::filter(rownames(mat) %in% network_filtered$target[network_filtered$source == kinase])) * mor_targets
+    KSdata <- cbind(KSdata,
+                    value = KSdata$mor * KSdata[,4])
+    colnames(KSdata)[5] <- "value"
+
+    kinase.list <- as.vector(KSdata$source)
+    kinase.list <- as.matrix(table(kinase.list))
+    Mean.FC <- aggregate(value ~ source, data = KSdata,
+                        FUN = mean)
+    Mean.FC <- Mean.FC[order(Mean.FC[, 1]), ]
+    Mean.FC$mS <- Mean.FC[, 2]
+    Mean.FC$Enrichment <- Mean.FC$mS/abs(mean(mat_c[,2], na.rm = T))
+    Mean.FC$m <- kinase.list
+    Mean.FC$z.score <- ((Mean.FC$mS - mean(mat_c[,2], na.rm = T)) *
+                         sqrt(Mean.FC$m))/sd(mat_c[,2], na.rm = T)
+    Mean.FC$p.value <- pnorm(-abs(Mean.FC$z.score))
+    Mean.FC$FDR <- p.adjust(Mean.FC$p.value, method = "fdr")
+    Mean.FC <- Mean.FC[order(Mean.FC$source), -2]
 
 
-    mean_targets <- mat_mor %>%
-      base::colMeans()
+    data.frame(source = Mean.FC$source, condition = colnames(mat_c)[2], score = Mean.FC$z.score, method ="KSEA_z")
 
-    mean_all <- mat %>%
-      base::colMeans()
-
-    sdv_all <- mat %>%
-      summarise_if(is.numeric, sd)
-
-    z.score <- (sqrt(S)/sdv_all) * (mean_targets - mean_all)
-
-    data.frame(source = kinase, condition = colnames(mat), score = as.numeric(as.vector(z.score[1,])), method ="KSEA_z")
   })
-
   rownames(scores) <- NULL
   return(scores)
-}
+  }
