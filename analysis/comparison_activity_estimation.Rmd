@@ -10,7 +10,6 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ```{r, warning=FALSE, message=FALSE}
-library(cmapR)
 library(org.Hs.eg.db)
 library(KSEAapp)
 library(tidyverse)
@@ -174,8 +173,8 @@ KSEA_act <- map(KSEA.input, function(sample){
 
   KSEA_scores <- KSEA.Scores(KSData = KSEA.network,
                              PX = sample,
-                             NetworKIN = T,
-                             NetworKIN.cutoff = 5)
+                             NetworKIN = F,
+                             NetworKIN.cutoff = 0)
 
   KSEA_scores %>%
     dplyr::select(Kinase.Gene, z.score) %>%
@@ -187,6 +186,33 @@ KSEA_act <- map(KSEA.input, function(sample){
 names(KSEA_act) <- names(CPTAC_data_filtered)
 
 head(KSEA_act$ccrcc)
+```
+```{r}
+KSEA.input <- map(names(CPTAC_data_filtered), function(cohort){
+ cohort_data <- CPTAC_data_filtered[[cohort]]
+ cohort_data %>%
+   dplyr::select(ID, NATvsTUM_t) %>%
+   column_to_rownames("ID")
+})
+```
+
+```{r}
+SEA_act <- map(KSEA.input, function(sample){
+  
+  KSEA.network <- KSEAapp::KSData
+  network <- data.frame(source = KSEA.network$GENE,
+                        target = paste0(KSEA.network$SUB_GENE, "_", KSEA.network$SUB_MOD_RSD),
+                        mor = 1)
+
+  KSEA_scores <- run_zscore_KSEA(network = network,
+                                mat = sample)
+  })
+
+names(SEA_act) <- names(CPTAC_data_filtered)
+
+head(SEA_act$ccrcc)
+
+full_join(SEA_act$ccrcc, KSEA_act$ccrcc %>% dplyr::rename("source" = "Kinase"), by = c("source"))
 ```
 
 ### PTM-SEA

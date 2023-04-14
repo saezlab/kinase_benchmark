@@ -1,0 +1,11 @@
+#1.3
+5	1	2	3
+id	signature.direction	gene.descs.gene.names.tmp.idx...	t
+signature.score	na	na	-2.4218
+signature.pvalue	na	na	0.0414
+signature.fdr.pvalue	na	na	0.0903
+P06241;Y420-p	u	9648	0.8999
+P12931;Y419-p	u	24900	0.8999
+P40763;Y705-p	u	25417	-2.1333
+Q15672;S68-p	u	28318	1.0598
+P67809;S102-p	u	29592	1.8137
