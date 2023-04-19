@@ -1,0 +1,15 @@
+name: phospho
+channels:
+  - conda-forge
+  - bioconda
+  - r
+dependencies:
+  - r-base # general dependencies
+  - r-tidyverse
+  - r-devtools
+  - r-workflowr
+  - bioconductor-decoupler
+  - r-tidyselect
+  - bioconductor-fgsea
+  - bioconductor-viper
+  - bioconductor-biomart

@@ -1,15 +1,19 @@
+# R
 .Rproj.user
 .Rhistory
 .RData
 .Ruserdata
 .Rapp.history
 .DS_Store
-analysis/figure
-analysis/*png
-analysis/*html
-analysis/*_cache
-analysis/site_libs
-data
-output
-INKA
+
+# Data folders
+data/
+logs/
+plots/
+results/
+
+# Snakemake stuff
+.snakemake/
+
+# omnipath stuff
 omnipathr-log

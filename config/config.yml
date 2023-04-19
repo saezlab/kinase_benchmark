@@ -1,0 +1,5 @@
+project_name: "kinase_activity_estimation"
+
+activity_estimation:
+  datasets: ["ucec", "luad", "lscc", "hnscc", "gbm", "ccrcc", "brca"]
+  PKNs: ["omnipath", "combined", "goldStandard", "NetworKIN", "phosphositeplus"]

@@ -1,0 +1,44 @@
+from snakemake.utils import min_version
+min_version("6.0")
+import os
+
+configfile: "config/config.yml"
+
+rule all:
+    input:
+        expand("results/activity_scores/{PKN}/{dataset}_{PKN}.rds", dataset = config["activity_estimation"]["datasets"], PKN = config["activity_estimation"]["PKNs"])
+
+rule prepare_omnipath:
+    input:
+        file_dataset = expand("data/CPTAC_phospho/{dataset}_phospho_data_median_centered.tsv", dataset = config["activity_estimation"]["datasets"])
+    output:
+        tsv = "results/prior/omnipath.tsv"
+    conda:
+        "envs/phospho.yml"
+    script:
+        "scripts/01.1_prepare_omnipath.R"
+
+rule prepare_phosphositeplus:
+    input:
+        ppsp = "data/prior/phosphositeplus",
+        file_dataset = expand("data/CPTAC_phospho/{dataset}_phospho_data_median_centered.tsv", dataset = config["activity_estimation"]["datasets"])
+    output:
+        tsv = "results/prior/phosphositeplus.tsv"
+    conda:
+        "envs/phospho.yml"
+    script:
+        "scripts/01.2_prepare_phosphositeplus.R"
+
+rule activity_estimation:
+    input:
+        file_dataset = "data/CPTAC_phospho/{dataset}_phospho_data_median_centered.tsv",
+        file_PKN = "results/prior/{PKN}.tsv",
+        scripts = expand("workflow/scripts/methods/run_{method}.R", method = ["INKA", "KARP", "lm_rokai", "zscore"]),
+        script_support = "workflow/scripts/methods/support_functions.R"
+    output:
+        rds = "results/activity_scores/{PKN}/{dataset}_{PKN}.rds"
+    conda:
+        "envs/phospho.yml"
+    script:
+        "scripts/02_activity_estimation.R"
+
