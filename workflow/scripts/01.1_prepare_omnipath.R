@@ -58,7 +58,8 @@ omnipath_prior_df <- omnipath_prior %>%
     modification == "dephosphorylation" ~ -1
   )) %>%
   dplyr::select(site, enzyme_genesymbol, mor) %>%
-  dplyr::rename("source" = enzyme_genesymbol, "target" = site)
+  dplyr::rename("source" = enzyme_genesymbol, "target" = site) %>%
+  distinct()
 
 
 ## Save processed Omnipath ---------------------------

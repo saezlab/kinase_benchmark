@@ -54,7 +54,8 @@ ppsp_prior_df <- ppsp_prior %>%
   drop_na() %>%
   dplyr::mutate(mor = 1) %>%
   dplyr::select(KINASE, site, mor) %>%
-  dplyr::rename("source" = KINASE, "target" = site)
+  dplyr::rename("source" = KINASE, "target" = site) %>%
+  distinct()
 
 
 ## Save processed Omnipath ---------------------------
