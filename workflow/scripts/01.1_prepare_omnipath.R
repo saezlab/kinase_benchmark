@@ -61,6 +61,15 @@ omnipath_prior_df <- omnipath_prior %>%
   dplyr::rename("source" = enzyme_genesymbol, "target" = site) %>%
   distinct()
 
+# Remove edges with duplicated sign information
+edges <- paste(omnipath_prior_df$source, omnipath_prior_df$target, sep = "_")
+dup_edges <- edges[duplicated(edges)]
+
+omnipath_prior_df <- omnipath_prior_df %>%
+  dplyr::mutate(KS = paste(source, target, sep = "_")) %>%
+  dplyr::filter(!KS %in% dup_edges) %>%
+  dplyr::select(-KS)
+
 
 ## Save processed Omnipath ---------------------------
 write_tsv(omnipath_prior_df, output_file)
