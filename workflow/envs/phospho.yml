@@ -13,3 +13,4 @@ dependencies:
   - bioconductor-fgsea
   - bioconductor-viper
   - bioconductor-biomart
+  - bioconductor-qusage

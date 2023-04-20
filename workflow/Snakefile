@@ -29,6 +29,17 @@ rule prepare_phosphositeplus:
     script:
         "scripts/01.2_prepare_phosphositeplus.R"
 
+rule prepare_ptmsigdb:
+    input:
+        ptmsig_file = "data/prior/ptm.sig.db.all.uniprot.human.v1.9.0.gmt",
+        file_dataset = expand("data/CPTAC_phospho/{dataset}_phospho_data_median_centered.tsv", dataset = config["activity_estimation"]["datasets"])
+    output:
+        tsv = "results/prior/ptmsigdb.tsv"
+    conda:
+        "envs/phospho.yml"
+    script:
+        "scripts/01.3_prepare_ptmsigdb.R"
+
 rule activity_estimation:
     input:
         file_dataset = "data/CPTAC_phospho/{dataset}_phospho_data_median_centered.tsv",
