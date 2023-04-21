@@ -46,9 +46,9 @@ results <- map_dfr(1:ncol(phospho), function(i){
     drop_na()
 
   #prepare network
-  prior_i <- intersect_regulons(mat_i, prior, .source = "source", .target = "target", minsize = 5)
-  cor.source <- check_corr(prior_i) %>% filter(correlation > 0.9) %>% pull(source.2)
-  prior_i <- prior_i %>% filter(!source %in% cor.source) %>% ungroup()
+  prior_tmp <- intersect_regulons(mat_i, prior, .source = "source", .target = "target", minsize = 5)
+  cor.source <- check_corr(prior_tmp) %>% filter(correlation > 0.9) %>% pull(source.2)
+  prior_i <- prior %>% filter(!source %in% cor.source) %>% ungroup()
 
   # run activity estimation methods
   KARP <- run_KARP(mat_i, prior_i)
