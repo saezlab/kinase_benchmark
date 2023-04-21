@@ -16,8 +16,6 @@ if(exists("snakemake")){
   script_support <- "workflow/scripts/methods/support_functions.R"
 }
 
-print(snakemake@input)
-
 ## Libraries ---------------------------
 library(decoupleR)
 library(tidyselect)
