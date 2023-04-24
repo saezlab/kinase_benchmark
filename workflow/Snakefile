@@ -40,6 +40,17 @@ rule prepare_ptmsigdb:
     script:
         "scripts/01.3_prepare_ptmsigdb.R"
 
+rule prepare_ikipdb:
+    input:
+        ptmsig_file = "data/prior/iKiP-DB-Table.tsv",
+        file_dataset = expand("data/CPTAC_phospho/{dataset}_phospho_data_median_centered.tsv", dataset = config["activity_estimation"]["datasets"])
+    output:
+        tsv = "results/prior/iKiPdb.tsv"
+    conda:
+        "envs/phospho.yml"
+    script:
+        "scripts/01.4_prepare_ikipdb.R"
+
 rule activity_estimation:
     input:
         file_dataset = "data/CPTAC_phospho/{dataset}_phospho_data_median_centered.tsv",
@@ -52,4 +63,5 @@ rule activity_estimation:
         "envs/phospho.yml"
     script:
         "scripts/02_activity_estimation.R"
+
 

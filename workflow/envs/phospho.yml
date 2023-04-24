@@ -14,3 +14,4 @@ dependencies:
   - bioconductor-viper
   - bioconductor-biomart
   - bioconductor-qusage
+  - bioconductor-org.hs.eg.db
