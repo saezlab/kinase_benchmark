@@ -54,17 +54,30 @@ res <- getBM(attributes = c('ensembl_gene_id',
 target_df <- full_join(pps_df, res, by = "ensembl_gene_id", relationship = "many-to-many") %>%
   mutate(target_site = paste0(uniprot_gn_id, ";", position))
 
-## merge with phosphositeplus
-ppsp_prior <- left_join(target_df, PTMsig_df %>% dplyr::select(source, target_site), by = "target_site", relationship = "many-to-many")
+## merge with PTMsigDB
+PTMsig_prior <- left_join(PTMsig_df %>%
+                          dplyr::select(source, target_site),
+                        target_df, by = "target_site", relationship = "many-to-many")
 
-ppsp_prior_df <- ppsp_prior %>%
-  drop_na() %>%
+PTMsig_prior_df <- PTMsig_prior %>%
+  mutate(target = case_when(
+    !is.na(site) ~ site,
+    is.na(site) ~ target_site
+  )) %>%
   dplyr::mutate(mor = 1) %>%
-  dplyr::select(source, site, mor) %>%
-  dplyr::rename("target" = site) %>%
+  dplyr::select(source, target, mor)
+
+## Change kinases to common gene names---------------------------
+PTMsig_prior_df$source <- map_chr(str_split(paste(PTMsig_prior_df$source,
+                                                  PTMsig_prior_df$source,
+                                                  sep = "/"),
+                                            "/"),
+                                  2)
+
+# Remove duplicated edges (if present)
+PTMsig_prior_df <- PTMsig_prior_df %>%
   distinct()
 
-
-## Save processed Omnipath ---------------------------
-write_tsv(ppsp_prior_df, output_file)
+## Save processed PTMsigDB ---------------------------
+write_tsv(PTMsig_prior_df, output_file)
 

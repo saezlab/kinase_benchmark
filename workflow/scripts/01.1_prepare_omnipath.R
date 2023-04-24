@@ -49,16 +49,20 @@ res <- getBM(attributes = c('ensembl_gene_id',
 target_df <- full_join(pps_df, res, by = "ensembl_gene_id") %>%
   mutate(target_site = paste0(external_gene_name, "_", position))
 
-omnipath_prior <- left_join(target_df, omnipath_ptm_filtered %>% dplyr::select(target_site, enzyme_genesymbol, modification), by = "target_site", relationship = "many-to-many")
+omnipath_prior <- left_join(omnipath_ptm_filtered %>% dplyr::select(target_site, enzyme_genesymbol, modification), target_df, by = "target_site", relationship = "many-to-many")
 
 omnipath_prior_df <- omnipath_prior %>%
-  drop_na() %>%
+  mutate(target = case_when(
+    !is.na(site) ~ site,
+    is.na(site) ~ target_site
+  )) %>%
   mutate(mor = case_when(
     modification == "phosphorylation" ~ 1,
     modification == "dephosphorylation" ~ -1
   )) %>%
-  dplyr::select(site, enzyme_genesymbol, mor) %>%
-  dplyr::rename("source" = enzyme_genesymbol, "target" = site) %>%
+  dplyr::select(enzyme_genesymbol, target, mor) %>%
+  drop_na() %>%
+  dplyr::rename("source" = enzyme_genesymbol) %>%
   distinct()
 
 # Remove edges with duplicated sign information
