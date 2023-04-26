@@ -51,6 +51,17 @@ rule prepare_ikipdb:
     script:
         "scripts/01.4_prepare_ikipdb.R"
 
+rule map_kinase_ids:
+    input:
+        prior_files = expand("results/prior/{PKN}.tsv", PKN = config["activity_estimation"]["PKNs"])
+    output:
+        tsv = "resources/kinase_mapping.tsv"
+    conda:
+        "envs/phospho.yml"
+    script:
+        "scripts/02_convert_kinase_ids.R"
+
+
 rule activity_estimation:
     input:
         file_dataset = "data/CPTAC_phospho/{dataset}_phospho_data_median_centered.tsv",
@@ -62,6 +73,15 @@ rule activity_estimation:
     conda:
         "envs/phospho.yml"
     script:
-        "scripts/02_activity_estimation.R"
+        "scripts/03_activity_estimation.R"
 
+rule activity_comparison:
+    input:
+        act_files = expand("results/activity_scores/{PKN}/{dataset}_{PKN}.rds", PKN = config["activity_estimation"]["PKNs"], dataset = config["activity_estimation"]["datasets"])
+    output:
+        rds = "results/activity_scores/{PKN}/{dataset}_{PKN}.rds"
+    conda:
+        "envs/phospho.yml"
+    script:
+        "scripts/04_activity_comparison.R"
 
