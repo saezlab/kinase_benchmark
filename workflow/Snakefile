@@ -79,7 +79,7 @@ rule activity_comparison:
     input:
         act_files = expand("results/activity_scores/{PKN}/{dataset}_{PKN}.rds", PKN = config["activity_estimation"]["PKNs"], dataset = config["activity_estimation"]["datasets"])
     output:
-        rds = "results/activity_scores/{PKN}/{dataset}_{PKN}.rds"
+        pdf = "results/comparison/plots/Pearson_heatmap.pdf"
     conda:
         "envs/phospho.yml"
     script:
