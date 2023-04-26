@@ -52,6 +52,7 @@ run_INKA <- function(mat,
   kinases <- network_filtered$source %>%
     base::unique()
   scores <- purrr::map_dfr(kinases, function(kinase){
+
     targets <- network_filtered %>%
       dplyr::filter(source == kinase) %>%
       dplyr::pull(target)
@@ -69,15 +70,27 @@ run_INKA <- function(mat,
   substrate.centric <- mat_mor %>%
       base::colSums()
 
-  targets.k <- network_filtered %>%
-    dplyr::filter(str_detect(string = target, pattern = kinase)) %>%
-    dplyr::pull(target)
+  mapping_kinase <- read_tsv("resources/kinase_mapping.tsv", col_types = cols())
+  kin_id <- mapping_kinase %>%
+    filter(external_gene_name == kinase) %>%
+    pull(ensembl_gene_id)
+
+  targets.k <- map(kin_id, function(id){
+    network_filtered %>%
+      dplyr::filter(str_detect(string = target, pattern = id)) %>%
+      dplyr::pull(target)
+
+  }) %>% unlist()
 
   kinase.centric <- mat %>%
     dplyr::filter(rownames(mat) %in% targets.k) %>%
     base::colSums()
 
     score <-  sign(substrate.centric) * sqrt(abs(substrate.centric) * abs(kinase.centric))
+
+    if (score == 0){
+      score <- NA
+    }
 
     data.frame(source = kinase, condition = colnames(mat), score = c(score, substrate.centric, kinase.centric), method = rep(c("INKA", "INKA_substrate_centric", "INKA_kinase_centric"), each = ncol(mat)) )
   })
