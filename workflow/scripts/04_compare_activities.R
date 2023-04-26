@@ -1,3 +1,39 @@
+if(exists("snakemake")){
+  act_files <- snakemake@input$ppsp
+  output_file <- snakemake@output$tsv
+}else{
+  act_files <- list.files("results/activity_scores", pattern = "rds", recursive = T, full.names = T)
+  output_file <- "results/prior/phosphositeplus.tsv"
+}
+
+## Libraries ---------------------------
+library(tidyverse)
+
+## Load and merge scores ---------------------------
+act_list <- map(act_files, readRDS)
+names(act_list) <- str_remove(map_chr(str_split(act_files, "/"), 4), ".rds")
+act_df <- map_dfr(names(act_list), function(act_i){
+  act <- act_list[[act_i]]
+  act_df <- map_dfr(names(act), function(method){
+    act_method <- act[[method]]
+    act_method %>%
+      rownames_to_column("kinase") %>%
+      pivot_longer(!kinase, names_to = "sample", values_to = "score") %>%
+      add_column(method = method)
+  })
+  act_df %>%
+    add_column(prior = str_split(act_i, "_")[[1]][2]) %>%
+    add_column(cancer = str_split(act_i, "_")[[1]][1])
+})
+
+act_cancer <- act_df %>%
+  group_by(cancer) %>%
+  group_split()
+
+
+
+
+
 # Copyright (c) Sophia Müller-Dott [2022]
 # sophia.mueller-dott@uni-heidelberg.de
 

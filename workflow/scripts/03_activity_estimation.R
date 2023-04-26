@@ -7,11 +7,11 @@ if(exists("snakemake")){
   scripts <- snakemake@input$scripts
   script_support <- snakemake@input$script_support
 }else{
-  dataset <- "data/CPTAC_phospho/brca_phospho_data_median_centered.tsv"
-  dataset_name <- "brca"
-  PKN <- "results/prior/goldStandard.tsv"
-  PKN_name <- "goldStandard"
-  output_file <- "results/activity_scores/brca_goldStandard.rds"
+  dataset <- "data/CPTAC_phospho/luad_phospho_data_median_centered.tsv"
+  dataset_name <- "luad"
+  PKN <- "results/prior/iKiPdb.tsv"
+  PKN_name <- "iKiPdb"
+  output_file <- "results/activity_scores/luad_goldStandard.rds"
   scripts <- list.files("workflow/scripts/methods", pattern = "run", full.names = T)
   script_support <- "workflow/scripts/methods/support_functions.R"
 }
@@ -46,13 +46,19 @@ results <- map_dfr(1:ncol(phospho), function(i){
   #prepare network
   prior_tmp <- intersect_regulons(mat_i, prior, .source = "source", .target = "target", minsize = 5)
   cor.source <- check_corr(prior_tmp) %>% filter(correlation > 0.9) %>% pull(source.2)
-  prior_i <- prior %>% filter(!source %in% cor.source) %>% ungroup()
+
+  if (dataset_name == "luad" & PKN_name == "iKiPdb"){
+    prior_i <- prior %>% filter(!source == "EPHB3") %>% ungroup()
+  } else {
+    prior_i <- prior %>% filter(!source %in% cor.source) %>% ungroup()
+  }
+
 
   # run activity estimation methods
   KARP <- run_KARP(mat_i, prior_i)
   RoKAI_z <- run_zscore_RoKAI(mat_i, prior_i)
   KSEA_z <- run_zscore_KSEA(mat_i, prior_i)
-  #INKA <- run_INKA(mat_i, prior_i)
+  INKA <- run_INKA(mat_i, prior_i)
   Rokai_lm <- run_lm_rokai(mat_i, prior_i)
   decoupler <- decouple(mat = as.matrix(mat_i), network = prior_i)
   fgsea <- run_fgsea(mat = as.matrix(mat_i), network = prior_i)
@@ -62,26 +68,26 @@ results <- map_dfr(1:ncol(phospho), function(i){
 
   decoupler <- decoupler %>%
     dplyr::select(c(source, condition, score, statistic)) %>%
-    rename("method" = "statistic")
+    dplyr::rename("method" = "statistic")
   fgsea <- fgsea %>%
     dplyr::select(c(source, condition, score, statistic)) %>%
-    rename("method" = "statistic")
+    dplyr::rename("method" = "statistic")
   #gsva <- gsva %>%
   #  dplyr::select(c(source, condition, score, statistic)) %>%
   #  rename("method" = "statistic")
   wmean <- wmean %>%
     dplyr::select(c(source, condition, score, statistic)) %>%
-    rename("method" = "statistic")
+    dplyr::rename("method" = "statistic")
   viper <- viper %>%
     dplyr::select(c(source, condition, score, statistic)) %>%
-    rename("method" = "statistic")
+    dplyr::rename("method" = "statistic")
 
-  results <- rbind(KARP, RoKAI_z, KSEA_z, Rokai_lm, decoupler, fgsea, #gsva,
+  results <- rbind(KARP, RoKAI_z, KSEA_z, INKA, Rokai_lm, decoupler, fgsea, #gsva,
                    wmean, viper)
 })
 
 results <- results %>%
-  filter(!method %in% c("INKA_substrate_centric", "INKA_kinase_centric", "INKA", "wsum", "norm_wsum")) %>%
+  dplyr::filter(!method %in% c("wsum", "norm_wsum")) %>%
   group_by(method)
 
 results_list <- results %>%
