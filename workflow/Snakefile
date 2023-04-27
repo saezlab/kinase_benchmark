@@ -83,5 +83,5 @@ rule activity_comparison:
     conda:
         "envs/phospho.yml"
     script:
-        "scripts/04_activity_comparison.R"
+        "scripts/04_compare_activities.R"
 

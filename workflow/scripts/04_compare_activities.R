@@ -1,5 +1,5 @@
 if(exists("snakemake")){
-  act_files <- snakemake@input$ppsp
+  act_files <- snakemake@input$act_files
   plot_dest <- snakemake@output$pdf
 }else{
   act_files <- list.files("results/activity_scores", pattern = "rds", recursive = T, full.names = T)
