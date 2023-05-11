@@ -127,6 +127,7 @@ run_zscore_KSEA <- function(mat,
     dplyr::filter(target %in% rownames(mat)) %>%
     dplyr::group_by(source) %>%
     dplyr::filter(dplyr::n() >= minsize)
+  network_filtered <- network_filtered[c("source", "target", "mor")] #remove likelihood column
 
   # Analysis ----------------------------------------------------------------
   # Code is taken from KSEAapp::KSEA.Scores and adjusted to include mode of regulation
@@ -138,7 +139,8 @@ run_zscore_KSEA <- function(mat,
 
     KSdata <- full_join(network_filtered, mat_c, by = "target") %>%
       drop_na()
-    colnames(KSdata)[4] <- "pps"
+    print(KSdata)
+    colnames(KSdata)[4] <- "pps" #careful! if data frame structure changes renaming won't work
 
     KSdata <- KSdata %>%
       dplyr::mutate(value = mor*pps)
@@ -157,10 +159,9 @@ run_zscore_KSEA <- function(mat,
     Mean.FC$FDR <- p.adjust(Mean.FC$p.value, method = "fdr")
     Mean.FC <- Mean.FC[order(Mean.FC$source), -2]
 
-
     data.frame(source = Mean.FC$source, condition = colnames(mat_c)[2], score = Mean.FC$z.score, method ="KSEA_z")
 
   })
   rownames(scores) <- NULL
   return(scores)
-  }
+}
