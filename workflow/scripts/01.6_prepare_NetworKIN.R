@@ -129,7 +129,7 @@ nwkin_df <- left_join(nwkin_filtered, pps, by = "Site1", relationship = "many-to
     id == substrate_name ~ paste0(target, "|auto"), #mark autophosphorylation
     id != substrate_name ~ target
   )) %>%
-  rename("source" = id) %>%
+  dplyr::rename("source" = id) %>%
   dplyr::select(source, target) %>%
   add_column(mor = 1)
 
