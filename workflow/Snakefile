@@ -57,7 +57,7 @@ rule prepare_ikipdb:
 
 rule prepare_GPS:
     input:
-        GPS_file = "data/prior/mmc4.xlsx"
+        GPS_file = "data/prior/mmc4.xlsx",
         file_dataset = expand("data/CPTAC_phospho/{dataset}_phospho_data_median_centered.tsv", dataset = config["activity_estimation"]["datasets"])
     output:
         tsv = "results/prior/GPS_goldStandard.tsv"
@@ -68,12 +68,12 @@ rule prepare_GPS:
 
 rule prepare_NetworKIN:
     input:
-        networkin_file = "data/prior/networkin_human_predictions_3.1.tsv"
-        file_dataset = expand("data/CPTAC_phospho/{dataset}_phospho_data_median_centered.tsv", dataset = config["activity_estimation"]["datasets"])
-        GPS_file = "results/prior/GPS_goldStandard.tsv"
+        networkin_file = "data/prior/networkin_human_predictions_3.1.tsv",
+        file_dataset = expand("data/CPTAC_phospho/{dataset}_phospho_data_median_centered.tsv", dataset = config["activity_estimation"]["datasets"]),
+        GPS_file = "results/prior/GPS_goldStandard.tsv",
         score = 5
     output:
-        tsv = "results/prior/networkin.tsv"
+        tsv = "results/prior/networkin.tsv",
         tsv_merge = "results/prior/GPS_NetworKIN.tsv"
     conda:
         "envs/phospho.yml"
@@ -107,6 +107,20 @@ rule activity_estimation:
 
 
 # -------------------------------------- Comparison ---------------------------------------
+rule prior_comparison:
+    input:
+        prior_files = expand("results/prior/{PKN}.tsv", PKN = config["activity_estimation"]["PKNs"],
+        plot_width = 13,
+        plot_height = 6
+    output:
+        kin = "results/comparison/plots/coverage_kinases.pdf",
+        edges = "results/comparison/plots/coverage_edges.pdf",
+        pps = "results/comparison/plots/coverage_pps.pdf"
+    conda:
+        "envs/phospho.yml"
+    script:
+        "scripts/04.1_compare_prior.R"
+
 rule activity_comparison:
     input:
         act_files = expand("results/activity_scores/{PKN}/{dataset}_{PKN}.rds", PKN = config["activity_estimation"]["PKNs"], dataset = config["activity_estimation"]["datasets"]),
@@ -120,5 +134,7 @@ rule activity_comparison:
     conda:
         "envs/phospho.yml"
     script:
-        "scripts/04_compare_activities.R"
+        "scripts/04.2_compare_activities.R"
+
+
 
