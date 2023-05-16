@@ -4,10 +4,14 @@ import os
 
 configfile: "config/config.yml"
 
+
+# ------------------------------------ Default setting ------------------------------------
 rule all:
     input:
         expand("results/activity_scores/{PKN}/{dataset}_{PKN}.rds", dataset = config["activity_estimation"]["datasets"], PKN = config["activity_estimation"]["PKNs"])
 
+
+# ------------------------------ Prior knowledge preparation ------------------------------
 rule prepare_omnipath:
     input:
         file_dataset = expand("data/CPTAC_phospho/{dataset}_phospho_data_median_centered.tsv", dataset = config["activity_estimation"]["datasets"])
@@ -87,6 +91,7 @@ rule map_kinase_ids:
         "scripts/02_convert_kinase_ids.R"
 
 
+# ---------------------------------- Activity estimation ----------------------------------
 rule activity_estimation:
     input:
         file_dataset = "data/CPTAC_phospho/{dataset}_phospho_data_median_centered.tsv",
@@ -100,6 +105,8 @@ rule activity_estimation:
     script:
         "scripts/03_activity_estimation.R"
 
+
+# -------------------------------------- Comparison ---------------------------------------
 rule activity_comparison:
     input:
         act_files = expand("results/activity_scores/{PKN}/{dataset}_{PKN}.rds", PKN = config["activity_estimation"]["PKNs"], dataset = config["activity_estimation"]["datasets"]),
