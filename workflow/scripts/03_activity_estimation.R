@@ -45,36 +45,56 @@ results <- map_dfr(1:ncol(phospho), function(i){
 
   #prepare network
   prior_tmp <- intersect_regulons(mat_i, prior, .source = "source", .target = "target", minsize = 5)
-  cor.source <- check_corr(prior_tmp) %>% filter(correlation > 0.9) %>% pull(source.2)
+  cor.source <- check_corr(prior_tmp)
+  filter_source <- cor.source %>% filter(correlation > 0.9) %>% pull(source.2)
 
   if (dataset_name == "luad" & PKN_name == "iKiPdb"){
-    prior_i <- prior %>% filter(!source == "EPHB3") %>% ungroup()
-  } else {
-    prior_i <- prior %>% filter(!source %in% cor.source) %>% ungroup()
+    filter_source <- "EPHB3"
   }
 
+  prior_i <- prior %>% filter(!source %in% filter_source) %>% ungroup()
 
   # run activity estimation methods
-  KARP <- run_KARP(mat_i, prior_i)
-  RoKAI_z <- run_zscore_RoKAI(mat_i, prior_i)
-  KSEA_z <- run_zscore_KSEA(mat_i, prior_i)
-  INKA <- run_INKA(mat_i, prior_i)
-  Rokai_lm <- run_lm_rokai(mat_i, prior_i)
-  decoupler <- decouple(mat = as.matrix(mat_i), network = prior_i)
-  fgsea <- run_fgsea(mat = as.matrix(mat_i), network = prior_i)
-  #gsva <- run_gsva(mat = as.matrix(mat_i), network = prior_i)
-  wmean <- run_wmean(mat = as.matrix(mat_i), network = prior_i)
-  viper <- run_viper(mat = as.matrix(mat_i), network = prior_i)
+  KARP <- run_KARP(mat_i, prior)
+  RoKAI_z <- run_zscore_RoKAI(mat_i, prior)
+  KSEA_z <- run_zscore_KSEA(mat_i, prior)
+  INKA <- run_INKA(mat_i, prior)
+  Rokai_lm <- run_lm_rokai(mat_i, prior)
+  mlm <- run_mlm(mat = as.matrix(mat_i), network = prior_i)
+  ulm <- run_ulm(mat = as.matrix(mat_i), network = prior)
+  wsum <- run_wsum(mat = as.matrix(mat_i), network = prior)
+  fgsea <- run_fgsea(mat = as.matrix(mat_i), network = prior)
+  wmean <- run_wmean(mat = as.matrix(mat_i), network = prior)
+  viper <- run_viper(mat = as.matrix(mat_i), network = prior)
 
-  decoupler <- decoupler %>%
+  # For mlm add correlated kinases again and assign the same score
+  mlm <- mlm %>%
+    dplyr::select(c(source, condition, score, statistic)) %>%
+    dplyr::rename("method" = "statistic")
+  recode_score <- map_dfr(filter_source, function(kin){
+    cor.kinase <- cor.source %>%
+      filter(source.2 == kin) %>%
+      arrange(desc(correlation)) %>%
+      pull(source)
+    cor.kinase <- cor.kinase[1]
+
+    score_kin <- mlm %>%
+      filter(source == cor.kinase)
+    score_kin$source <- kin
+    score_kin
+  })
+  mlm <- rbind(mlm, recode_score)
+
+  # Rename decoupler output for rbind
+  wsum <- wsum %>%
+    dplyr::select(c(source, condition, score, statistic)) %>%
+    dplyr::rename("method" = "statistic")
+  ulm <- ulm %>%
     dplyr::select(c(source, condition, score, statistic)) %>%
     dplyr::rename("method" = "statistic")
   fgsea <- fgsea %>%
     dplyr::select(c(source, condition, score, statistic)) %>%
     dplyr::rename("method" = "statistic")
-  #gsva <- gsva %>%
-  #  dplyr::select(c(source, condition, score, statistic)) %>%
-  #  rename("method" = "statistic")
   wmean <- wmean %>%
     dplyr::select(c(source, condition, score, statistic)) %>%
     dplyr::rename("method" = "statistic")
@@ -82,12 +102,13 @@ results <- map_dfr(1:ncol(phospho), function(i){
     dplyr::select(c(source, condition, score, statistic)) %>%
     dplyr::rename("method" = "statistic")
 
-  results <- rbind(KARP, RoKAI_z, KSEA_z, INKA, Rokai_lm, decoupler, fgsea, #gsva,
-                   wmean, viper)
+  results <- rbind(KARP, RoKAI_z, KSEA_z, INKA, Rokai_lm, ulm, mlm,
+                   wsum, fgsea, wmean, viper) %>%
+    filter(!is.infinite(score))
 })
 
 results <- results %>%
-  dplyr::filter(!method %in% c("wsum", "norm_wsum")) %>%
+  dplyr::filter(!method %in% c("norm_wsum", "corr_wsum", "corr_wmean")) %>%
   group_by(method)
 
 results_list <- results %>%
