@@ -22,7 +22,7 @@ phosphositeplus_human <- phosphositeplus %>%
 
 # Map targets to pps in data
 pps <- map_dfr(file_datasets, function(file){
-  df <- read_tsv(file)
+  df <- read_tsv(file, col_types = cols())
   data.frame(site = df$site)
 })
 
@@ -58,6 +58,10 @@ ppsp_prior_df <- ppsp_prior %>%
     !is.na(site) ~ site,
     is.na(site) ~ target_site
     )) %>%
+  mutate(target = case_when(
+    str_detect(pattern = KINASE, string = target_site) ~ paste0(target, "|auto"), #mark autophosphorylation
+    !str_detect(pattern = KINASE, string = target_site) ~ target
+  )) %>%
   dplyr::mutate(mor = 1) %>%
   dplyr::select(KINASE, target, mor) %>%
   dplyr::rename("source" = KINASE)

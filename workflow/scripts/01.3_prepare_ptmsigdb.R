@@ -28,7 +28,7 @@ PTMsig_df <- PTMsig_df %>%
 
 # Map targets to pps in data
 pps <- map_dfr(file_datasets, function(file){
-  df <- read_tsv(file)
+  df <- read_tsv(file, col_types = cols())
   data.frame(site = df$site)
 })
 
@@ -54,9 +54,25 @@ res <- getBM(attributes = c('ensembl_gene_id',
 target_df <- full_join(pps_df, res, by = "ensembl_gene_id", relationship = "many-to-many") %>%
   mutate(target_site = paste0(uniprot_gn_id, ";", position))
 
+## Change kinases to common gene names---------------------------
+PTMsig_df$source <- map_chr(str_split(paste(PTMsig_df$source,
+                                            PTMsig_df$source,
+                                            sep = "/"),
+                                      "/"),
+                            2)
+
+# Add uniprot id of kinases to identify autophosphorylation
+res_kin <- getBM(attributes = c('external_gene_name',
+                                'uniprot_gn_id'),
+             values = PTMsig_df$source,
+             mart = mart)  %>%
+  dplyr::rename("source" = external_gene_name) %>%
+  dplyr::rename("source_uniprot" = uniprot_gn_id)
+
+PTMsig_df <- left_join(PTMsig_df, res_kin, by = "source", relationship = "many-to-many")
+
 ## merge with PTMsigDB
-PTMsig_prior <- left_join(PTMsig_df %>%
-                          dplyr::select(source, target_site),
+PTMsig_prior <- left_join(PTMsig_df,
                         target_df, by = "target_site", relationship = "many-to-many")
 
 PTMsig_prior_df <- PTMsig_prior %>%
@@ -64,15 +80,13 @@ PTMsig_prior_df <- PTMsig_prior %>%
     !is.na(site) ~ site,
     is.na(site) ~ target_site
   )) %>%
+  mutate(target = case_when(
+    str_detect(pattern = source_uniprot, string = target_site) ~ paste0(target, "|auto"), #mark autophosphorylation
+    !str_detect(pattern = source_uniprot, string = target_site) ~ target
+  )) %>%
   dplyr::mutate(mor = 1) %>%
   dplyr::select(source, target, mor)
 
-## Change kinases to common gene names---------------------------
-PTMsig_prior_df$source <- map_chr(str_split(paste(PTMsig_prior_df$source,
-                                                  PTMsig_prior_df$source,
-                                                  sep = "/"),
-                                            "/"),
-                                  2)
 
 # Remove duplicated edges (if present)
 PTMsig_prior_df <- PTMsig_prior_df %>%

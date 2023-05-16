@@ -39,7 +39,7 @@ rownames(mappings_sp) <- mappings_sp$protein
 
 # Prepare phosphorylation sites in data sets
 pps <- map_dfr(file_datasets, function(file){
-  df <- read_tsv(file)
+  df <- read_tsv(file, col_types = cols())
   data.frame(site = df$site)
 })
 

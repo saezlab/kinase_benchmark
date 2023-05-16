@@ -41,7 +41,7 @@ ikipdb_df <- map_dfr(unique(ikipdb$Kinase_name), function(kinase){
 
 # Map targets to pps in data
 pps <- map_dfr(file_datasets, function(file){
-  df <- read_tsv(file)
+  df <- read_tsv(file, col_types = cols())
   data.frame(site = df$site)
 })
 
@@ -67,25 +67,10 @@ res <- getBM(attributes = c('ensembl_gene_id',
 target_df <- full_join(pps_df, res, by = "ensembl_gene_id", relationship = "many-to-many") %>%
   mutate(target_site = paste0(uniprot_gn_id, "_", surrounding))
 
-## merge with phosphositeplus
-ikipd_prior <- left_join(ikipdb_df %>%
-                          dplyr::select(kinase, target_site),
-                        target_df, by = "target_site", relationship = "many-to-many")
-
-ikipd_prior_df <- ikipd_prior %>%
-  mutate(target = case_when(
-    !is.na(site) ~ site,
-    is.na(site) ~ target_site
-  )) %>%
-  dplyr::mutate(mor = 1) %>%
-  dplyr::select(kinase, target, mor) %>%
-  dplyr::rename("source" = kinase)
-
-
 ## Rename kinases in prior knowledge ---------------------------
 ## Change kinases to common gene names
-ikipd_prior_df <- ikipd_prior_df %>%
-  dplyr::mutate(source = recode(source,
+ikipdb_df <- ikipdb_df %>%
+  dplyr::mutate(kinase = recode(kinase,
                                 "ACK" = "TNK2",
                                 "AMPKA1" = "PRKAA1",
                                 "AMPKA2" = "PRKAA2",
@@ -101,9 +86,37 @@ ikipd_prior_df <- ikipd_prior_df %>%
                                 "RIPK5" = "DSTYK",
                                 "TSSK1" = "TSSK1B",
                                 "ZAK" = "MAP3K20"
-                                )) %>%
-  dplyr::filter(!source == "NA") %>%
+  )) %>%
+  dplyr::filter(!kinase == "NA") %>%
   distinct()
 
-## Save processed phosphositeplus ---------------------------
+# Add uniprot id of kinases to identify autophosphorylation
+res_kin <- getBM(attributes = c('external_gene_name',
+                                'uniprot_gn_id'),
+                 values = ikipdb_df$kinase,
+                 mart = mart)  %>%
+  dplyr::rename("kinase" = external_gene_name) %>%
+  dplyr::rename("source_uniprot" = uniprot_gn_id)
+
+ikipdb_df <- left_join(ikipdb_df, res_kin, by = "kinase", relationship = "many-to-many")
+
+## merge with ikipdb ---------------------------
+ikipd_prior <- left_join(ikipdb_df,
+                        target_df, by = "target_site", relationship = "many-to-many")
+
+ikipd_prior_df <- ikipd_prior %>%
+  mutate(target = case_when(
+    !is.na(site) ~ site,
+    is.na(site) ~ target_site
+  )) %>%
+  mutate(target = case_when(
+    str_detect(pattern = source_uniprot, string = target_site) ~ paste0(target, "|auto"), #mark autophosphorylation
+    !str_detect(pattern = source_uniprot, string = target_site) ~ target
+  )) %>%
+  dplyr::mutate(mor = 1) %>%
+  dplyr::select(kinase, target, mor) %>%
+  dplyr::rename("source" = kinase)
+
+
+## Save processed ikipdb ---------------------------
 write_tsv(ikipd_prior_df, output_file)

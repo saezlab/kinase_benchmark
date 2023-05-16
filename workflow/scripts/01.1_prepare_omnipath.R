@@ -24,7 +24,7 @@ omnipath_ptm_filtered <- omnipath_ptm_filtered %>%
 
 # Map targets to pps in data
 pps <- map_dfr(file_datasets, function(file){
-  df <- read_tsv(file)
+  df <- read_tsv(file, col_types = cols())
   data.frame(site = df$site)
 })
 
@@ -55,6 +55,10 @@ omnipath_prior_df <- omnipath_prior %>%
   mutate(target = case_when(
     !is.na(site) ~ site,
     is.na(site) ~ target_site
+  )) %>%
+  mutate(target = case_when(
+    str_detect(pattern = enzyme_genesymbol, string = target_site) ~ paste0(target, "|auto"), #mark autophosphorylation
+    !str_detect(pattern = enzyme_genesymbol, string = target_site) ~ target
   )) %>%
   mutate(mor = case_when(
     modification == "phosphorylation" ~ 1,
