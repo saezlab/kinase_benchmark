@@ -139,7 +139,6 @@ run_zscore_KSEA <- function(mat,
 
     KSdata <- full_join(network_filtered, mat_c, by = "target") %>%
       drop_na()
-    print(KSdata)
     colnames(KSdata)[4] <- "pps" #careful! if data frame structure changes renaming won't work
 
     KSdata <- KSdata %>%
