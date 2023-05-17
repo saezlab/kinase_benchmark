@@ -13,6 +13,8 @@ if(exists("snakemake")){
   height <- 6
   width <- 13
 }
+height <- as.numeric(height)
+width <- as.numeric(width)
 
 ## Libraries ---------------------------
 library(tidyverse)

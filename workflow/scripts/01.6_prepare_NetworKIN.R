@@ -13,6 +13,7 @@ if(exists("snakemake")){
   networkin_score <- 5
   output_file_merge <- "results/prior/GPS_NetworKIN.tsv"
 }
+networkin_score <- as.numeric(networkin_score)
 
 ## Libraries ---------------------------
 library(tidyverse)

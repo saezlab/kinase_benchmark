@@ -67,7 +67,7 @@ GPS_mapped <- left_join(GPS, pps, by = "Site1", relationship = "many-to-many") %
     `UniProt ID...1` == `UniProt ID...3` ~ paste0(target, "|auto"), #mark autophosphorylation
     `UniProt ID...1` != `UniProt ID...3` ~ target
   )) %>%
-  rename("source" = Kinase) %>%
+  dplyr::rename("source" = Kinase) %>%
   dplyr::select(source, target) %>%
   add_column(mor = 1)
 

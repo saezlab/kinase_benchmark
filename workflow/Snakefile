@@ -71,7 +71,7 @@ rule prepare_NetworKIN:
         networkin_file = "data/prior/networkin_human_predictions_3.1.tsv",
         file_dataset = expand("data/CPTAC_phospho/{dataset}_phospho_data_median_centered.tsv", dataset = config["activity_estimation"]["datasets"]),
         GPS_file = "results/prior/GPS_goldStandard.tsv",
-        score = 5
+        score = "5"
     output:
         tsv = "results/prior/networkin.tsv",
         tsv_merge = "results/prior/GPS_NetworKIN.tsv"
@@ -109,9 +109,9 @@ rule activity_estimation:
 # -------------------------------------- Comparison ---------------------------------------
 rule prior_comparison:
     input:
-        prior_files = expand("results/prior/{PKN}.tsv", PKN = config["activity_estimation"]["PKNs"],
-        plot_width = 13,
-        plot_height = 6
+        prior_files = expand("results/prior/{PKN}.tsv", PKN = config["activity_estimation"]["PKNs"]),
+        plot_width = "13",
+        plot_height = "6"
     output:
         kin = "results/comparison/plots/coverage_kinases.pdf",
         edges = "results/comparison/plots/coverage_edges.pdf",
