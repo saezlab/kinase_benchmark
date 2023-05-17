@@ -48,6 +48,12 @@ run_INKA <- function(mat,
     dplyr::group_by(source) %>%
     dplyr::filter(dplyr::n() >= minsize)
 
+  network_autophospho <- network %>%
+    dplyr::mutate(target = str_remove(target, "\\|auto")) %>%
+    dplyr::filter(target %in% rownames(mat)) %>%
+    dplyr::group_by(source) %>%
+    dplyr::filter(dplyr::n() >= minsize)
+
   # Analysis ----------------------------------------------------------------
   kinases <- network_filtered$source %>%
     base::unique()
@@ -76,7 +82,7 @@ run_INKA <- function(mat,
     pull(ensembl_gene_id)
 
   targets.k <- map(kin_id, function(id){
-    network_filtered %>%
+    network_autophospho %>%
       dplyr::filter(str_detect(string = target, pattern = id)) %>%
       dplyr::pull(target)
 
@@ -90,6 +96,12 @@ run_INKA <- function(mat,
 
     if (score == 0){
       score <- NA
+    }
+    if (kinase.centric == 0){
+      kinase.centric <- NA
+    }
+    if (substrate.centric == 0){
+      substrate.centric <- NA
     }
 
     data.frame(source = kinase, condition = colnames(mat), score = c(score, substrate.centric, kinase.centric), method = rep(c("INKA", "INKA_substrate_centric", "INKA_kinase_centric"), each = ncol(mat)) )
