@@ -29,14 +29,7 @@ phospho <- read_table(dataset) %>%
     column_to_rownames("site")
 
 ## Prior knowledge Kinase-Substrate Networks
-if (PKN_name %in% c("goldStandard", "combined", "NetworKIN")){
-  net <- read.table(file = PKN, sep = "\t", header = T)
-  colnames(net) <- c("source", "target")
-  prior <- net %>%
-    add_column(mor = 1)
-} else {
-  prior <- read.table(file = PKN, sep = "\t", header = T)
-}
+prior <- read.table(file = PKN, sep = "\t", header = T)
 
 ## Kinase activity estimation ---------------------------
 results <- map_dfr(1:ncol(phospho), function(i){
