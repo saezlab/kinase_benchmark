@@ -115,7 +115,8 @@ ikipd_prior_df <- ikipd_prior %>%
   )) %>%
   dplyr::mutate(mor = 1) %>%
   dplyr::select(kinase, target, mor) %>%
-  dplyr::rename("source" = kinase)
+  dplyr::rename("source" = kinase) %>%
+  distinct()
 
 
 ## Save processed ikipdb ---------------------------

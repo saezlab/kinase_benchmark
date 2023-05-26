@@ -4,7 +4,7 @@ if(exists("snakemake")){
   file_datasets <- snakemake@input$file_dataset
 }else{
   GPS_file <- "data/prior/mmc4.xlsx"
-  output_file <- "results/prior/GPS_goldStandard.tsv"
+  output_file <- "results/prior/GPS.tsv"
   file_datasets <- list.files("data/CPTAC_phospho", full.names = T)
 }
 
@@ -69,7 +69,8 @@ GPS_mapped <- left_join(GPS, pps, by = "Site1", relationship = "many-to-many") %
   )) %>%
   dplyr::rename("source" = Kinase) %>%
   dplyr::select(source, target) %>%
-  add_column(mor = 1)
+  add_column(mor = 1) %>%
+  distinct()
 
 ## Save prior ---------------------------
 write_tsv(GPS_mapped, output_file)

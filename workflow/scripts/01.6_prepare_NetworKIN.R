@@ -8,10 +8,10 @@ if(exists("snakemake")){
 }else{
   networkin_file <- "data/prior/networkin_human_predictions_3.1.tsv"
   output_file <- "results/prior/networkin.tsv"
-  GPS_file <- "results/prior/GPS_goldStandard.tsv"
+  GPS_file <- "results/prior/GPS.tsv"
   file_datasets <- list.files("data/CPTAC_phospho", full.names = T)
   networkin_score <- 5
-  output_file_merge <- "results/prior/GPS_NetworKIN.tsv"
+  output_file_merge <- "results/prior/GPSnetworkin.tsv"
 }
 networkin_score <- as.numeric(networkin_score)
 
@@ -132,20 +132,19 @@ nwkin_df <- left_join(nwkin_filtered, pps, by = "Site1", relationship = "many-to
   )) %>%
   dplyr::rename("source" = id) %>%
   dplyr::select(source, target) %>%
-  add_column(mor = 1)
+  add_column(mor = 1) %>%
+  distinct()
 
 
 ## Save prior ---------------------------
 write_tsv(nwkin_df, output_file)
 
 ## Combine NetworKIN and GPS gold standard ---------------------------
-GPS <- read_tsv(GPS_file, col_types = cols()) %>%
-  add_column(origin = "GPS")
+GPS <- read_tsv(GPS_file, col_types = cols())
 
 ## only add pps from kinases already present in GPS
 nwkin_df_kin <- nwkin_df %>%
-  dplyr::filter(source %in% GPS$source) %>%
-  add_column(origin = "NetworKIN")
+  dplyr::filter(source %in% GPS$source)
 
 merge_df <- rbind(GPS, nwkin_df_kin)
 merge_df <- merge_df[!duplicated(merge_df),]
