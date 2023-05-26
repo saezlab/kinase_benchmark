@@ -2,4 +2,4 @@ project_name: "kinase_activity_estimation"
 
 activity_estimation:
   datasets: ["ucec", "luad", "lscc", "hnscc", "gbm", "ccrcc", "brca"]
-  PKNs: ["omnipath", "GPS_NetworKIN", "GPS_goldStandard", "networkin", "phosphositeplus", "ptmsigdb", "iKiPdb"]
+  PKNs: ["omnipath", "GPSnetworkin", "GPS", "networkin", "phosphositeplus", "ptmsigdb", "iKiPdb"]

@@ -16,3 +16,6 @@ dependencies:
   - bioconductor-qusage
   - bioconductor-org.hs.eg.db
   - bioconductor-complexheatmap
+  - r-hmisc
+  - bioconductor-cmapr
+  - bioconductor-rwikipathways

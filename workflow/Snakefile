@@ -8,7 +8,7 @@ configfile: "config/config.yml"
 # ------------------------------------ Default setting ------------------------------------
 rule all:
     input:
-        expand("results/activity_scores/{PKN}/{dataset}_{PKN}.rds", dataset = config["activity_estimation"]["datasets"], PKN = config["activity_estimation"]["PKNs"])
+        expand("results/final_scores/{PKN}/{dataset}_{PKN}.rds", dataset = config["activity_estimation"]["datasets"], PKN = config["activity_estimation"]["PKNs"])
 
 
 # ------------------------------ Prior knowledge preparation ------------------------------
@@ -60,21 +60,21 @@ rule prepare_GPS:
         GPS_file = "data/prior/mmc4.xlsx",
         file_dataset = expand("data/CPTAC_phospho/{dataset}_phospho_data_median_centered.tsv", dataset = config["activity_estimation"]["datasets"])
     output:
-        tsv = "results/prior/GPS_goldStandard.tsv"
+        tsv = "results/prior/GPS.tsv"
     conda:
         "envs/phospho.yml"
     script:
-        "scripts/01.5_prepare_GPSgoldStandard.R"
+        "scripts/01.5_prepare_GPS.R"
 
 rule prepare_NetworKIN:
     input:
         networkin_file = "data/prior/networkin_human_predictions_3.1.tsv",
         file_dataset = expand("data/CPTAC_phospho/{dataset}_phospho_data_median_centered.tsv", dataset = config["activity_estimation"]["datasets"]),
-        GPS_file = "results/prior/GPS_goldStandard.tsv",
+        GPS_file = "results/prior/GPS.tsv",
         score = "5"
     output:
         tsv = "results/prior/networkin.tsv",
-        tsv_merge = "results/prior/GPS_NetworKIN.tsv"
+        tsv_merge = "results/prior/GPSnetworkin.tsv"
     conda:
         "envs/phospho.yml"
     script:
@@ -90,13 +90,34 @@ rule map_kinase_ids:
     script:
         "scripts/02_convert_kinase_ids.R"
 
+# ------------------------------- PTM-SEA input preparation -------------------------------
+rule ptmsea_datasets:
+    input:
+        file_dataset = "data/CPTAC_phospho/{dataset}_phospho_data_median_centered.tsv"
+    output:
+        gct = "results/datasets/{dataset}.gct"
+    conda:
+        "envs/phospho.yml"
+    script:
+        "scripts/02.1_prepare_datasets_ptm-sea.R"
+
+rule ptmsea_prior:
+    input:
+        file_PKN = "results/prior/{PKN}.tsv"
+    output:
+        gmt = "results/prior/ptm-sea/{PKN}.gmt"
+    conda:
+        "envs/phospho.yml"
+    script:
+        "scripts/02.2_prepare_prior_ptm-sea.R"
+
 
 # ---------------------------------- Activity estimation ----------------------------------
 rule activity_estimation:
     input:
         file_dataset = "data/CPTAC_phospho/{dataset}_phospho_data_median_centered.tsv",
         file_PKN = "results/prior/{PKN}.tsv",
-        scripts = expand("workflow/scripts/methods/run_{method}.R", method = ["INKA", "KARP", "lm_rokai", "zscore"]),
+        scripts = expand("workflow/scripts/methods/run_{method}.R", method = ["INKA", "KARP", "lm_rokai", "zscore", "erics_methods"]),
         script_support = "workflow/scripts/methods/support_functions.R"
     output:
         rds = "results/activity_scores/{PKN}/{dataset}_{PKN}.rds"
@@ -105,6 +126,32 @@ rule activity_estimation:
     script:
         "scripts/03_activity_estimation.R"
 
+rule activity_estimation_ptmsea:
+    input:
+        file_dataset = "results/datasets/{dataset}.gct",
+        file_PKN = "results/prior/ptm-sea/{PKN}.gmt"
+    output:
+        rds = "results/activity_scores_ptmsea/log/{dataset}_{PKN}.log",
+        gct = "results/activity_scores_ptmsea/{dataset}_{PKN}-scores.gct"
+    params:
+        output_folder = "results/activity_scores_ptmsea"
+    conda:
+        "envs/phospho.yml"
+    script:
+        "scripts/03.1_activity_estimation_ptmsea.R"
+
+rule combine_scores:
+    input:
+        file_ptmsea = "results/activity_scores_ptmsea/{dataset}_{PKN}-scores.gct",
+        file_scores = "results/activity_scores/{PKN}/{dataset}_{PKN}.rds"
+    output:
+        rds = "results/final_scores/{PKN}/{dataset}_{PKN}.rds"
+    params:
+        rm_methods = ["corr_wmean", "corr_wsum", "norm_wsum", "wmean", "INKA_kinase_centric", "INKA_substrate_centric"]
+    conda:
+        "envs/phospho.yml"
+    script:
+        "scripts/04_combine_scores.R"
 
 # -------------------------------------- Comparison ---------------------------------------
 rule prior_comparison:
@@ -123,7 +170,7 @@ rule prior_comparison:
 
 rule activity_comparison:
     input:
-        act_files = expand("results/activity_scores/{PKN}/{dataset}_{PKN}.rds", PKN = config["activity_estimation"]["PKNs"], dataset = config["activity_estimation"]["datasets"]),
+        act_files = expand("results/final_scores/{PKN}/{dataset}_{PKN}.rds", PKN = config["activity_estimation"]["PKNs"], dataset = config["activity_estimation"]["datasets"]),
         jaccard_i = "10"
     output:
         plotSpearman = "results/comparison/plots/spearman_heatmap.pdf",
