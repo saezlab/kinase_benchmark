@@ -7,11 +7,11 @@ if(exists("snakemake")){
   scripts <- snakemake@input$scripts
   script_support <- snakemake@input$script_support
 }else{
-  dataset <- "data/CPTAC_phospho/luad_phospho_data_median_centered.tsv"
-  dataset_name <- "luad"
-  PKN <- "results/prior/iKiPdb.tsv"
-  PKN_name <- "iKiPdb"
-  output_file <- "results/activity_scores/luad_goldStandard.rds"
+  dataset <- "data/CPTAC_phospho/hnscc_phospho_data_median_centered.tsv"
+  dataset_name <- "hnscc"
+  PKN <- "results/prior/GPS.tsv"
+  PKN_name <- "GPS"
+  output_file <- "results/activity_scores/hnscc_GPS.rds"
   scripts <- list.files("workflow/scripts/methods", pattern = "run", full.names = T)
   script_support <- "workflow/scripts/methods/support_functions.R"
 }
@@ -39,7 +39,7 @@ results <- map_dfr(1:ncol(phospho), function(i){
   #prepare network
   prior_tmp <- intersect_regulons(mat_i, prior, .source = "source", .target = "target", minsize = 5)
   cor.source <- check_corr(prior_tmp)
-  filter_source <- cor.source %>% filter(correlation > 0.9) %>% pull(source.2)
+  filter_source <- cor.source %>% filter(correlation > 0.9) %>% pull(source.2) %>% unique()
 
   if (dataset_name == "luad" & PKN_name == "iKiPdb"){
     filter_source <- "EPHB3"
@@ -76,7 +76,8 @@ results <- map_dfr(1:ncol(phospho), function(i){
     score_kin$source <- kin
     score_kin
   })
-  mlm <- rbind(mlm, recode_score)
+  mlm <- rbind(mlm, recode_score) %>%
+    distinct()
 
   # Rename decoupler output for rbind
   wsum <- wsum %>%
@@ -100,8 +101,22 @@ results <- map_dfr(1:ncol(phospho), function(i){
     filter(!is.infinite(score))
 })
 
+# Run methods implemented by Eric Kai from Zhang group
+results_eric <- calculate_Kinase_Activity(mat = phospho, network = prior)
+results_eric_long <- map_dfr(names(results_eric), function(method_i){
+  tidyr::pivot_longer(results_eric[[method_i]] %>%
+                        as.data.frame() %>%
+                        rownames_to_column("source"),
+                      !source,  names_to = "condition", values_to = "score") %>%
+    add_column(method = method_i)
+})
+
+# Combine results
+results <- rbind(results, results_eric_long)
 results <- results %>%
-  dplyr::filter(!method %in% c("norm_wsum", "corr_wsum", "corr_wmean")) %>%
+  drop_na() %>%
+  arrange(source) %>%
+  distinct() %>%
   group_by(method)
 
 results_list <- results %>%
