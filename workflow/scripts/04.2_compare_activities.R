@@ -7,7 +7,7 @@ if(exists("snakemake")){
   plot_jaccard_down <-  snakemake@output$plotJaccardDown
   dist_csv <- snakemake@output$dist_csv
 }else{
-  act_files <- list.files("results/activity_scores", pattern = "rds", recursive = T, full.names = T)
+  act_files <- list.files("results/final_scores", pattern = "rds", recursive = T, full.names = T)
   plot_spearman <- "results/comparison/plots/spearman_heatmap.pdf"
   plot_pearson <- "results/comparison/plots/pearson_heatmap.pdf"
   plot_jaccard_up <- "results/comparison/plots/jaccard_up_heatmap.pdf"
@@ -23,14 +23,29 @@ library(ComplexHeatmap)
 ## Load and merge scores ---------------------------
 act_list <- map(act_files, readRDS)
 names(act_list) <- str_remove(map_chr(str_split(act_files, "/"), 4), ".rds")
+
 act_df <- map_dfr(names(act_list), function(act_i){
   act <- act_list[[act_i]]
   act_df <- map_dfr(names(act), function(method){
     act_method <- act[[method]]
-    act_method %>%
+    act_method <- act_method %>%
       rownames_to_column("kinase") %>%
       pivot_longer(!kinase, names_to = "sample", values_to = "score") %>%
       add_column(method = method)
+
+    if(method == "mlm"){
+      act_method <- map_dfr(1:nrow(act_method), function(row_i){
+        df <- act_method[row_i,]
+        if (!is.null(unlist(df$score))){
+          df %>%
+            mutate(score = unlist(df$score)[1])
+        } else if (is.null(unlist(df$score))){
+          df %>%
+            mutate(score = NA)
+        }
+      })
+    }
+    act_method
   })
   act_df %>%
     add_column(prior = str_split(act_i, "_")[[1]][2]) %>%
