@@ -156,13 +156,14 @@ rule combine_scores:
 # -------------------------------------- Comparison ---------------------------------------
 rule prior_comparison:
     input:
-        prior_files = expand("results/prior/{PKN}.tsv", PKN = config["activity_estimation"]["PKNs"]),
-        plot_width = "13",
-        plot_height = "6"
+        prior_files = expand("results/prior/{PKN}.tsv", PKN = config["activity_estimation"]["PKNs"])
     output:
         kin = "results/comparison/plots/coverage_kinases.pdf",
         edges = "results/comparison/plots/coverage_edges.pdf",
         pps = "results/comparison/plots/coverage_pps.pdf"
+    params:
+        plot_width = "13",
+        plot_height = "6"
     conda:
         "envs/phospho.yml"
     script:

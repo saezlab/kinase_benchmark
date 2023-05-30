@@ -3,8 +3,8 @@ if(exists("snakemake")){
   coverage_pdf <- snakemake@output$kin
   edges_coverage_pdf <- snakemake@output$edges
   pps_coverage_pdf <- snakemake@output$pps
-  height <- snakemake@input$plot_height
-  width <- snakemake@input$plot_width
+  height <- snakemake@params$plot_height
+  width <- snakemake@params$plot_width
 }else{
   prior_files <- list.files("results/prior", pattern = "tsv", recursive = T, full.names = T)
   coverage_pdf <- "results/comparison/plots/coverage_kinases.pdf"
