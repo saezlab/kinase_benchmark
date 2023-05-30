@@ -170,14 +170,15 @@ rule prior_comparison:
 
 rule activity_comparison:
     input:
-        act_files = expand("results/final_scores/{PKN}/{dataset}_{PKN}.rds", PKN = config["activity_estimation"]["PKNs"], dataset = config["activity_estimation"]["datasets"]),
-        jaccard_i = "10"
+        act_files = expand("results/final_scores/{PKN}/{dataset}_{PKN}.rds", PKN = config["activity_estimation"]["PKNs"], dataset = config["activity_estimation"]["datasets"])
     output:
         plotSpearman = "results/comparison/plots/spearman_heatmap.pdf",
         plotPearson = "results/comparison/plots/pearson_heatmap.pdf",
         plotJaccardUp = "results/comparison/plots/jaccard_up_heatmap.pdf",
         plotJaccardDown = "results/comparison/plots/jaccard_down_heatmap.pdf",
         dist_csv = "results/comparison/mean_distance.csv"
+    params:
+        jaccard_i = "10"
     conda:
         "envs/phospho.yml"
     script:

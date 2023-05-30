@@ -1,6 +1,6 @@
 if(exists("snakemake")){
   act_files <- snakemake@input$act_files
-  jaccard_i <-  snakemake@input$jaccard_i
+  jaccard_i <-  snakemake@params$jaccard_i
   plot_spearman <- snakemake@output$plotSpearman
   plot_pearson <-  snakemake@output$plotPearson
   plot_jaccard_up <-  snakemake@output$plotJaccardUp
