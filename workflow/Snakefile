@@ -186,4 +186,39 @@ rule activity_comparison:
         "scripts/04.2_compare_activities.R"
 
 
+# -------------------------------------- BENCHMARK ---------------------------------------
+# -------------------------------------- decryptm ---------------------------------------
+rule protein_mapping:
+    input:
+        curve_file = "data/decryptm/10_Kinase_Inhibitors/Phosphoproteome/curves_{decryptm_set}.txt",
+        ref_proteome_file = "data/decryptm/uniprot_proteome_up000005640_03112020.fasta"
+    output:
+        output_file = "results/decryptm/protein_mapping/mapped_protein_{decryptm_set}.csv"
+    conda:
+        "envs/phospho.yml"
+    script:
+        "scripts/decryptm/01_protein_mapping.py"
+
+def get_metadata_files(wildcards):
+  files = {'curve_file': "data/decryptm/10_Kinase_Inhibitors/Phosphoproteome/curves_{decryptm_set}.txt".format(decryptm_set=wildcards.decryptm_set),
+  'mapped_file': "results/decryptm/protein_mapping/mapped_protein_{decryptm_set}.csv".format(decryptm_set=wildcards.decryptm_set)}
+
+  if wildcards.decryptm_set == 'Rep':
+      files['meta_file'] = ["data/decryptm/10_Kinase_Inhibitors/Phosphoproteome/pipeline_Rep_{0}.toml".format(drug) for drug in ['Dasatinib', 'PD325901', 'Refametinib', 'Staursporin']]
+  else:
+      files['meta_file'] = ["data/decryptm/10_Kinase_Inhibitors/Phosphoproteome/pipeline_{decryptm_set}.toml".format(decryptm_set=wildcards.decryptm_set)]
+
+  return files
+
+
+rule phospho_preprocessing:
+    input:
+        unpack(get_metadata_files)
+    output:
+        phospho = "results/decryptm/phosphoproteome/intensities_{decryptm_set}.csv",
+        meta_output = "results/decryptm/phosphoproteome/metadata_{decryptm_set}.csv"
+    conda:
+        "envs/phospho.yml"
+    script:
+        "scripts/decryptm/02_preprocessing_phospho.R"
 
