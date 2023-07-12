@@ -1,15 +1,17 @@
 if 'snakemake' in locals():
-   int_file = snakemake.input[0]
+   input_folder = snakemake.input[0]
    ref_proteome_file = snakemake.input[1]
    output_file = snakemake.output[0]
 else:
-   int_file = '../../../data/decryptm/10_Kinase_Inhibitors/Phosphoproteome/curves_2KI.txt'
+   input_folder = '../../../data/decryptm/10_Kinase_Inhibitors'
    ref_proteome_file = '../../../data/decryptm/uniprot_proteome_up000005640_03112020.fasta'
-   output_file = '../../../results/decryptm/protein_mapping/mapped_protein_2KI.csv'
+   output_file = '../../../results/decryptm/protein_mapping/mapped_protein_10_Kinase_Inhibitors.csv'
 
 import pandas as pd
 import numpy as np
 import re
+import os
+import glob
 from Bio import SeqIO
 
 def parse_phosphosite_info(prob_peptide, probability_trheshold=0.75):
@@ -39,7 +41,16 @@ ref_proteome = SeqIO.to_dict(SeqIO.parse(ref_proteome_file, "fasta"))
 ref_proteome = {k.split('|')[1]: v for k, v in ref_proteome.items()}
 
 # read tsv file
-df = pd.read_csv(int_file, sep='\t')
+csv_files = glob.glob(os.path.join(input_folder, '**/*curves*'))
+csv_files = [file for file in csv_files if 'Phospho' in file]
+
+dfs = []
+for file in csv_files:
+    df_pps = pd.read_csv(file, sep='\t')
+    dfs.append(df_pps)
+
+df = pd.concat(dfs, ignore_index=True)
+
 protein_id_column = 'Leading proteins'
 phospho_count_column = 'Phospho (STY)'
 phospho_prob_column = 'All Phospho (STY) Probabilities'
@@ -88,9 +99,9 @@ for index, row in df.iterrows():
         if left_i >= 0 and right_i <= len(ref_seq):
             window = ref_seq[left_i:right_i]
         elif left_i < 0:
-            window = 'X' * abs(left_i) + ref_seq[:right_i]
+            window = '_' * abs(left_i) + ref_seq[:right_i]
         elif right_i > len(ref_seq):
-            window = ref_seq[left_i:] + (right_i - len(ref_seq)) * 'X'
+            window = ref_seq[left_i:] + (right_i - len(ref_seq)) * '_'
         out.append(str(window))
     out = ';'.join(out)
     # concatenate aa and positions without separator

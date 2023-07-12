@@ -1,22 +1,40 @@
 if(exists("snakemake")){
-  curve_file <- snakemake@input$curve_file
-  meta_file <- snakemake@input$meta_file
+  folder <- snakemake@input$input_folder
   mapped_file <- snakemake@input$mapped_file
   phospho_output <- snakemake@output$phospho
   meta_output <- snakemake@output$meta_output
 }else{
-  curve_file <- "data/decryptm/10_Kinase_Inhibitors/Phosphoproteome/curves_6KI.txt"
-  meta_file <- "data/decryptm/10_Kinase_Inhibitors/Phosphoproteome/pipeline_6KI.toml"
-  mapped_file <- "results/decryptm/protein_mapping/mapped_protein_6KI.csv"
-  phospho_output <- "results/decryptm/phosphoproteome/intensities_6KI.csv"
-  meta_output <- "results/decryptm/phosphoproteome/metadata_6KI.csv"
+  folder <- "data/decryptm/3_EGFR_Inhibitors"
+  mapped_file <- "results/decryptm/protein_mapping/mapped_protein_3_EGFR_Inhibitors.csv"
+  phospho_output <- "results/decryptm/phosphoproteome/EC50_3_EGFR_Inhibitors.csv"
+  meta_output <- "results/decryptm/phosphoproteome/metadata_3_EGFR_Inhibitors.csv"
 }
 
 library(tidyverse)
 library(configr)
 
 ## load files -------------------------
-maxquant <- read.csv(curve_file, sep = "\t")
+maxquant_files <- list.files(folder, pattern = "curve", recursive = T, full.names = T)
+maxquant_files <- maxquant_files[str_detect(maxquant_files, "Phospho")]
+
+meta_file <- list.files(folder, pattern = "toml", recursive = T, full.names = T)
+meta_file <- meta_file[str_detect(meta_file, "Phospho")]
+
+maxquant <- map_dfr(maxquant_files, function(curve_file) {
+  df <- read.csv(curve_file, sep = "\t")
+  df <- df[!colnames(df) %in% c("Phosphoproteome", "Fullproteome")]
+  if (folder == "data/decryptm/Dasatinib_Triplicates"){
+    file_id <- str_extract(curve_file, "(?<=Phosphoproteome_).*?(?=\\/curves.txt)")
+  } else  if (folder == "data/decryptm/BCRABL_Inhibitors"){
+    file_id <- "BCRABL"
+  } else {
+    file_id <- str_extract(curve_file, "(?<=curves_).*?(?=\\.txt)")
+  }
+  if(is.na(file_id)){
+    file_id <- ""
+  }
+  df %>% mutate(sample = paste(Experiment, file_id, sep = "_"))
+})
 mapped_pps <- read.csv(mapped_file, sep = "\t")
 
 # add protein position and fifteenmer to maxquant file
@@ -28,133 +46,303 @@ maxquant <- maxquant %>%
   mutate(pps_id = paste(Leading.proteins, Gene.names, psite_location, fifteenmer, sep = "|"))
 
 ## load and process meta data -------------------------
-if (length(meta_file) != 1){
+# The processing has to be done seperately for the different experiments as they differ in their nomenclature
+if(folder == "data/decryptm/BCRABL_Inhibitors"){
   meta_df <- map_dfr(meta_file, function(meta){
+    dataset_id <- "BCRABL"
+    if(is.na(dataset_id)){
+      dataset_id <- ""
+    }
+    metadata <- read.config(file = meta)
+    drugs <- c("Imatinib", "Dasatinib")
+
+    meta_df <- map_dfr(drugs, function(drug){
+      data.frame(drug = drug,
+                 dose = paste(metadata$TMT$doses, collapse = ","),
+                 dose_scale = metadata$TMT$dose_scale,
+                 dataset = metadata$`Meta Data`$dataset_name,
+                 time = metadata$`Meta Data`$treatment_time,
+                 cells = metadata$`Meta Data`$cells,
+                 who = metadata$`Meta Data`$who,
+                 replicate = "R1",
+                 experiment_type = metadata$`Meta Data`$experiment_type,
+                 dataset_id = dataset_id) %>%
+        mutate(sample = paste0(experiment_type, "PTM_", cells, "_", drug, "_", time, "_", replicate, "_", dataset_id)) %>%
+        mutate(sample = str_replace(sample, " ", ""))
+    })
+  })
+} else if (folder == "data/decryptm/Dasatinib_Triplicates"){
+  meta_df <- map_dfr(meta_file, function(meta){
+    dataset_id <- str_extract(meta, "(?<=pipeline_).*?(?=\\.toml)")
+    if(is.na(dataset_id)){
+      dataset_id <- ""
+    }
     metadata <- read.config(file = meta)
     drugs <- str_split(metadata$`Meta Data`$experiment_description, ", ") %>%
       unlist()
 
     meta_df <- map_dfr(drugs, function(drug){
-      data.frame(channels = as.character(metadata$TMT$channels),
-                 drug = drug,
-                 dose = metadata$TMT$doses,
-                 dose_scale = metadata$`Meta Data`$dataset_name,
-                 dataset = metadata$`Meta Data`$cells,
+      data.frame(drug = c("Dasatinib"),
+                 dose = paste(metadata$TMT$doses, collapse = ","),
+                 dose_scale = metadata$TMT$dose_scale,
+                 dataset = metadata$`Meta Data`$dataset_name,
                  time = metadata$`Meta Data`$treatment_time,
                  cells = metadata$`Meta Data`$cells,
                  who = metadata$`Meta Data`$who,
-                 experiment_type = metadata$`Meta Data`$experiment_type) %>%
-        mutate(drug = recode(drug,
-                             "Rafametinib" = "Refametinib",
-                             "Stausporin" = "Staursporin"))  %>%
-        mutate(control = channels == metadata$Processing$control_channel) %>%
-        mutate(time_min = str_remove(time, " min")) %>%
-        mutate(sample = case_when(
-          !control ~ paste0(experiment_type, "PTM_", cells, "_", drug, "_", time_min, "min_", channels, "_", dose),
-          control ~ paste0(experiment_type, "PTM_", cells, "_", drug, "_", time_min, "min_", channels, "_", dose, "C")
-          )) %>%
-        mutate(Experiment = paste0(experiment_type, "PTM_", cells, "_", drug, "_", time_min, "min_R1"))
+                 replicate = c("R1", "R2", "R3"),
+                 experiment_type = metadata$`Meta Data`$experiment_type,
+                 dataset_id = "") %>%
+        mutate(sample = paste0(experiment_type, "PTM_", cells, "_", drug, "_", time, "_", replicate, "_", dataset_id)) %>%
+        mutate(sample = str_replace(sample, " ", ""))
+    })
+  })
+  meta_df$dataset_id <- rep(c("MS2", "MS3"), each = 3)
+  meta_df <- meta_df %>%
+    mutate(sample = paste0(experiment_type, "PTM_", cells, "_", drug, "_", time, "_", replicate, "_", dataset_id)) %>%
+    mutate(sample = str_replace(sample, " ", ""))
+} else if (folder == "data/decryptm/Combination_Treatments_Selumetinib_MK2206"){
+  meta_df <- map_dfr(meta_file, function(meta){
+    dataset_id <- str_extract(meta, "(?<=pipeline_).*?(?=\\.toml)")
+    if(is.na(dataset_id)){
+      dataset_id <- ""
+    }
+    metadata <- read.config(file = meta)
+    drugs <- dataset_id
+
+    meta_df <- map_dfr(drugs, function(drug){
+      data.frame(drug = drug,
+                 dose = paste(metadata$TMT$doses, collapse = ","),
+                 dose_scale = metadata$TMT$dose_scale,
+                 dataset = metadata$`Meta Data`$dataset_name,
+                 time = metadata$`Meta Data`$treatment_time,
+                 cells = metadata$`Meta Data`$cells,
+                 who = metadata$`Meta Data`$who,
+                 replicate = c("R1", "R2"),
+                 experiment_type = metadata$`Meta Data`$experiment_type,
+                 dataset_id = dataset_id) %>%
+        mutate(sample = paste0(experiment_type, "PTM_", cells, "_", drug, "_", time, "_", replicate, "_", dataset_id)) %>%
+        mutate(sample = str_replace(sample, " ", "")) %>%
+        mutate(sample = recode(sample,
+                               "ddPTM_A459_Selumetinib_MK2206_1to2_30min_R1_Selumetinib_MK2206_1to2" = "ddPTM_A459_SelumetinibMK2206-1to2_30min_R1_Selumetinib_MK2206_12",
+                               "ddPTM_A459_Selumetinib_MK2206_3to1_30min_R1_Selumetinib_MK2206_3to1" = "ddPTM_A459_SelumetinibMK2206-3to1_30min_R1_Selumetinib_MK2206_31"))
       })
   })
+} else if (folder == "data/decryptm/Combination_Treatments_AZD4547_Lapatinib"){
+  meta_df <- map_dfr(meta_file, function(meta){
+    dataset_id <- str_extract(meta, "(?<=pipeline_).*?(?=\\.toml)")
+    if(is.na(dataset_id)){
+      dataset_id <- ""
+    }
+    metadata <- read.config(file = meta)
+    drugs <- c("Lapatinib", "AZD4547", "LapatinibAZD4547")
 
-} else {
-  metadata <- read.config(file = meta_file)
-  drugs <- str_split(metadata$`Meta Data`$experiment_description, ", ") %>%
-    unlist()
+    meta_df <- map_dfr(drugs, function(drug){
+      data.frame(drug = drug,
+                 dose = paste(metadata$TMT$doses, collapse = ","),
+                 dose_scale = metadata$TMT$dose_scale,
+                 dataset = metadata$`Meta Data`$dataset_name,
+                 time = metadata$`Meta Data`$treatment_time,
+                 cells = metadata$`Meta Data`$cells,
+                 who = metadata$`Meta Data`$who,
+                 replicate = c("R1", "R2"),
+                 experiment_type = metadata$`Meta Data`$experiment_type,
+                 dataset_id = dataset_id) %>%
+        mutate(sample = paste0(experiment_type, "PTM_", cells, "_", drug, "_", time, "_", replicate, "_", dataset_id)) %>%
+        mutate(sample = str_replace(sample, " ", ""))
+    })
+  })
+} else if (folder == "data/decryptm/Combination_Treatments_AZD4547_Gefitinib"){
+  meta_df <- map_dfr(meta_file, function(meta){
+    dataset_id <- str_extract(meta, "(?<=pipeline_).*?(?=\\.toml)")
+    if(is.na(dataset_id)){
+      dataset_id <- ""
+    }
+    metadata <- read.config(file = meta)
+    drugs <- dataset_id
 
-  meta_df <- map_dfr(drugs, function(drug){
-    data.frame(channels = as.character(metadata$TMT$channels),
-               drug = drug,
-               dose = metadata$TMT$doses,
-               dose_scale = metadata$TMT$dose_scale,
-               dataset = metadata$`Meta Data`$dataset_name,
-               time = metadata$`Meta Data`$treatment_time,
-               cells = metadata$`Meta Data`$cells,
-               who = metadata$`Meta Data`$who,
-               experiment_type = metadata$`Meta Data`$experiment_type) %>%
-      mutate(drug = recode(drug,
-                           "Rafametinib" = "Refametinib",
-                           "Stausporin" = "Staursporin")) %>%
-      mutate(control = channels == metadata$Processing$control_channel) %>%
-      mutate(time_min = str_remove(time, " min")) %>%
-      mutate(sample = case_when(
-        !control ~ paste0(experiment_type, "PTM_", cells, "_", drug, "_", time_min, "min_", channels, "_", dose),
-        control ~ paste0(experiment_type, "PTM_", cells, "_", drug, "_", time_min, "min_", channels, "_", dose, "C")
-      )) %>%
-      mutate(Experiment = paste0(experiment_type, "PTM_", cells, "_", drug, "_", time_min, "min_R1"))
+    meta_df <- map_dfr(drugs, function(drug){
+      data.frame(drug = drug,
+                 dose = paste(metadata$TMT$doses, collapse = ","),
+                 dose_scale = metadata$TMT$dose_scale,
+                 dataset = metadata$`Meta Data`$dataset_name,
+                 time = metadata$`Meta Data`$treatment_time,
+                 cells = metadata$`Meta Data`$cells,
+                 who = metadata$`Meta Data`$who,
+                 replicate = c("R1"),
+                 experiment_type = metadata$`Meta Data`$experiment_type,
+                 dataset_id = dataset_id) %>%
+        mutate(sample = paste0(experiment_type, "PTM_", cells, "_", drug, "_", time, "_", replicate, "_", dataset_id)) %>%
+        mutate(sample = str_replace(sample, " ", "")) %>%
+        mutate(sample = recode(sample,
+                               "ddPTM_PC-9_Gefitinib_AZD4547_1to80_30min_R1_Gefitinib_AZD4547_1to80" = "ddPTM_PC-9_GeftinibAZD4547-1to80_30min_R1_Gefitinib_AZD4547"))
+    })
+  })
+} else if (folder == "data/decryptm/HER2_Inhibitors"){
+  meta_df <- map_dfr(meta_file, function(meta){
+    dataset_id <- str_extract(meta, "(?<=pipeline_).*?(?=\\.toml)")
+    if(is.na(dataset_id)){
+      dataset_id <- ""
+    }
+    metadata <- read.config(file = meta)
+    drugs <- str_split(dataset_id, "_")[[1]][2]
+
+    meta_df <- map_dfr(drugs, function(drug){
+      data.frame(drug = drug,
+                 dose = paste(metadata$TMT$doses, collapse = ","),
+                 dose_scale = metadata$TMT$dose_scale,
+                 dataset = metadata$`Meta Data`$dataset_name,
+                 time = "2h",
+                 cells = metadata$`Meta Data`$cells,
+                 who = metadata$`Meta Data`$who,
+                 replicate = c("R1"),
+                 experiment_type = metadata$`Meta Data`$experiment_type,
+                 dataset_id = dataset_id) %>%
+        mutate(sample = paste0(experiment_type, "PTM_", cells, "_", drug, "_", time, "_", replicate, "_", dataset_id)) %>%
+        mutate(sample = str_replace(sample, " ", "")) %>%
+        mutate(cells = recode(cells,
+                              "BTB-474" = "BT-474")) %>%
+        mutate(sample = recode(sample,
+                               "ddPTM_BTB-474_Trastuzumab_2h_R1_BT474_Trastuzumab" = "ddPTM_BT-474_Trastuzumab_2h_R1_BT474_Trastuzumab"))
+      })
+  })
+} else if (folder == "data/decryptm/10_Kinase_Inhibitors"){
+  meta_df <- map_dfr(meta_file, function(meta){
+    dataset_id <- str_extract(meta, "(?<=pipeline_).*?(?=\\.toml)")
+    if(is.na(dataset_id)){
+      dataset_id <- ""
+    }
+    metadata <- read.config(file = meta)
+    drugs <- str_split(metadata$`Meta Data`$experiment_description, ", ") %>%
+      unlist()
+
+    meta_df <- map_dfr(drugs, function(drug){
+      data.frame(drug = drug,
+                 dose = paste(metadata$TMT$doses, collapse = ","),
+                 dose_scale = metadata$TMT$dose_scale,
+                 dataset = metadata$`Meta Data`$dataset_name,
+                 time = metadata$`Meta Data`$treatment_time,
+                 cells = metadata$`Meta Data`$cells,
+                 who = metadata$`Meta Data`$who,
+                 replicate = c("R1"),
+                 experiment_type = metadata$`Meta Data`$experiment_type,
+                 dataset_id = dataset_id) %>%
+        mutate(drug = recode(drug,
+                             "Rafametinib" = "Refametinib",
+                             "Stausporin" = "Staursporin")) %>%
+        mutate(sample = paste0(experiment_type, "PTM_", cells, "_", drug, "_", time, "_", replicate, "_", dataset_id)) %>%
+        mutate(sample = str_replace(sample, " ", ""))
+    })
+  })
+} else if (folder == "data/decryptm/3_EGFR_Inhibitors"){
+  meta_df <- map_dfr(meta_file, function(meta){
+    dataset_id <- str_extract(meta, "(?<=pipeline_).*?(?=\\.toml)")
+    if(is.na(dataset_id)){
+      dataset_id <- ""
+    }
+    metadata <- read.config(file = meta)
+    drugs <- c("Afatinib", "Gefitinib", "Dasatinib")
+
+    meta_df <- map_dfr(drugs, function(drug){
+      data.frame(drug = drug,
+                 dose = paste(metadata$TMT$doses, collapse = ","),
+                 dose_scale = metadata$TMT$dose_scale,
+                 dataset = metadata$`Meta Data`$dataset_name,
+                 time = metadata$`Meta Data`$treatment_time,
+                 cells = metadata$`Meta Data`$cells,
+                 who = metadata$`Meta Data`$who,
+                 replicate = c("R1", "R2", "R3", "R4"),
+                 experiment_type = metadata$`Meta Data`$experiment_type,
+                 dataset_id = dataset_id) %>%
+        mutate(drug = recode(drug,
+                             "Rafametinib" = "Refametinib",
+                             "Stausporin" = "Staursporin")) %>%
+        mutate(sample = paste0(experiment_type, "PTM_", cells, "_", drug, "_", time, "_", replicate, "_", dataset_id)) %>%
+        mutate(sample = str_replace(sample, " ", ""))
+    })
   })
 }
 
-head(meta_df)
+maxquant$Experiment %>% unique()
 
 ## Format phosphorylation sites into matrix -------------------------
 # select reporter intensities, phosphorylation sites and experiments
-psp <- colnames(maxquant)[str_detect(colnames(maxquant), "Reporter.intensity.corrected")]
-psp <- c(psp, c("pps_id", "Experiment"))
+psp <- c("pps_id", "sample", "Log.EC50", "R2", "pEC50", "EC50")
 
 df <- maxquant %>%
   filter(!psite_location == "") %>%
   select(all_of(psp)) %>%
-  mutate(tmp_id = paste(pps_id, Experiment, sep = ":")) %>% # create tmp ID to check for pps that were measured twice in each experiment
-  select(-c(pps_id, Experiment)) %>%
+  mutate(tmp_id = paste(pps_id, sample, sep = ":")) %>% # create tmp ID to check for pps that were measured twice in each experiment
+  filter(!is.na(Log.EC50)) %>%
+  select(-c(pps_id, sample)) %>%
   distinct() # remove duplicated rows
 
-# remove rows with only zeros
-msk <- rowSums(df[,1:11]) == 0
-df_filtered <- df[!msk,]
+ggplot(df, aes(x = R2)) +
+  geom_histogram(bins = 50)
+
+# remove pps with R2 of 0
+df <- df %>%
+  filter(!R2 == 0)
 
 # identify duplicated phosphorylation sites per experiment (e.g. due to missed cleavage)
-dup_peptides <- df_filtered %>%
+dup_peptides <- df %>%
   filter(duplicated(tmp_id)) %>%
   pull(tmp_id) %>%
   unique()
 length(dup_peptides)
 
-# For each duplicated pps check correlation
-# Select the one with higher intensities for pps with a high correlation
+# For each duplicated pps check correlation of intensities
+int_rep <- colnames(maxquant)[str_detect(colnames(maxquant), "Reporter.intensity.corrected")]
+int <- c(int_rep, c("pps_id", "sample"))
+
+df_int <- maxquant %>%
+  filter(!psite_location == "") %>%
+  select(all_of(int)) %>%
+  mutate(tmp_id = paste(pps_id, sample, sep = ":")) %>% # create tmp ID to check for pps that were measured twice in each experiment
+  select(-c(pps_id, sample)) %>%
+  distinct() # remove duplicated rows
+
+# remove rows with only zeros
+msk <- rowSums(df_int[int_rep], na.rm = T) == 0
+df_int <- df_int[!msk,]
+
+# Select the one with lower R2 for pps with a high correlation
 # remove the ones with a low correlation
 fixed_dup <- map_dfr(dup_peptides, function(dup){
-  df_dup <- df_filtered %>% filter(tmp_id == dup)
+  df_dup <- df_int %>% filter(tmp_id == dup)
+  df_ec50 <- df %>% filter(tmp_id == dup)
   pear_cor <- cor(df_dup[1,names(df_dup)[!names(df_dup) %in% c("pps_id", "tmp_id")]] %>% as.numeric(),
                   df_dup[2,names(df_dup)[!names(df_dup) %in% c("pps_id", "tmp_id")]] %>% as.numeric(),
-                  method = "pearson")
+                  method = "pearson", use = "complete.obs")
 
   if (pear_cor >= 0.8){
-    idx <- which(c(df_dup[1,1], df_dup[2,1]) == max(c(df_dup[1,1], df_dup[2,1])))[1]
+    idx <- which(c(df_ec50[1,"R2"], df_ec50[2,"R2"]) == max(c(df_ec50[1,"R2"], df_ec50[2,"R2"]), na.rm = T))[1]
 
-    df_dup[idx,] %>% add_column(correlation = pear_cor)
+    df_ec50[idx,] %>% add_column(correlation = pear_cor)
   } else {
-    df_dup[1,] %>% mutate(tmp_id = "remove") %>% add_column(correlation = pear_cor)
+    df_ec50[1,] %>% mutate(tmp_id = "remove") %>% add_column(correlation = pear_cor)
   }
-}) %>%
+})
+
+fixed_dup <- fixed_dup %>%
   filter(tmp_id != "remove") %>%
   select(-correlation)
 
 length(unique(fixed_dup$tmp_id))
 
 # remove duplicates
-df_rm_dup <- df_filtered %>%
+df_rm_dup <- df %>%
   filter(!tmp_id %in% dup_peptides) %>%
   rbind(fixed_dup)
 
 # final check for duplicates
 df_rm_dup$tmp_id %>% duplicated() %>% any()
 
-df_long <- df_rm_dup %>%
-  pivot_longer(!tmp_id, names_to = "channel", values_to = "intensity") %>%
+pps_m <- df_rm_dup %>%
+  mutate(sample = map_chr(str_split(tmp_id, ":"), 2)) %>%
   mutate(pps_id = map_chr(str_split(tmp_id, ":"), 1)) %>%
-  mutate(Experiment = map_chr(str_split(tmp_id, ":"), 2)) %>%
-  mutate(channels = str_remove(channel, "Reporter.intensity.corrected."))
-
-# add channel information from meta data
-df_long <- df_long %>%
-  left_join(meta_df %>%
-              select(channels, dose, control, Experiment, sample) %>%
-              distinct(),
-            by = c("channels", "Experiment"), relationship = "many-to-many")
-pps_m <- df_long %>%
-  select(pps_id, sample, intensity) %>%
-  pivot_wider(names_from = sample, values_from = intensity, values_fill = NA)
+  mutate(neg.Log.EC50 = Log.EC50 * -1) %>%
+  select(neg.Log.EC50, sample, pps_id) %>%
+  pivot_wider(names_from = sample, values_from = neg.Log.EC50, values_fill = NA)
 
 write_csv(pps_m, phospho_output)
 write_csv(meta_df, meta_output)
