@@ -20,6 +20,9 @@ dependencies:
   - bioconductor-cmapr
   - bioconductor-rwikipathways
   - r-configr
+  - r-ggfortify
+  - r-ggvenndiagram
+  - r-pheatmap
   - python
   - pandas
   - pip

@@ -58,10 +58,14 @@ if(folder == "data/decryptm/BCRABL_Inhibitors"){
 
     meta_df <- map_dfr(drugs, function(drug){
       data.frame(drug = drug,
-                 dose = paste(metadata$TMT$doses, collapse = ","),
+                 dose = paste(metadata$TMT$doses, collapse = ";"),
+                 channels = paste(metadata$TMT$channels, collapse = ";"),
+                 control_channel = metadata$Processing$control_channel,
                  dose_scale = metadata$TMT$dose_scale,
+                 dose_unit = metadata$TMT$dose_label,
                  dataset = metadata$`Meta Data`$dataset_name,
                  time = metadata$`Meta Data`$treatment_time,
+                 quantification = metadata$TMT$quantification,
                  cells = metadata$`Meta Data`$cells,
                  who = metadata$`Meta Data`$who,
                  replicate = "R1",
@@ -83,10 +87,14 @@ if(folder == "data/decryptm/BCRABL_Inhibitors"){
 
     meta_df <- map_dfr(drugs, function(drug){
       data.frame(drug = c("Dasatinib"),
-                 dose = paste(metadata$TMT$doses, collapse = ","),
+                 dose = paste(metadata$TMT$doses, collapse = ";"),
+                 channels = paste(metadata$TMT$channels, collapse = ";"),
+                 control_channel = metadata$Processing$control_channel,
                  dose_scale = metadata$TMT$dose_scale,
+                 dose_unit = metadata$TMT$dose_label,
                  dataset = metadata$`Meta Data`$dataset_name,
                  time = metadata$`Meta Data`$treatment_time,
+                 quantification = metadata$TMT$quantification,
                  cells = metadata$`Meta Data`$cells,
                  who = metadata$`Meta Data`$who,
                  replicate = c("R1", "R2", "R3"),
@@ -111,10 +119,14 @@ if(folder == "data/decryptm/BCRABL_Inhibitors"){
 
     meta_df <- map_dfr(drugs, function(drug){
       data.frame(drug = drug,
-                 dose = paste(metadata$TMT$doses, collapse = ","),
+                 dose = paste(metadata$TMT$doses, collapse = ";"),
+                 channels = paste(metadata$TMT$channels, collapse = ";"),
+                 control_channel = metadata$Processing$control_channel,
                  dose_scale = metadata$TMT$dose_scale,
+                 dose_unit = metadata$TMT$dose_label,
                  dataset = metadata$`Meta Data`$dataset_name,
                  time = metadata$`Meta Data`$treatment_time,
+                 quantification = metadata$TMT$quantification,
                  cells = metadata$`Meta Data`$cells,
                  who = metadata$`Meta Data`$who,
                  replicate = c("R1", "R2"),
@@ -138,10 +150,14 @@ if(folder == "data/decryptm/BCRABL_Inhibitors"){
 
     meta_df <- map_dfr(drugs, function(drug){
       data.frame(drug = drug,
-                 dose = paste(metadata$TMT$doses, collapse = ","),
+                 dose = paste(metadata$TMT$doses, collapse = ";"),
+                 channels = paste(metadata$TMT$channels, collapse = ";"),
+                 control_channel = metadata$Processing$control_channel,
                  dose_scale = metadata$TMT$dose_scale,
+                 dose_unit = metadata$TMT$dose_label,
                  dataset = metadata$`Meta Data`$dataset_name,
                  time = metadata$`Meta Data`$treatment_time,
+                 quantification = metadata$TMT$quantification,
                  cells = metadata$`Meta Data`$cells,
                  who = metadata$`Meta Data`$who,
                  replicate = c("R1", "R2"),
@@ -162,10 +178,14 @@ if(folder == "data/decryptm/BCRABL_Inhibitors"){
 
     meta_df <- map_dfr(drugs, function(drug){
       data.frame(drug = drug,
-                 dose = paste(metadata$TMT$doses, collapse = ","),
+                 dose = paste(metadata$TMT$doses, collapse = ";"),
+                 channels = paste(metadata$TMT$channels, collapse = ";"),
+                 control_channel = metadata$Processing$control_channel,
                  dose_scale = metadata$TMT$dose_scale,
+                 dose_unit = metadata$TMT$dose_label,
                  dataset = metadata$`Meta Data`$dataset_name,
                  time = metadata$`Meta Data`$treatment_time,
+                 quantification = metadata$TMT$quantification,
                  cells = metadata$`Meta Data`$cells,
                  who = metadata$`Meta Data`$who,
                  replicate = c("R1"),
@@ -188,10 +208,14 @@ if(folder == "data/decryptm/BCRABL_Inhibitors"){
 
     meta_df <- map_dfr(drugs, function(drug){
       data.frame(drug = drug,
-                 dose = paste(metadata$TMT$doses, collapse = ","),
+                 dose = paste(metadata$TMT$doses, collapse = ";"),
+                 channels = paste(metadata$TMT$channels, collapse = ";"),
+                 control_channel = metadata$Processing$control_channel,
                  dose_scale = metadata$TMT$dose_scale,
+                 dose_unit = metadata$TMT$dose_label,
                  dataset = metadata$`Meta Data`$dataset_name,
                  time = "2h",
+                 quantification = metadata$TMT$quantification,
                  cells = metadata$`Meta Data`$cells,
                  who = metadata$`Meta Data`$who,
                  replicate = c("R1"),
@@ -217,10 +241,14 @@ if(folder == "data/decryptm/BCRABL_Inhibitors"){
 
     meta_df <- map_dfr(drugs, function(drug){
       data.frame(drug = drug,
-                 dose = paste(metadata$TMT$doses, collapse = ","),
+                 dose = paste(metadata$TMT$doses, collapse = ";"),
+                 channels = paste(metadata$TMT$channels, collapse = ";"),
+                 control_channel = metadata$Processing$control_channel,
                  dose_scale = metadata$TMT$dose_scale,
+                 dose_unit = metadata$TMT$dose_label,
                  dataset = metadata$`Meta Data`$dataset_name,
                  time = metadata$`Meta Data`$treatment_time,
+                 quantification = metadata$TMT$quantification,
                  cells = metadata$`Meta Data`$cells,
                  who = metadata$`Meta Data`$who,
                  replicate = c("R1"),
@@ -244,10 +272,14 @@ if(folder == "data/decryptm/BCRABL_Inhibitors"){
 
     meta_df <- map_dfr(drugs, function(drug){
       data.frame(drug = drug,
-                 dose = paste(metadata$TMT$doses, collapse = ","),
+                 dose = paste(metadata$TMT$doses, collapse = ";"),
+                 channels = paste(metadata$TMT$channels, collapse = ";"),
+                 control_channel = metadata$Processing$control_channel,
                  dose_scale = metadata$TMT$dose_scale,
+                 dose_unit = metadata$TMT$dose_label,
                  dataset = metadata$`Meta Data`$dataset_name,
                  time = metadata$`Meta Data`$treatment_time,
+                 quantification = metadata$TMT$quantification,
                  cells = metadata$`Meta Data`$cells,
                  who = metadata$`Meta Data`$who,
                  replicate = c("R1", "R2", "R3", "R4"),
@@ -265,16 +297,20 @@ if(folder == "data/decryptm/BCRABL_Inhibitors"){
 maxquant$Experiment %>% unique()
 
 ## Format phosphorylation sites into matrix -------------------------
-# select reporter intensities, phosphorylation sites and experiments
-psp <- c("pps_id", "sample", "Log.EC50", "R2", "pEC50", "EC50")
+# select EC50 values, phosphorylation sites and experiments
+psp <- c("pps_id", "sample", "R2", "pEC50", "EC50", "Curve.effect.size")
 
 df <- maxquant %>%
   filter(!psite_location == "") %>%
   select(all_of(psp)) %>%
   mutate(tmp_id = paste(pps_id, sample, sep = ":")) %>% # create tmp ID to check for pps that were measured twice in each experiment
-  filter(!is.na(Log.EC50)) %>%
+  #filter(!is.na(Log.EC50)) %>%
   select(-c(pps_id, sample)) %>%
   distinct() # remove duplicated rows
+
+# remove rows with only zeros
+msk <- rowSums(df[c("R2", "pEC50", "EC50", "Curve.effect.size")], na.rm = T) == 0
+df <- df[!msk,]
 
 ggplot(df, aes(x = R2)) +
   geom_histogram(bins = 50)
@@ -315,7 +351,9 @@ fixed_dup <- map_dfr(dup_peptides, function(dup){
                   method = "pearson", use = "complete.obs")
 
   if (pear_cor >= 0.8){
-    idx <- which(c(df_ec50[1,"R2"], df_ec50[2,"R2"]) == max(c(df_ec50[1,"R2"], df_ec50[2,"R2"]), na.rm = T))[1]
+    # Select phosphorylation site with higher intensities as these can be considered to be more reliable
+    idx <- which(c(rowSums(df_dup[!colnames(df_dup) == "tmp_id"])) == max(c(rowSums(df_dup[!colnames(df_dup) == "tmp_id"]))))[1]
+    #idx <- which(c(df_ec50$R2) == max(c(df_ec50$R2), na.rm = T))[1]
 
     df_ec50[idx,] %>% add_column(correlation = pear_cor)
   } else {
@@ -337,12 +375,10 @@ df_rm_dup <- df %>%
 # final check for duplicates
 df_rm_dup$tmp_id %>% duplicated() %>% any()
 
-pps_m <- df_rm_dup %>%
+pps_long <- df_rm_dup %>%
   mutate(sample = map_chr(str_split(tmp_id, ":"), 2)) %>%
   mutate(pps_id = map_chr(str_split(tmp_id, ":"), 1)) %>%
-  mutate(neg.Log.EC50 = Log.EC50 * -1) %>%
-  select(neg.Log.EC50, sample, pps_id) %>%
-  pivot_wider(names_from = sample, values_from = neg.Log.EC50, values_fill = NA)
+  select(-tmp_id)
 
-write_csv(pps_m, phospho_output)
+write_csv(pps_long, phospho_output)
 write_csv(meta_df, meta_output)

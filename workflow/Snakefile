@@ -218,9 +218,21 @@ rule merge_datasets:
         targets = "data/decryptm/drug_targets.csv"
     output:
         output_meta = "results/decryptm/processed_data/meta_data.csv",
-        output_EC50 = "results/decryptm/processed_data/EC50.csv"
+        output_EC50 = "results/decryptm/processed_data/pEC50.csv",
+        output_R2_EC50 = "results/decryptm/processed_data/R2_pEC50.csv",
+        output_drugs = "results/decryptm/processed_data/overview_drugs.csv"
     conda:
         "envs/phospho.yml"
     script:
         "scripts/decryptm/03_merge_datasets.R"
+
+rule QC_decryptm:
+    input:
+        EC50_file = "results/decryptm/processed_data/{EC50}.csv"
+    output:
+        output_plots = "results/decryptm/processed_data/figures/QC_{EC50}.pdf"
+    conda:
+        "envs/phospho.yml"
+    script:
+        "scripts/decryptm/04_quality_control.R"
 
