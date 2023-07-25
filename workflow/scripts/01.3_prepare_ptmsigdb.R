@@ -1,11 +1,15 @@
 if(exists("snakemake")){
   ptmsig_file <- snakemake@input$ptmsig
-  output_file <- snakemake@output$tsv
   file_datasets <- snakemake@input$file_dataset
+  decryptm_dataset <- snakemake@input$decryptm
+  output_file <- snakemake@output$tsv
+  output_file_decryptm <- snakemake@output$out_decryptm
 }else{
   ptmsig_file <- "data/prior/ptm.sig.db.all.uniprot.human.v1.9.0.gmt"
   output_file <- "results/prior/ptmsigdb.tsv"
   file_datasets <- list.files("data/CPTAC_phospho", full.names = T)
+  decryptm_dataset <- "results/decryptm/processed_data/R2_pEC50.csv"
+  output_file_decryptm <- "results/decryptm/prior/ptmsigdb.tsv"
 }
 
 ## Libraries ---------------------------
@@ -26,6 +30,24 @@ PTMsig_df <- PTMsig_df %>%
   mutate(source = str_remove(source, "KINASE-PSP_")) %>%
   mutate(target_site = str_remove(target_site, "-p;u"))
 
+## Change kinases to common gene names---------------------------
+PTMsig_df$source <- map_chr(str_split(paste(PTMsig_df$source,
+                                            PTMsig_df$source,
+                                            sep = "/"),
+                                      "/"),
+                            2)
+
+# Add uniprot id of kinases to identify autophosphorylation
+res_kin <- getBM(attributes = c('external_gene_name',
+                                'uniprot_gn_id'),
+                 values = PTMsig_df$source,
+                 mart = mart)  %>%
+  dplyr::rename("source" = external_gene_name) %>%
+  dplyr::rename("source_uniprot" = uniprot_gn_id)
+
+PTMsig_df <- left_join(PTMsig_df, res_kin, by = "source", relationship = "many-to-many")
+
+## Prepare CPTAC ---------------------------
 # Map targets to pps in data
 pps <- map_dfr(file_datasets, function(file){
   df <- read_tsv(file, col_types = cols())
@@ -45,7 +67,6 @@ pps_df <- data.frame(site = pps,
 
 ## Convert Ensemble gene IDs to Gene names
 mart <- useMart(biomart = "ensembl", dataset = "hsapiens_gene_ensembl")
-
 res <- getBM(attributes = c('ensembl_gene_id',
                             'uniprot_gn_id'),
              values = identifiers,
@@ -54,24 +75,17 @@ res <- getBM(attributes = c('ensembl_gene_id',
 target_df <- full_join(pps_df, res, by = "ensembl_gene_id", relationship = "many-to-many") %>%
   mutate(target_site = paste0(uniprot_gn_id, ";", position))
 
-## Change kinases to common gene names---------------------------
-PTMsig_df$source <- map_chr(str_split(paste(PTMsig_df$source,
-                                            PTMsig_df$source,
-                                            sep = "/"),
-                                      "/"),
-                            2)
+## Prepare decryptm ---------------------------
+decryptm_df <- read_csv(decryptm_dataset)
+decryptm_identifiers <- decryptm_df %>%
+  dplyr::select(pps_id) %>%
+  mutate(gene_name = map_chr(str_split(pps_id, "\\|"), 1))  %>%
+  mutate(position = map_chr(str_split(pps_id, "\\|"), 3)) %>%
+  mutate(target_site = paste0(gene_name, ";", position)) %>%
+  dplyr::rename("site" = pps_id)
 
-# Add uniprot id of kinases to identify autophosphorylation
-res_kin <- getBM(attributes = c('external_gene_name',
-                                'uniprot_gn_id'),
-             values = PTMsig_df$source,
-             mart = mart)  %>%
-  dplyr::rename("source" = external_gene_name) %>%
-  dplyr::rename("source_uniprot" = uniprot_gn_id)
-
-PTMsig_df <- left_join(PTMsig_df, res_kin, by = "source", relationship = "many-to-many")
-
-## merge with PTMsigDB
+## Merge with network ---------------------------
+## CPTAC ---------------------------
 PTMsig_prior <- left_join(PTMsig_df,
                         target_df, by = "target_site", relationship = "many-to-many")
 
@@ -92,6 +106,29 @@ PTMsig_prior_df <- PTMsig_prior %>%
 PTMsig_prior_df <- PTMsig_prior_df %>%
   distinct()
 
-## Save processed PTMsigDB ---------------------------
+## Save processed PTMsigDB
 write_tsv(PTMsig_prior_df, output_file)
 
+## decryptm ---------------------------
+PTMsig_prior <- left_join(PTMsig_df,
+                          decryptm_identifiers, by = "target_site", relationship = "many-to-many")
+
+PTMsig_prior_df <- PTMsig_prior %>%
+  mutate(target = case_when(
+    !is.na(site) ~ site,
+    is.na(site) ~ target_site
+  )) %>%
+  mutate(target = case_when(
+    str_detect(pattern = source_uniprot, string = target_site) ~ paste0(target, "|auto"), #mark autophosphorylation
+    !str_detect(pattern = source_uniprot, string = target_site) ~ target
+  )) %>%
+  dplyr::mutate(mor = 1) %>%
+  dplyr::select(source, target, mor)
+
+
+# Remove duplicated edges (if present)
+PTMsig_prior_df <- PTMsig_prior_df %>%
+  distinct()
+
+## Save processed PTMsigDB
+write_tsv(PTMsig_prior_df, output_file_decryptm)

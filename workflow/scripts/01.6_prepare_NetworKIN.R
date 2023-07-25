@@ -1,10 +1,14 @@
 if(exists("snakemake")){
   networkin_file <- snakemake@input$networkin_file
-  output_file <- snakemake@output$tsv
   file_datasets <- snakemake@input$file_dataset
-  networkin_score <- snakemake@input$score
   GPS_file <- snakemake@input$GPS_file
+  GPS_file_decryptm <- snakemake@input$GPS_decryptm
+  decryptm_dataset <- snakemake@input$decryptm
+  output_file <- snakemake@output$tsv
   output_file_merge <- snakemake@output$tsv_merge
+  output_file_merge_decryptm <- snakemake@output$out_merge_decryptm
+  output_file_decryptm <- snakemake@output$out_decryptm
+  networkin_score <- snakemake@params$score
 }else{
   networkin_file <- "data/prior/networkin_human_predictions_3.1.tsv"
   output_file <- "results/prior/networkin.tsv"
@@ -12,6 +16,10 @@ if(exists("snakemake")){
   file_datasets <- list.files("data/CPTAC_phospho", full.names = T)
   networkin_score <- 5
   output_file_merge <- "results/prior/GPSnetworkin.tsv"
+  GPS_file_decryptm <- "results/decryptm/prior/GPS.tsv"
+  decryptm_dataset <- "results/decryptm/processed_data/R2_pEC50.csv"
+  output_file_merge_decryptm <- "results/decryptm/prior/GPSnetworkin.tsv"
+  output_file_decryptm <- "results/decryptm/prior/networkin.tsv"
 }
 networkin_score <- as.numeric(networkin_score)
 
@@ -102,7 +110,7 @@ rownames(mappings_sp) <- mappings_sp$protein
 mappings_hugo <- mappings[!duplicated(paste0(mappings$gene, mappings$gene_name_BCM_refined)), ]
 rownames(mappings_hugo) <- mappings_hugo$gene
 
-
+## Prepare CPTAC ---------------------------
 # Prepare phosphorylation sites in data sets
 pps <- map_dfr(file_datasets, function(file){
   df <- read_tsv(file, col_types = cols())
@@ -119,8 +127,18 @@ pps$gene <- mappings_hugo[sub("\\|.*", "", pps$site), "gene_name_BCM_refined"]
 pps$Site1 <- paste0(pps$gene, "|", sub("\\D\\D$","", sub("^\\D\\D", "",pps$fifteenmer)))
 site_check <- pps$fifteenmer[duplicated(pps$fifteenmer)]
 
+## Prepare decryptm ---------------------------
+decryptm_df <- read_csv(decryptm_dataset)
+decryptm_identifiers <- decryptm_df %>%
+  dplyr::select(pps_id) %>%
+  dplyr::mutate(gene_name = map_chr(str_split(pps_id, "\\|"), 2))  %>%
+  dplyr::mutate(position = map_chr(str_split(pps_id, "\\|"), 4)) %>%
+  dplyr::mutate(elevenmer = sub("\\D\\D$","", sub("^\\D\\D", "", position))) %>%
+  dplyr::mutate(Site1 = paste0(gene_name, "|", elevenmer)) %>%
+  dplyr::rename("site" = pps_id)
 
-# Map pps from datasets to NetworKIN
+## Merge with network ---------------------------
+## CPTAC ---------------------------
 nwkin_df <- left_join(nwkin_filtered, pps, by = "Site1", relationship = "many-to-many") %>%
   mutate(target = case_when(
     is.na(site) ~ Site1,
@@ -136,10 +154,10 @@ nwkin_df <- left_join(nwkin_filtered, pps, by = "Site1", relationship = "many-to
   distinct()
 
 
-## Save prior ---------------------------
+## Save prior
 write_tsv(nwkin_df, output_file)
 
-## Combine NetworKIN and GPS gold standard ---------------------------
+## Combine NetworKIN and GPS gold standard
 GPS <- read_tsv(GPS_file, col_types = cols())
 
 ## only add pps from kinases already present in GPS
@@ -149,5 +167,37 @@ nwkin_df_kin <- nwkin_df %>%
 merge_df <- rbind(GPS, nwkin_df_kin)
 merge_df <- merge_df[!duplicated(merge_df),]
 
-## Save merged ---------------------------
+## Save merged
 write_tsv(merge_df, output_file_merge)
+
+## decryptm ---------------------------
+nwkin_df <- left_join(nwkin_filtered, decryptm_identifiers, by = "Site1", relationship = "many-to-many") %>%
+  mutate(target = case_when(
+    is.na(site) ~ Site1,
+    !is.na(site) ~ site
+  )) %>%
+  mutate(target = case_when(
+    id == substrate_name ~ paste0(target, "|auto"), #mark autophosphorylation
+    id != substrate_name ~ target
+  )) %>%
+  dplyr::rename("source" = id) %>%
+  dplyr::select(source, target) %>%
+  add_column(mor = 1) %>%
+  distinct()
+
+
+## Save prior
+write_tsv(nwkin_df, output_file_decryptm)
+
+## Combine NetworKIN and GPS gold standard
+GPS <- read_tsv(GPS_file_decryptm, col_types = cols())
+
+## only add pps from kinases already present in GPS
+nwkin_df_kin <- nwkin_df %>%
+  dplyr::filter(source %in% GPS$source)
+
+merge_df <- rbind(GPS, nwkin_df_kin)
+merge_df <- merge_df[!duplicated(merge_df),]
+
+## Save merged
+write_tsv(merge_df, output_file_merge_decryptm)

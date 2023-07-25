@@ -14,9 +14,11 @@ rule all:
 # ------------------------------ Prior knowledge preparation ------------------------------
 rule prepare_omnipath:
     input:
-        file_dataset = expand("data/CPTAC_phospho/{dataset}_phospho_data_median_centered.tsv", dataset = config["activity_estimation"]["datasets"])
+        file_dataset = expand("data/CPTAC_phospho/{dataset}_phospho_data_median_centered.tsv", dataset = config["activity_estimation"]["datasets"]),
+        decryptm = "results/decryptm/processed_data/R2_pEC50.csv"
     output:
-        tsv = "results/prior/omnipath.tsv"
+        tsv = "results/prior/omnipath.tsv",
+        out_decryptm = "results/decryptm/prior/omnipath.tsv"
     conda:
         "envs/phospho.yml"
     script:
@@ -25,9 +27,11 @@ rule prepare_omnipath:
 rule prepare_phosphositeplus:
     input:
         ppsp = "data/prior/phosphositeplus",
-        file_dataset = expand("data/CPTAC_phospho/{dataset}_phospho_data_median_centered.tsv", dataset = config["activity_estimation"]["datasets"])
+        file_dataset = expand("data/CPTAC_phospho/{dataset}_phospho_data_median_centered.tsv", dataset = config["activity_estimation"]["datasets"]),
+        decryptm = "results/decryptm/processed_data/R2_pEC50.csv"
     output:
-        tsv = "results/prior/phosphositeplus.tsv"
+        tsv = "results/prior/phosphositeplus.tsv",
+        out_decryptm = "results/decryptm/prior/phosphositeplus.tsv"
     conda:
         "envs/phospho.yml"
     script:
@@ -36,9 +40,11 @@ rule prepare_phosphositeplus:
 rule prepare_ptmsigdb:
     input:
         ptmsig_file = "data/prior/ptm.sig.db.all.uniprot.human.v1.9.0.gmt",
-        file_dataset = expand("data/CPTAC_phospho/{dataset}_phospho_data_median_centered.tsv", dataset = config["activity_estimation"]["datasets"])
+        file_dataset = expand("data/CPTAC_phospho/{dataset}_phospho_data_median_centered.tsv", dataset = config["activity_estimation"]["datasets"]),
+        decryptm = "results/decryptm/processed_data/R2_pEC50.csv"
     output:
-        tsv = "results/prior/ptmsigdb.tsv"
+        tsv = "results/prior/ptmsigdb.tsv",
+        out_decryptm = "results/decryptm/prior/ptmsigdb.tsv"
     conda:
         "envs/phospho.yml"
     script:
@@ -47,9 +53,11 @@ rule prepare_ptmsigdb:
 rule prepare_ikipdb:
     input:
         ptmsig_file = "data/prior/iKiP-DB-Table.tsv",
-        file_dataset = expand("data/CPTAC_phospho/{dataset}_phospho_data_median_centered.tsv", dataset = config["activity_estimation"]["datasets"])
+        file_dataset = expand("data/CPTAC_phospho/{dataset}_phospho_data_median_centered.tsv", dataset = config["activity_estimation"]["datasets"]),
+        decryptm = "results/decryptm/processed_data/R2_pEC50.csv"
     output:
-        tsv = "results/prior/iKiPdb.tsv"
+        tsv = "results/prior/iKiPdb.tsv",
+        out_decryptm = "results/decryptm/prior/iKiPdb.tsv"
     conda:
         "envs/phospho.yml"
     script:
@@ -58,9 +66,11 @@ rule prepare_ikipdb:
 rule prepare_GPS:
     input:
         GPS_file = "data/prior/mmc4.xlsx",
-        file_dataset = expand("data/CPTAC_phospho/{dataset}_phospho_data_median_centered.tsv", dataset = config["activity_estimation"]["datasets"])
+        file_dataset = expand("data/CPTAC_phospho/{dataset}_phospho_data_median_centered.tsv", dataset = config["activity_estimation"]["datasets"]),
+        decryptm = "results/decryptm/processed_data/R2_pEC50.csv"
     output:
-        tsv = "results/prior/GPS.tsv"
+        tsv = "results/prior/GPS.tsv",
+        out_decryptm = "results/decryptm/prior/GPS.tsv"
     conda:
         "envs/phospho.yml"
     script:
@@ -71,10 +81,15 @@ rule prepare_NetworKIN:
         networkin_file = "data/prior/networkin_human_predictions_3.1.tsv",
         file_dataset = expand("data/CPTAC_phospho/{dataset}_phospho_data_median_centered.tsv", dataset = config["activity_estimation"]["datasets"]),
         GPS_file = "results/prior/GPS.tsv",
-        score = "5"
+        GPS_decryptm = "results/decryptm/prior/GPS.tsv",
+        decryptm = "results/decryptm/processed_data/R2_pEC50.csv"
     output:
         tsv = "results/prior/networkin.tsv",
-        tsv_merge = "results/prior/GPSnetworkin.tsv"
+        tsv_merge = "results/prior/GPSnetworkin.tsv",
+        output_file_decryptm = "results/decryptm/prior/networkin.tsv",
+        out_merge_decryptm = "results/decryptm/prior/GPSnetworkin.tsv"
+    params:
+    	score = 5
     conda:
         "envs/phospho.yml"
     script:
