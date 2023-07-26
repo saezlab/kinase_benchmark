@@ -13,6 +13,7 @@ if(exists("snakemake")){
 }
 
 ## Libraries ---------------------------
+library(biomaRt)
 library(readxl)
 library(tidyverse)
 

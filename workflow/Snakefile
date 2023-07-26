@@ -8,13 +8,65 @@ configfile: "config/config.yml"
 # ------------------------------------ Default setting ------------------------------------
 rule all:
     input:
-        expand("results/final_scores/{PKN}/{dataset}_{PKN}.rds", dataset = config["activity_estimation"]["datasets"], PKN = config["activity_estimation"]["PKNs"])
+        expand("results/final_scores/{PKN}/{normalisation}/{normalisation}_{dataset}_{PKN}.rds", dataset = config["activity_estimation"]["datasets"], PKN = config["activity_estimation"]["PKNs"], normalisation = config["activity_estimation"]["normalisation"])
 
 
+# ------------------------------------ DATA PROCESSING ------------------------------------
+# -------------------------------------- decryptm ---------------------------------------
+rule protein_mapping:
+    input:
+        input_folder = "data/decryptm/{decryptm_set}",
+        ref_proteome_file = "data/decryptm/uniprot_proteome_up000005640_03112020.fasta"
+    output:
+        output_file = "results/decryptm/protein_mapping/mapped_protein_{decryptm_set}.csv"
+    conda:
+        "envs/phospho.yml"
+    script:
+        "scripts/01_data_processing/decryptm/01_protein_mapping.py"
+
+rule phospho_preprocessing:
+    input:
+        input_folder = "data/decryptm/{decryptm_set}",
+        mapped_file = "results/decryptm/protein_mapping/mapped_protein_{decryptm_set}.csv"
+    output:
+        phospho = "results/decryptm/phosphoproteome/EC50_{decryptm_set}.csv",
+        meta_output = "results/decryptm/phosphoproteome/metadata_EC50_{decryptm_set}.csv"
+    conda:
+        "envs/phospho.yml"
+    script:
+        "scripts/01_data_processing/decryptm/02_preprocessing_phospho.R"
+
+rule merge_datasets:
+    input:
+        EC50_files = expand("results/decryptm/phosphoproteome/EC50_{decryptm_set}.csv", decryptm_set = config["decryptm"]["decryptm_set"]),
+        meta_files = expand("results/decryptm/phosphoproteome/metadata_EC50_{decryptm_set}.csv", decryptm_set = config["decryptm"]["decryptm_set"]),
+        targets = "data/decryptm/drug_targets.csv"
+    output:
+        output_meta = "results/decryptm/processed_data/meta_data.csv",
+        output_EC50 = "results/decryptm/processed_data/pEC50.csv",
+        output_R2_EC50 = "results/decryptm/processed_data/R2_pEC50.csv",
+        output_drugs = "results/decryptm/processed_data/overview_drugs.csv"
+    conda:
+        "envs/phospho.yml"
+    script:
+        "scripts/01_data_processing/decryptm/03_merge_datasets.R"
+
+rule QC_decryptm:
+    input:
+        EC50_file = "results/decryptm/processed_data/{EC50}.csv"
+    output:
+        output_plots = "results/decryptm/processed_data/figures/QC_{EC50}.pdf"
+    conda:
+        "envs/phospho.yml"
+    script:
+        "scripts/01_data_processing/decryptm/04_quality_control.R"
+
+
+# ------------------------------ INPUT PREPARATION ------------------------------
 # ------------------------------ Prior knowledge preparation ------------------------------
 rule prepare_omnipath:
     input:
-        file_dataset = expand("data/CPTAC_phospho/{dataset}_phospho_data_median_centered.tsv", dataset = config["activity_estimation"]["datasets"]),
+        file_dataset = expand("data/CPTAC_phospho/{dataset}_{normalisation}_medcent_30plus.tsv", dataset = config["activity_estimation"]["datasets"], normalisation = config["activity_estimation"]["normalisation"]),
         decryptm = "results/decryptm/processed_data/R2_pEC50.csv"
     output:
         tsv = "results/prior/omnipath.tsv",
@@ -22,12 +74,12 @@ rule prepare_omnipath:
     conda:
         "envs/phospho.yml"
     script:
-        "scripts/01.1_prepare_omnipath.R"
+        "scripts/02_prior_mapping/01.1_prepare_omnipath.R"
 
 rule prepare_phosphositeplus:
     input:
         ppsp = "data/prior/phosphositeplus",
-        file_dataset = expand("data/CPTAC_phospho/{dataset}_phospho_data_median_centered.tsv", dataset = config["activity_estimation"]["datasets"]),
+        file_dataset = expand("data/CPTAC_phospho/{dataset}_{normalisation}_medcent_30plus.tsv", dataset = config["activity_estimation"]["datasets"], normalisation = config["activity_estimation"]["normalisation"]),
         decryptm = "results/decryptm/processed_data/R2_pEC50.csv"
     output:
         tsv = "results/prior/phosphositeplus.tsv",
@@ -35,12 +87,12 @@ rule prepare_phosphositeplus:
     conda:
         "envs/phospho.yml"
     script:
-        "scripts/01.2_prepare_phosphositeplus.R"
+        "scripts/02_prior_mapping/01.2_prepare_phosphositeplus.R"
 
 rule prepare_ptmsigdb:
     input:
         ptmsig_file = "data/prior/ptm.sig.db.all.uniprot.human.v1.9.0.gmt",
-        file_dataset = expand("data/CPTAC_phospho/{dataset}_phospho_data_median_centered.tsv", dataset = config["activity_estimation"]["datasets"]),
+        file_dataset = expand("data/CPTAC_phospho/{dataset}_{normalisation}_medcent_30plus.tsv", dataset = config["activity_estimation"]["datasets"], normalisation = config["activity_estimation"]["normalisation"]),
         decryptm = "results/decryptm/processed_data/R2_pEC50.csv"
     output:
         tsv = "results/prior/ptmsigdb.tsv",
@@ -48,12 +100,12 @@ rule prepare_ptmsigdb:
     conda:
         "envs/phospho.yml"
     script:
-        "scripts/01.3_prepare_ptmsigdb.R"
+        "scripts/02_prior_mapping/01.3_prepare_ptmsigdb.R"
 
 rule prepare_ikipdb:
     input:
         ptmsig_file = "data/prior/iKiP-DB-Table.tsv",
-        file_dataset = expand("data/CPTAC_phospho/{dataset}_phospho_data_median_centered.tsv", dataset = config["activity_estimation"]["datasets"]),
+        file_dataset = expand("data/CPTAC_phospho/{dataset}_{normalisation}_medcent_30plus.tsv", dataset = config["activity_estimation"]["datasets"], normalisation = config["activity_estimation"]["normalisation"]),
         decryptm = "results/decryptm/processed_data/R2_pEC50.csv"
     output:
         tsv = "results/prior/iKiPdb.tsv",
@@ -61,12 +113,12 @@ rule prepare_ikipdb:
     conda:
         "envs/phospho.yml"
     script:
-        "scripts/01.4_prepare_ikipdb.R"
+        "scripts/02_prior_mapping/01.4_prepare_ikipdb.R"
 
 rule prepare_GPS:
     input:
         GPS_file = "data/prior/mmc4.xlsx",
-        file_dataset = expand("data/CPTAC_phospho/{dataset}_phospho_data_median_centered.tsv", dataset = config["activity_estimation"]["datasets"]),
+        file_dataset = expand("data/CPTAC_phospho/{dataset}_{normalisation}_medcent_30plus.tsv", dataset = config["activity_estimation"]["datasets"], normalisation = config["activity_estimation"]["normalisation"]),
         decryptm = "results/decryptm/processed_data/R2_pEC50.csv"
     output:
         tsv = "results/prior/GPS.tsv",
@@ -74,12 +126,12 @@ rule prepare_GPS:
     conda:
         "envs/phospho.yml"
     script:
-        "scripts/01.5_prepare_GPS.R"
+        "scripts/02_prior_mapping/01.5_prepare_GPS.R"
 
 rule prepare_NetworKIN:
     input:
         networkin_file = "data/prior/networkin_human_predictions_3.1.tsv",
-        file_dataset = expand("data/CPTAC_phospho/{dataset}_phospho_data_median_centered.tsv", dataset = config["activity_estimation"]["datasets"]),
+        file_dataset = expand("data/CPTAC_phospho/{dataset}_{normalisation}_medcent_30plus.tsv", dataset = config["activity_estimation"]["datasets"], normalisation = config["activity_estimation"]["normalisation"]),
         GPS_file = "results/prior/GPS.tsv",
         GPS_decryptm = "results/decryptm/prior/GPS.tsv",
         decryptm = "results/decryptm/processed_data/R2_pEC50.csv"
@@ -93,7 +145,7 @@ rule prepare_NetworKIN:
     conda:
         "envs/phospho.yml"
     script:
-        "scripts/01.6_prepare_NetworKIN.R"
+        "scripts/02_prior_mapping/01.6_prepare_NetworKIN.R"
 
 rule map_kinase_ids:
     input:
@@ -103,18 +155,18 @@ rule map_kinase_ids:
     conda:
         "envs/phospho.yml"
     script:
-        "scripts/02_convert_kinase_ids.R"
+        "scripts/02_prior_mapping/02_convert_kinase_ids.R"
 
 # ------------------------------- PTM-SEA input preparation -------------------------------
 rule ptmsea_datasets:
     input:
-        file_dataset = "data/CPTAC_phospho/{dataset}_phospho_data_median_centered.tsv"
+        file_dataset = "data/CPTAC_phospho/{dataset}_{normalisation}_medcent_30plus.tsv"
     output:
-        gct = "results/datasets/{dataset}.gct"
+        gct = "results/datasets/{dataset}_{normalisation}.gct"
     conda:
         "envs/phospho.yml"
     script:
-        "scripts/02.1_prepare_datasets_ptm-sea.R"
+        "scripts/02_prior_mapping/02.1_prepare_datasets_ptm-sea.R"
 
 rule ptmsea_prior:
     input:
@@ -124,49 +176,50 @@ rule ptmsea_prior:
     conda:
         "envs/phospho.yml"
     script:
-        "scripts/02.2_prepare_prior_ptm-sea.R"
+        "scripts/02_prior_mapping/02.2_prepare_prior_ptm-sea.R"
 
 
-# ---------------------------------- Activity estimation ----------------------------------
+# ---------------------------------- ACTIVITY ESTIMATION ----------------------------------
+# ------------------------------ CPTAC ------------------------------
 rule activity_estimation:
     input:
-        file_dataset = "data/CPTAC_phospho/{dataset}_phospho_data_median_centered.tsv",
+        file_dataset = "data/CPTAC_phospho/{dataset}_{normalisation}_medcent_30plus.tsv",
         file_PKN = "results/prior/{PKN}.tsv",
         scripts = expand("workflow/scripts/methods/run_{method}.R", method = ["INKA", "KARP", "lm_rokai", "zscore", "erics_methods"]),
         script_support = "workflow/scripts/methods/support_functions.R"
     output:
-        rds = "results/activity_scores/{PKN}/{dataset}_{PKN}.rds"
+        rds = "results/activity_scores/{PKN}/{normalisation}/{normalisation}_{dataset}_{PKN}.rds"
     conda:
         "envs/phospho.yml"
     script:
-        "scripts/03_activity_estimation.R"
+        "scripts/03_kinase_activity_estimation/CPTAC/03_activity_estimation.R"
 
 rule activity_estimation_ptmsea:
     input:
-        file_dataset = "results/datasets/{dataset}.gct",
+        file_dataset = "results/datasets/{dataset}_{normalisation}.gct",
         file_PKN = "results/prior/ptm-sea/{PKN}.gmt"
     output:
-        rds = "results/activity_scores_ptmsea/log/{dataset}_{PKN}.log",
-        gct = "results/activity_scores_ptmsea/{dataset}_{PKN}-scores.gct"
+        rds = "results/activity_scores_ptmsea/log/{normalisation}_{dataset}_{PKN}.log",
+        gct = "results/activity_scores_ptmsea/{normalisation}_{dataset}_{PKN}-scores.gct"
     params:
         output_folder = "results/activity_scores_ptmsea"
     conda:
         "envs/phospho.yml"
     script:
-        "scripts/03.1_activity_estimation_ptmsea.R"
+        "scripts/03_kinase_activity_estimation/CPTAC/03.1_activity_estimation_ptmsea.R"
 
 rule combine_scores:
     input:
-        file_ptmsea = "results/activity_scores_ptmsea/{dataset}_{PKN}-scores.gct",
-        file_scores = "results/activity_scores/{PKN}/{dataset}_{PKN}.rds"
+        file_ptmsea = "results/activity_scores_ptmsea/{normalisation}_{dataset}_{PKN}-scores.gct",
+        file_scores = "results/activity_scores/{PKN}/{normalisation}/{normalisation}_{dataset}_{PKN}.rds"
     output:
-        rds = "results/final_scores/{PKN}/{dataset}_{PKN}.rds"
+        rds = "results/final_scores/{PKN}/{normalisation}/{normalisation}_{dataset}_{PKN}.rds"
     params:
         rm_methods = ["corr_wmean", "corr_wsum", "norm_wsum", "wmean", "INKA_kinase_centric", "INKA_substrate_centric"]
     conda:
         "envs/phospho.yml"
     script:
-        "scripts/04_combine_scores.R"
+        "scripts/03_kinase_activity_estimation/04_combine_scores.R"
 
 # -------------------------------------- Comparison ---------------------------------------
 rule prior_comparison:
@@ -202,52 +255,3 @@ rule activity_comparison:
 
 
 # -------------------------------------- BENCHMARK ---------------------------------------
-# -------------------------------------- decryptm ---------------------------------------
-rule protein_mapping:
-    input:
-        input_folder = "data/decryptm/{decryptm_set}",
-        ref_proteome_file = "data/decryptm/uniprot_proteome_up000005640_03112020.fasta"
-    output:
-        output_file = "results/decryptm/protein_mapping/mapped_protein_{decryptm_set}.csv"
-    conda:
-        "envs/phospho.yml"
-    script:
-        "scripts/decryptm/01_protein_mapping.py"
-
-rule phospho_preprocessing:
-    input:
-        input_folder = "data/decryptm/{decryptm_set}",
-        mapped_file = "results/decryptm/protein_mapping/mapped_protein_{decryptm_set}.csv"
-    output:
-        phospho = "results/decryptm/phosphoproteome/EC50_{decryptm_set}.csv",
-        meta_output = "results/decryptm/phosphoproteome/metadata_EC50_{decryptm_set}.csv"
-    conda:
-        "envs/phospho.yml"
-    script:
-        "scripts/decryptm/02_preprocessing_phospho.R"
-
-rule merge_datasets:
-    input:
-        EC50_files = expand("results/decryptm/phosphoproteome/EC50_{decryptm_set}.csv", decryptm_set = config["decryptm"]["decryptm_set"]),
-        meta_files = expand("results/decryptm/phosphoproteome/metadata_EC50_{decryptm_set}.csv", decryptm_set = config["decryptm"]["decryptm_set"]),
-        targets = "data/decryptm/drug_targets.csv"
-    output:
-        output_meta = "results/decryptm/processed_data/meta_data.csv",
-        output_EC50 = "results/decryptm/processed_data/pEC50.csv",
-        output_R2_EC50 = "results/decryptm/processed_data/R2_pEC50.csv",
-        output_drugs = "results/decryptm/processed_data/overview_drugs.csv"
-    conda:
-        "envs/phospho.yml"
-    script:
-        "scripts/decryptm/03_merge_datasets.R"
-
-rule QC_decryptm:
-    input:
-        EC50_file = "results/decryptm/processed_data/{EC50}.csv"
-    output:
-        output_plots = "results/decryptm/processed_data/figures/QC_{EC50}.pdf"
-    conda:
-        "envs/phospho.yml"
-    script:
-        "scripts/decryptm/04_quality_control.R"
-

@@ -15,5 +15,8 @@ results/
 # Snakemake stuff
 .snakemake/
 
+# cluster
+slurm/
+
 # omnipath stuff
 omnipathr-log
