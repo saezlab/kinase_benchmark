@@ -1,3 +1,4 @@
+print("1")
 if(exists("snakemake")){
   networkin_file <- snakemake@input$networkin_file
   file_datasets <- snakemake@input$file_dataset
@@ -6,8 +7,6 @@ if(exists("snakemake")){
   decryptm_dataset <- snakemake@input$decryptm
   output_file <- snakemake@output$tsv
   output_file_merge <- snakemake@output$tsv_merge
-  output_file_merge_decryptm <- snakemake@output$out_merge_decryptm
-  output_file_decryptm <- snakemake@output$out_decryptm
   networkin_score <- snakemake@params$score
 }else{
   networkin_file <- "data/prior/networkin_human_predictions_3.1.tsv"
@@ -94,7 +93,6 @@ nwkin_filtered <- nwkin[nwkin$networkin_score >= networkin_score, ]
 # matching with gene and 15mer in CPTAC data)
 nwkin_filtered$sequence <- toupper(nwkin_filtered$sequence)
 nwkin_filtered$sequence <- gsub("\\-", "_", nwkin_filtered$sequence)
-
 # Prepare Site in NetworKIN
 nwkin_filtered$Site1 <- paste0(nwkin_filtered$substrate_name, "|", nwkin_filtered$sequence)
 
@@ -168,36 +166,6 @@ merge_df <- rbind(GPS, nwkin_df_kin)
 merge_df <- merge_df[!duplicated(merge_df),]
 
 ## Save merged
+print("test")
 write_tsv(merge_df, output_file_merge)
-
-## decryptm ---------------------------
-nwkin_df <- left_join(nwkin_filtered, decryptm_identifiers, by = "Site1", relationship = "many-to-many") %>%
-  mutate(target = case_when(
-    is.na(site) ~ Site1,
-    !is.na(site) ~ site
-  )) %>%
-  mutate(target = case_when(
-    id == substrate_name ~ paste0(target, "|auto"), #mark autophosphorylation
-    id != substrate_name ~ target
-  )) %>%
-  dplyr::rename("source" = id) %>%
-  dplyr::select(source, target) %>%
-  add_column(mor = 1) %>%
-  distinct()
-
-
-## Save prior
-write_tsv(nwkin_df, output_file_decryptm)
-
-## Combine NetworKIN and GPS gold standard
-GPS <- read_tsv(GPS_file_decryptm, col_types = cols())
-
-## only add pps from kinases already present in GPS
-nwkin_df_kin <- nwkin_df %>%
-  dplyr::filter(source %in% GPS$source)
-
-merge_df <- rbind(GPS, nwkin_df_kin)
-merge_df <- merge_df[!duplicated(merge_df),]
-
-## Save merged
-write_tsv(merge_df, output_file_merge_decryptm)
+print("test2")

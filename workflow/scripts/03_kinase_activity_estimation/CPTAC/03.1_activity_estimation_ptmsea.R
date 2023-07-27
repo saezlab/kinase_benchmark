@@ -3,6 +3,7 @@ if(exists("snakemake")){
   dataset_name <- snakemake@wildcards$dataset
   PKN <- snakemake@input$file_PKN
   PKN_name <- snakemake@wildcards$PKN
+  normalisation <- snakemake@wildcards$normalisation
   log <- snakemake@output$rds
   output_folder <- snakemake@params$output_folder
 }else{
@@ -21,7 +22,7 @@ library(tidyselect)
 
 ## Run ssGSEA/PTM-SEA ---------------------------
 res <- run_ssGSEA2(dataset,
-                  output.prefix = paste(dataset_name, PKN_name, sep = "_"),
+                  output.prefix = paste(normalisation, dataset_name, PKN_name, sep = "_"),
                   gene.set.databases = PKN,
                   output.directory = output_folder,
                   sample.norm.type = "none",
@@ -29,7 +30,7 @@ res <- run_ssGSEA2(dataset,
                   correl.type = "rank",
                   statistic = "area.under.RES",
                   output.score.type = "NES",
-                  nperm = 100,
+                  nperm = 50,
                   min.overlap = 5,
                   extended.output = TRUE,
                   global.fdr = FALSE,

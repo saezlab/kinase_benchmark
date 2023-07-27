@@ -137,9 +137,7 @@ rule prepare_NetworKIN:
         decryptm = "results/decryptm/processed_data/R2_pEC50.csv"
     output:
         tsv = "results/prior/networkin.tsv",
-        tsv_merge = "results/prior/GPSnetworkin.tsv",
-        output_file_decryptm = "results/decryptm/prior/networkin.tsv",
-        out_merge_decryptm = "results/decryptm/prior/GPSnetworkin.tsv"
+        tsv_merge = "results/prior/GPSnetworkin.tsv"
     params:
     	score = 5
     conda:

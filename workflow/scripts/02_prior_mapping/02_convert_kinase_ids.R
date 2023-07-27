@@ -1,5 +1,5 @@
 if(exists("snakemake")){
-  prior_files <- snakemake@input$ppsp
+  prior_files <- snakemake@input$prior_files
   output_file <- snakemake@output$tsv
 }else{
   prior_files <- list.files("results/prior", pattern = "tsv", recursive = T, full.names = T)
