@@ -1,3 +1,4 @@
+print("firsttest")
 if(exists("snakemake")){
   scores_ptmsea_file <- snakemake@input$file_ptmsea
   scores_file <- snakemake@input$file_scores

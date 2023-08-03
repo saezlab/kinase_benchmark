@@ -217,7 +217,7 @@ rule combine_scores:
     conda:
         "envs/phospho.yml"
     script:
-        "scripts/03_kinase_activity_estimation/04_combine_scores.R"
+        "scripts/03_kinase_activity_estimation/CPTAC/04_combine_scores.R"
 
 # -------------------------------------- Comparison ---------------------------------------
 rule prior_comparison:
