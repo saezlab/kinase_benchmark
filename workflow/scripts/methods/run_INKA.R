@@ -35,7 +35,8 @@ run_INKA <- function(mat,
                      .source = .data$source,
                      .target = .data$target,
                      .mor = .data$mor,
-                     minsize = 0
+                     minsize = 0,
+                     kinase_mapping = T
 ) {
   # Check for NAs/Infs in mat
   check_nas_infs(mat)
@@ -76,10 +77,15 @@ run_INKA <- function(mat,
   substrate.centric <- mat_mor %>%
       base::colSums()
 
-  mapping_kinase <- read_tsv("resources/kinase_mapping.tsv", col_types = cols())
-  kin_id <- mapping_kinase %>%
-    filter(external_gene_name == kinase) %>%
-    pull(ensembl_gene_id)
+  if (kinase_mapping){
+    mapping_kinase <- read_tsv("resources/kinase_mapping.tsv", col_types = cols())
+    kin_id <- mapping_kinase %>%
+      filter(external_gene_name == kinase) %>%
+      pull(ensembl_gene_id)
+  } else {
+    kin_id <- kinase
+  }
+
 
   targets.k <- map(kin_id, function(id){
     network_autophospho %>%

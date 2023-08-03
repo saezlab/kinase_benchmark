@@ -66,6 +66,8 @@ ikipdb_df <- ikipdb_df %>%
   distinct()
 
 # Add uniprot id of kinases to identify autophosphorylation
+mart <- useMart(biomart = "ensembl", dataset = "hsapiens_gene_ensembl")
+
 res_kin <- getBM(attributes = c('external_gene_name',
                                 'uniprot_gn_id'),
                  values = ikipdb_df$kinase,
@@ -94,8 +96,6 @@ pps_df <- data.frame(site = pps,
                      surrounding = map_chr(str_split(pps$site,  "\\|"), 4))
 
 ## Convert Ensemble gene IDs to Gene names
-mart <- useMart(biomart = "ensembl", dataset = "hsapiens_gene_ensembl")
-
 res <- getBM(attributes = c('ensembl_gene_id',
                             'uniprot_gn_id'),
              values = identifiers,

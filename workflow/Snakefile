@@ -8,7 +8,8 @@ configfile: "config/config.yml"
 # ------------------------------------ Default setting ------------------------------------
 rule all:
     input:
-        expand("results/final_scores/{PKN}/{normalisation}/{normalisation}_{dataset}_{PKN}.rds", dataset = config["activity_estimation"]["datasets"], PKN = config["activity_estimation"]["PKNs"], normalisation = config["activity_estimation"]["normalisation"])
+#        expand("results/final_scores/{PKN}/{normalisation}/{normalisation}_{dataset}-{PKN}.rds", dataset = config["activity_estimation"]["datasets"], PKN = config["activity_estimation"]["PKNs"], normalisation = #config["activity_estimation"]["normalisation"]),
+        expand("results/decryptm/benchmark/{PKN}/bench_{decryptm_methods}-{decryptm_measurement}-{PKN}.csv", decryptm_methods = config["decryptm"]["decryptm_methods"], decryptm_measurement = config["decryptm"]["decryptm_measurement"], PKN = config["activity_estimation"]["PKNs"])
 
 
 # ------------------------------------ DATA PROCESSING ------------------------------------
@@ -67,7 +68,7 @@ rule QC_decryptm:
 rule prepare_omnipath:
     input:
         file_dataset = expand("data/CPTAC_phospho/{dataset}_{normalisation}_medcent_30plus.tsv", dataset = config["activity_estimation"]["datasets"], normalisation = config["activity_estimation"]["normalisation"]),
-        decryptm = "results/decryptm/processed_data/R2_pEC50.csv"
+        decryptm = expand("results/decryptm/processed_data/{decryptm_measurement}.csv", decryptm_measurement = config["decryptm"]["decryptm_measurement"])
     output:
         tsv = "results/prior/omnipath.tsv",
         out_decryptm = "results/decryptm/prior/omnipath.tsv"
@@ -80,7 +81,7 @@ rule prepare_phosphositeplus:
     input:
         ppsp = "data/prior/phosphositeplus",
         file_dataset = expand("data/CPTAC_phospho/{dataset}_{normalisation}_medcent_30plus.tsv", dataset = config["activity_estimation"]["datasets"], normalisation = config["activity_estimation"]["normalisation"]),
-        decryptm = "results/decryptm/processed_data/R2_pEC50.csv"
+        decryptm = expand("results/decryptm/processed_data/{decryptm_measurement}.csv", decryptm_measurement = config["decryptm"]["decryptm_measurement"])
     output:
         tsv = "results/prior/phosphositeplus.tsv",
         out_decryptm = "results/decryptm/prior/phosphositeplus.tsv"
@@ -93,7 +94,7 @@ rule prepare_ptmsigdb:
     input:
         ptmsig_file = "data/prior/ptm.sig.db.all.uniprot.human.v1.9.0.gmt",
         file_dataset = expand("data/CPTAC_phospho/{dataset}_{normalisation}_medcent_30plus.tsv", dataset = config["activity_estimation"]["datasets"], normalisation = config["activity_estimation"]["normalisation"]),
-        decryptm = "results/decryptm/processed_data/R2_pEC50.csv"
+        decryptm = expand("results/decryptm/processed_data/{decryptm_measurement}.csv", decryptm_measurement = config["decryptm"]["decryptm_measurement"])
     output:
         tsv = "results/prior/ptmsigdb.tsv",
         out_decryptm = "results/decryptm/prior/ptmsigdb.tsv"
@@ -106,7 +107,7 @@ rule prepare_ikipdb:
     input:
         ptmsig_file = "data/prior/iKiP-DB-Table.tsv",
         file_dataset = expand("data/CPTAC_phospho/{dataset}_{normalisation}_medcent_30plus.tsv", dataset = config["activity_estimation"]["datasets"], normalisation = config["activity_estimation"]["normalisation"]),
-        decryptm = "results/decryptm/processed_data/R2_pEC50.csv"
+        decryptm = expand("results/decryptm/processed_data/{decryptm_measurement}.csv", decryptm_measurement = config["decryptm"]["decryptm_measurement"])
     output:
         tsv = "results/prior/iKiPdb.tsv",
         out_decryptm = "results/decryptm/prior/iKiPdb.tsv"
@@ -119,7 +120,7 @@ rule prepare_GPS:
     input:
         GPS_file = "data/prior/mmc4.xlsx",
         file_dataset = expand("data/CPTAC_phospho/{dataset}_{normalisation}_medcent_30plus.tsv", dataset = config["activity_estimation"]["datasets"], normalisation = config["activity_estimation"]["normalisation"]),
-        decryptm = "results/decryptm/processed_data/R2_pEC50.csv"
+        decryptm = expand("results/decryptm/processed_data/{decryptm_measurement}.csv", decryptm_measurement = config["decryptm"]["decryptm_measurement"])
     output:
         tsv = "results/prior/GPS.tsv",
         out_decryptm = "results/decryptm/prior/GPS.tsv"
@@ -132,18 +133,44 @@ rule prepare_NetworKIN:
     input:
         networkin_file = "data/prior/networkin_human_predictions_3.1.tsv",
         file_dataset = expand("data/CPTAC_phospho/{dataset}_{normalisation}_medcent_30plus.tsv", dataset = config["activity_estimation"]["datasets"], normalisation = config["activity_estimation"]["normalisation"]),
-        GPS_file = "results/prior/GPS.tsv",
-        GPS_decryptm = "results/decryptm/prior/GPS.tsv",
-        decryptm = "results/decryptm/processed_data/R2_pEC50.csv"
+        decryptm = expand("results/decryptm/processed_data/{decryptm_measurement}.csv", decryptm_measurement = config["decryptm"]["decryptm_measurement"])
     output:
         tsv = "results/prior/networkin.tsv",
-        tsv_merge = "results/prior/GPSnetworkin.tsv"
+        tsv_decryptm = "results/decryptm/prior/networkin.tsv"
     params:
     	score = 5
     conda:
         "envs/phospho.yml"
     script:
         "scripts/02_prior_mapping/01.6_prepare_NetworKIN.R"
+
+rule merge_GPS_PPSP:
+    input:
+        gps = "results/prior/GPS.tsv",
+        ppsp = "results/prior/phosphositeplus.tsv",
+        gps_decryptm = "results/decryptm/prior/GPS.tsv",
+        ppsp_dectyptm = "results/decryptm/prior/phosphositeplus.tsv"
+    output:
+        tsv = "results/prior/GPSppsp.tsv",
+        tsv_decryptm = "results/decryptm/prior/GPSppsp.tsv"
+    conda:
+        "envs/phospho.yml"
+    script:
+        "scripts/02_prior_mapping/01.7_merge_GPS_PPSP.R"
+
+rule merge_known_predicted:
+    input:
+        known_file = "results/prior/{known_targets}.tsv",
+        predicted_file = "results/prior/{predicted_targets}.tsv",
+        known_decryptm = "results/decryptm/prior/{known_targets}.tsv",
+        predicted_dectyptm = "results/decryptm/prior/{predicted_targets}.tsv"
+    output:
+        tsv = "results/prior/{known_targets}_{predicted_targets}.tsv",
+        tsv_decryptm = "results/decryptm/prior/{known_targets}_{predicted_targets}.tsv"
+    conda:
+        "envs/phospho.yml"
+    script:
+        "scripts/02_prior_mapping/01.8_merge_known_predicted.R"
 
 rule map_kinase_ids:
     input:
@@ -186,7 +213,7 @@ rule activity_estimation:
         scripts = expand("workflow/scripts/methods/run_{method}.R", method = ["INKA", "KARP", "lm_rokai", "zscore", "erics_methods"]),
         script_support = "workflow/scripts/methods/support_functions.R"
     output:
-        rds = "results/activity_scores/{PKN}/{normalisation}/{normalisation}_{dataset}_{PKN}.rds"
+        rds = "results/activity_scores/{PKN}/{normalisation}/{normalisation}_{dataset}-{PKN}.rds"
     conda:
         "envs/phospho.yml"
     script:
@@ -197,8 +224,8 @@ rule activity_estimation_ptmsea:
         file_dataset = "results/datasets/{dataset}_{normalisation}.gct",
         file_PKN = "results/prior/ptm-sea/{PKN}.gmt"
     output:
-        rds = "results/activity_scores_ptmsea/log/{normalisation}_{dataset}_{PKN}.log",
-        gct = "results/activity_scores_ptmsea/{normalisation}_{dataset}_{PKN}-scores.gct"
+        rds = "results/activity_scores_ptmsea/log/{normalisation}_{dataset}-{PKN}.log",
+        gct = "results/activity_scores_ptmsea/{normalisation}_{dataset}-{PKN}-scores.gct"
     params:
         output_folder = "results/activity_scores_ptmsea"
     conda:
@@ -208,16 +235,30 @@ rule activity_estimation_ptmsea:
 
 rule combine_scores:
     input:
-        file_ptmsea = "results/activity_scores_ptmsea/{normalisation}_{dataset}_{PKN}-scores.gct",
-        file_scores = "results/activity_scores/{PKN}/{normalisation}/{normalisation}_{dataset}_{PKN}.rds"
+        file_ptmsea = "results/activity_scores_ptmsea/{normalisation}_{dataset}-{PKN}-scores.gct",
+        file_scores = "results/activity_scores/{PKN}/{normalisation}/{normalisation}_{dataset}-{PKN}.rds"
     output:
-        rds = "results/final_scores/{PKN}/{normalisation}/{normalisation}_{dataset}_{PKN}.rds"
+        rds = "results/final_scores/{PKN}/{normalisation}/{normalisation}_{dataset}-{PKN}.rds"
     params:
         rm_methods = ["corr_wmean", "corr_wsum", "norm_wsum", "wmean", "INKA_kinase_centric", "INKA_substrate_centric"]
     conda:
         "envs/phospho.yml"
     script:
         "scripts/03_kinase_activity_estimation/CPTAC/04_combine_scores.R"
+
+# ------------------------------ decryptm ------------------------------
+rule activity_estimation_decryptm:
+    input:
+        file_dataset = "results/decryptm/processed_data/{decryptm_measurement}.csv",
+        file_PKN = "results/decryptm/prior/{PKN}.tsv",
+        scripts = expand("workflow/scripts/methods/run_{method}.R", method = ["INKA", "KARP", "lm_rokai", "zscore", "erics_methods"]),
+        script_support = "workflow/scripts/methods/support_functions.R"
+    output:
+        rds = "results/decryptm/activity_scores/{decryptm_measurement}-{PKN}.rds"
+    conda:
+        "envs/phospho.yml"
+    script:
+        "scripts/03_kinase_activity_estimation/decryptm/03_activity_estimation_decryptm.R"
 
 # -------------------------------------- Comparison ---------------------------------------
 rule prior_comparison:
@@ -253,3 +294,25 @@ rule activity_comparison:
 
 
 # -------------------------------------- BENCHMARK ---------------------------------------
+rule prepare_decryptm_benchmark:
+    input:
+        rds = "results/decryptm/activity_scores/{decryptm_measurement}-{PKN}.rds",
+        meta = "results/decryptm/processed_data/meta_data.csv"
+    output:
+        output = "results/decryptm/benchmark_scores/{decryptm_methods}-{decryptm_measurement}-{PKN}.csv",
+        meta_out = "results/decryptm/benchmark_scores/obs_{decryptm_methods}-{decryptm_measurement}-{PKN}.csv"
+    conda:
+        "envs/phospho.yml"
+    script:
+        "scripts/04_decryptm_benchmark/01_prepare_bench_input.R"
+
+rule run_decryptm_benchmark:
+    input:
+        scores = "results/decryptm/benchmark_scores/{decryptm_methods}-{decryptm_measurement}-{PKN}.csv",
+        meta = "results/decryptm/benchmark_scores/obs_{decryptm_methods}-{decryptm_measurement}-{PKN}.csv"
+    output:
+        output = "results/decryptm/benchmark/{PKN}/bench_{decryptm_methods}-{decryptm_measurement}-{PKN}.csv"
+    conda:
+        "envs/benchmark.yml"
+    script:
+        "scripts/04_decryptm_benchmark/02_decouple_bench.py"

@@ -1,0 +1,12 @@
+name: benchmark
+channels:
+  - conda-forge
+  - bioconda
+  - r
+dependencies:
+  - python
+  - pandas
+  - pip
+  - numpy
+  - pip:
+    - git+https://github.com/saezlab/decoupler-py.git
