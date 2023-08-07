@@ -9,8 +9,8 @@ if(exists("snakemake")){
 }else{
   input_file <- "results/decryptm/activity_scores/R2_pEC50-GPS.rds"
   meta_file <- "results/decryptm/processed_data/meta_data.csv"
-  meta_out <- "results/decryptm/benchmark_scores/obs_ulm_R2_pEC50-GPS.csv"
-  output_file <- "results/decryptm/benchmark_scores/ulm_R2_pEC50-GPS.csv"
+  meta_out <- "results/decryptm/benchmark_scores/obs_INKA-R2_pEC50-GPS.csv"
+  output_file <- "results/decryptm/benchmark_scores/INKA-R2_pEC50-GPS.csv"
 }
 
 ## Libraries ---------------------------
@@ -81,11 +81,11 @@ df_filtered <- map_dfr(1:nrow(df), function(i){
 df_filtered <- df_filtered %>%
   filter(!experiment == "remove")
 
-write_csv(df, output_file)
+write_csv(df_filtered, output_file)
 
 # filter out meta to fit to experiments in matrix
 target_df <- target_df %>%
-  filter(sample %in% df$experiment)
+  filter(sample %in% df_filtered$experiment)
 
 write_csv(target_df, meta_out)
 

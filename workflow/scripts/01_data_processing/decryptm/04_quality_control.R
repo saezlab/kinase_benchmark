@@ -53,6 +53,17 @@ p2.2 <- ggplot(ed50_long, aes(x = sample, y = EC50)) +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
   ylab("-log(EC50) * sign(effect size)")
 
+# Phosphosite NA distribution
+na_dist <- is.na(EC50) %>%
+  rowSums() %>%
+  as.data.frame() %>%
+  add_column(n = ncol(EC50)) %>%
+  mutate(perc = 1 - ./n)
+
+p2.3 <- ggplot(na_dist, aes(x=perc)) +
+  geom_histogram(bins = 50) +
+  xlab("PPS measured across sampels [%]")
+
 # correlation matrix
 cor_m <- cor(EC50, use = "pairwise.complete.obs")
 
@@ -108,6 +119,7 @@ pdf(file = output_plots, height = 15, width = 15)
 p1
 p2
 p2.2
+p2.3
 grid.newpage()
 p3
 p5 + theme(legend.position = "none")
