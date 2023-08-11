@@ -15,12 +15,14 @@ library(tidyverse)
 ## ---------------------------
 bench_files <- list.files("results/decryptm/benchmark",pattern = "bench", recursive = TRUE, full.names = T)
 
-bench_df <- map_dfr(bench_files, function(file){
+bench_list <- map(bench_files, function(file){
   read.csv(file, col.names = c("rows", "groupby", "group", "source", "method", "metric", "score", "ci")) %>%
     dplyr::select(-rows) %>%
     add_column(net = str_split(file, "/")[[1]][4])
 })
 
+bench_list <- bench_list[!(map_dbl(bench_list, nrow) == 0)]
+bench_df <- bind_rows(bench_list)
 
 order_m <- bench_df %>%
   filter(metric == "mcauprc") %>%

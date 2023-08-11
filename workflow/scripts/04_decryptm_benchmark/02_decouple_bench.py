@@ -90,7 +90,7 @@ obs.set_index('sample', inplace=True)
 # In[16]:
 
 
-bench_res = dc.get_performances(res, obs, groupby=None, by='experiment', metrics=['auroc', 'auprc', 'mcauroc', 'mcauprc'], n_iter=1000)
+bench_res = dc.get_performances(res, obs, groupby=None, by='experiment', metrics=['auroc', 'auprc', 'mcauroc', 'mcauprc'], n_iter=1000, min_exp=1)
 
 
 # In[17]:
