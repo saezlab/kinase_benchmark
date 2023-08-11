@@ -8,8 +8,8 @@ configfile: "config/config.yml"
 # ------------------------------------ Default setting ------------------------------------
 rule all:
     input:
-#        expand("results/final_scores/{PKN}/{normalisation}/{normalisation}_{dataset}-{PKN}.rds", dataset = config["activity_estimation"]["datasets"], PKN = config["activity_estimation"]["PKNs"], normalisation = #config["activity_estimation"]["normalisation"]),
-        expand("results/decryptm/benchmark/{PKN}/bench_{decryptm_methods}-{decryptm_measurement}-{PKN}.csv", decryptm_methods = config["decryptm"]["decryptm_methods"], decryptm_measurement = config["decryptm"]["decryptm_measurement"], PKN = config["activity_estimation"]["PKNs"])
+        expand("results/final_scores/{PKN}/{normalisation}/{normalisation}_{dataset}-{PKN}.rds", dataset = config["activity_estimation"]["datasets"], PKN = config["activity_estimation"]["PKNs"], normalisation = config["activity_estimation"]["normalisation"]),
+#        expand("results/decryptm/benchmark/{PKN}/bench_{decryptm_methods}-{decryptm_measurement}-{PKN}.csv", decryptm_methods = config["decryptm"]["decryptm_methods"], decryptm_measurement = config["decryptm"]["decryptm_measurement"], PKN = config["activity_estimation"]["PKNs"])
 
 
 # ------------------------------------ DATA PROCESSING ------------------------------------
