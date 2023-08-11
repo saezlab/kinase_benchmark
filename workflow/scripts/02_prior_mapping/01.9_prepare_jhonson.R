@@ -126,5 +126,8 @@ ppsp_prior_df <- ppsp_prior %>%
   dplyr::mutate(mor = 1) %>%
   dplyr::select(source, target, mor)
 
+ppsp_prior_df <- ppsp_prior_df %>%
+  distinct(.keep_all = TRUE)
+
 ## Save processed phosphositeplus
 write_tsv(ppsp_prior_df, output_file_decryptm)
