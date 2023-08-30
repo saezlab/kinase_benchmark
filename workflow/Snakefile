@@ -8,8 +8,8 @@ configfile: "config/config.yml"
 # ------------------------------------ Default setting ------------------------------------
 rule all:
     input:
-        expand("results/final_scores/{PKN}/{normalisation}/{normalisation}_{dataset}-{PKN}.rds", dataset = config["activity_estimation"]["datasets"], PKN = config["activity_estimation"]["PKNs"], normalisation = config["activity_estimation"]["normalisation"]),
-#        expand("results/decryptm/benchmark/{PKN}/bench_{decryptm_methods}-{decryptm_measurement}-{PKN}.csv", decryptm_methods = config["decryptm"]["decryptm_methods"], decryptm_measurement = config["decryptm"]["decryptm_measurement"], PKN = config["activity_estimation"]["PKNs"])
+#        expand("results/final_scores/{PKN}/{normalisation}/{normalisation}_{dataset}-{PKN}.rds", dataset = config["activity_estimation"]["datasets"], PKN = config["activity_estimation"]["PKNs"], normalisation = config["activity_estimation"]["normalisation"]),
+        expand("results/decryptm/benchmark/{PKN}/bench_{decryptm_methods}-{decryptm_measurement}-{PKN}.csv", decryptm_methods = config["decryptm"]["decryptm_methods"], decryptm_measurement = config["decryptm"]["decryptm_measurement"], PKN = config["decryptm"]["decryptm_PKNs"])
 
 
 # ------------------------------------ DATA PROCESSING ------------------------------------
@@ -310,10 +310,13 @@ rule activity_comparison:
 rule prepare_decryptm_benchmark:
     input:
         rds = "results/decryptm/activity_scores/{decryptm_measurement}-{PKN}.rds",
-        meta = "results/decryptm/processed_data/meta_data.csv"
+        meta = "results/decryptm/processed_data/meta_data.csv",
+        kinome = "data/decryptm/decryptm_processed_targets.csv"
     output:
         output = "results/decryptm/benchmark_scores/{decryptm_methods}-{decryptm_measurement}-{PKN}.csv",
         meta_out = "results/decryptm/benchmark_scores/obs_{decryptm_methods}-{decryptm_measurement}-{PKN}.csv"
+    params:
+    	  perturb = "victor"
     conda:
         "envs/phospho.yml"
     script:

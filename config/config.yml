@@ -3,9 +3,10 @@ project_name: "kinase_activity_estimation"
 activity_estimation:
   datasets: ["ucec", "luad", "lscc", "hnscc", "gbm", "ccrcc", "brca"]
   PKNs: ["omnipath", "GPS", "phosphositeplus", "GPSppsp", "GPSppsp_networkin", "GPSppsp_iKiPdb"] #, "ptmsigdb", "jhonson", "networkin", "phosphositeplus", "ptmsigdb", "iKiPdb"
-  normalisation: ["unnormalized"] #"globalLM", "protLM", "siteLM", "subtractProt",
+  normalisation: ["original"] #"globalLM", "protLM", "siteLM", "subtractProt","unnormalized"
 
 decryptm:
   decryptm_set: ["10_Kinase_Inhibitors", "Combination_Treatments_AZD4547_Gefitinib", "Combination_Treatments_AZD4547_Lapatinib", "Combination_Treatments_Selumetinib_MK2206", "Dasatinib_Triplicates", "BCRABL_Inhibitors", "HER2_Inhibitors", "3_EGFR_Inhibitors"]
+  decryptm_PKNs: ["omnipath", "GPS", "phosphositeplus", "GPSppsp", "GPSppsp_networkin", "GPSppsp_iKiPdb", "jhonson", "ptmsigdb"] #, "networkin", "iKiPdb"
   decryptm_measurement: ["R2_pEC50"]
   decryptm_methods: ["INKA", "KARP", "KS", "KSEA_z", "PC1", "RoKAI_z", "UQ", "Wilcox", "fgsea", "mean", "median", "mlm", "norm_fgsea","norm_wmean","number_of_targets","rokai_lm","ulm","viper","wsum"]

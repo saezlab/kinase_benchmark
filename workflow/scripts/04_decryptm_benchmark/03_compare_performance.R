@@ -25,7 +25,7 @@ bench_list <- bench_list[!(map_dbl(bench_list, nrow) == 0)]
 bench_df <- bind_rows(bench_list)
 
 order_m <- bench_df %>%
-  filter(metric == "mcauprc") %>%
+  filter(metric == "mcauroc") %>%
   group_by(method) %>%
   summarise(m_score = mean(score)) %>%
   arrange(desc(m_score)) %>%
@@ -34,7 +34,7 @@ bench_df$method <- factor(bench_df$method, levels = order_m)
 
 
 bench_df %>%
-  filter(metric == "mcauprc") %>%
+  filter(metric == "mcauroc") %>%
   ggplot(aes(x=net, y=score, fill=method)) +
   geom_boxplot(outlier.size=0.2, lwd=0.2) +
   theme_minimal() +

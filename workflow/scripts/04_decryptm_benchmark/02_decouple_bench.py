@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[4]:
+# In[1]:
 
 
 if 'snakemake' in locals():
@@ -9,91 +9,103 @@ if 'snakemake' in locals():
    meta_data = snakemake.input[1]
    output_file = snakemake.output[0]
 else:
-   input_file = '../../../results/decryptm/benchmark_scores/ulm_R2_pEC50_GPS.csv'
-   meta_data = '../../../results/decryptm/benchmark_scores/ulm_R2_pEC50_GPS_obs.csv'
-   output_file = '../../../results/decryptm/benchmark/bench_ulm_R2_pEC50_GPS.csv'
+   input_file = '../../../results/decryptm/benchmark_scores/ulm-R2_pEC50-jhonson.csv'
+   meta_data = '../../../results/decryptm/benchmark_scores/obs_ulm-R2_pEC50-jhonson.csv'
+   output_file = '../../../results/decryptm/benchmark/bench_ulm-R2_pEC50-jhonson.csv'
 
 
-# In[5]:
+# In[21]:
 
 
 import pandas as pd
 import numpy as np
+import os
+import re
 
 import decoupler as dc
 
 
-# In[6]:
+# In[3]:
 
 
 scores = pd.read_csv(input_file)
 scores = pd.DataFrame(scores)
 
 
-# In[7]:
+# In[23]:
 
-mth = input_file.split("/")[3].split("-")[0]
-print(mth)
+
+filename = os.path.basename(input_file)
+
+# Use regular expression to extract the part before "-R2"
+match = re.search(r'(.+)-R2', filename)
+mth = match.group(1)
+mth
+
+
+# In[4]:
+
+
 mthds = np.array([mth])
 
 
-# In[8]:
+# In[5]:
 
 
 exps = scores.iloc[:, 0].to_numpy()
 scores = scores.iloc[:, 1:]
 
 
-# In[9]:
+# In[6]:
 
 
 scores.replace(0, np.nan, inplace=True)
 
 
-# In[10]:
+# In[7]:
 
 
 srcs = np.array(scores.columns)
 
 
-# In[11]:
+# In[8]:
 
 
 scores.index = exps
 scores.columns = srcs
 
 
-# In[12]:
+# In[9]:
 
 
 res = {mthds[0]: scores}
 
 
-# In[13]:
+# In[10]:
 
 
 obs = pd.read_csv(meta_data)
 
 
-# In[14]:
+# In[11]:
 
 
 obs['perturb'] = obs['perturb'].str.split(';')
 
 
-# In[15]:
+# In[12]:
 
 
 obs.set_index('sample', inplace=True)
 
 
-# In[16]:
+# In[13]:
 
 
 bench_res = dc.get_performances(res, obs, groupby=None, by='experiment', metrics=['auroc', 'auprc', 'mcauroc', 'mcauprc'], n_iter=1000, min_exp=1)
 
 
-# In[17]:
+# In[ ]:
 
 
 pd.DataFrame.to_csv(bench_res, output_file)

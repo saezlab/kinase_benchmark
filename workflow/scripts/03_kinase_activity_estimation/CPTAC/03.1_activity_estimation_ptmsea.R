@@ -22,7 +22,7 @@ library(tidyselect)
 
 ## Run ssGSEA/PTM-SEA ---------------------------
 res <- run_ssGSEA2(dataset,
-                  output.prefix = paste(normalisation, dataset_name, PKN_name, sep = "_"),
+                  output.prefix = paste0(normalisation, "_", dataset_name, "-", PKN_name),
                   gene.set.databases = PKN,
                   output.directory = output_folder,
                   sample.norm.type = "none",

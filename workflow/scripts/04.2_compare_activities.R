@@ -21,8 +21,9 @@ library(tidyverse)
 library(ComplexHeatmap)
 
 ## Load and merge scores ---------------------------
+act_files <- act_files[str_detect(act_files, "unnormalized")]
 act_list <- map(act_files, readRDS)
-names(act_list) <- str_remove(map_chr(str_split(act_files, "/"), 4), ".rds")
+names(act_list) <- str_remove(map_chr(str_split(act_files, "/"), 5), ".rds")
 
 act_df <- map_dfr(names(act_list), function(act_i){
   act <- act_list[[act_i]]
@@ -48,10 +49,12 @@ act_df <- map_dfr(names(act_list), function(act_i){
     act_method
   })
   act_df %>%
-    add_column(prior = str_split(act_i, "_")[[1]][2]) %>%
-    add_column(cancer = str_split(act_i, "_")[[1]][1])
+    add_column(prior = str_split(act_i, "-")[[1]][2]) %>%
+    add_column(cancer = str_remove(str_split(act_i, "-")[[1]][1], "unnormalized_"))
 })
 
+act_df <- act_df %>%
+  filter(!is.na(prior))
 act_df <- act_df %>%
   group_by(cancer)
 
