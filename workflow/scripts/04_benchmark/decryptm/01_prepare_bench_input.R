@@ -9,12 +9,12 @@ if(exists("snakemake")){
   output_file <- snakemake@output$output
   meta_out <- snakemake@output$meta_out
 }else{
-  input_file <- "results/decryptm/activity_scores/R2_pEC50-GPS.rds"
+  input_file <- "results/decryptm/activity_scores/R2_pEC50-phosphositeplus.rds"
   meta_file <- "results/decryptm/processed_data/meta_data.csv"
   processed_meta <- "data/decryptm/decryptm_processed_targets.csv"
   perturb <- "kinomebeads"
-  meta_out <- "results/decryptm/benchmark_scores/obs_INKA-R2_pEC50-GPS.csv"
-  output_file <- "results/decryptm/benchmark_scores/INKA-R2_pEC50-GPS.csv"
+  meta_out <- "results/decryptm/benchmark_scores/obs_KSEA_z-R2_pEC50-phosphositeplus.csv"
+  output_file <- "results/decryptm/benchmark_scores/KSEA_z-R2_pEC50-phosphositeplus.csv"
 }
 
 ## Libraries ---------------------------
@@ -90,20 +90,20 @@ obs_targets <- obs_targets %>%
                                                      obs_targets$targets[obs_targets$drug == "MK2206"]), sep = ";"),
     !drug %in% c("Gefitinib_AZD4547_1to80", "LapatinibAZD4547", "Selumetinib_MK2206_1to2", "Selumetinib_MK2206_3to1") ~ targets
   )) %>%
-  rename("targets1" = perturb)
+  dplyr::rename("targets1" = perturb)
 
 # Set perturb
 if (perturb == "kinomebeads"){
   obs_targets <- obs_targets %>%
-    rename("perturb" = targets)
+    dplyr::rename("perturb" = targets)
 } else {
   obs_targets <- obs_targets %>%
-    rename("perturb" = targets1)
+    dplyr::rename("perturb" = targets1)
 }
 
 # filter out experiments with unknown target (e.g. several members)
 target_df <- obs_targets %>%
-  dplyr::filter(!perturb == "") %>%
+  dplyr::filter(!perturb == "" | !is.na(perturb)) %>%
   add_column(sign = 1)
 
 ## Get scores for each method ---------------------------
