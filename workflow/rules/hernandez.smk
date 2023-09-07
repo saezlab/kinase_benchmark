@@ -113,6 +113,22 @@ rule merge_known_predicted:
     script:
         "../scripts/02_prior_mapping/hernandez/01.8_merge_known_predicted.R"
 
+rule prior_overview:
+    input:
+        prior_files = expand("results/hernandez/prior/{PKN}.tsv", PKN = config["hernandez"]["hernandez_PKNs"])
+    output:
+        csv = "results/hernandez/overview_priors/coverage.csv",
+        kin = "results/hernandez/overview_priors/coverage_kinases.pdf",
+        edges = "results/hernandez/overview_priors/coverage_edges.pdf",
+        pps = "results/hernandez/overview_priors/coverage_pps.pdf"
+    params:
+        height = "6",
+        width = "13"
+    conda:
+        "../envs/phospho.yml"
+    script:
+        "../scripts/02_prior_mapping/hernandez/01.8_merge_known_predicted.R"
+
 
 # ------------------------------- PTM-SEA input preparation -------------------------------
 rule ptmsea_datasets:
@@ -178,18 +194,45 @@ rule combine_scores:
 
 
 # -------------------------------------- BENCHMARK ---------------------------------------
+rule scale_scores:
+    input:
+        rds = "results/hernandez/final_scores/{PKN}.rds"
+    output:
+        output = "results/hernandez/final_scores/scaled/{PKN}.rds"
+    conda:
+        "../envs/phospho.yml"
+    script:
+        "../scripts/04_benchmark/hernandez/00_scale_scores.R"
+
 rule prepare_benchmark:
     input:
-        rds = "results/hernandez/final_scores/{PKN}.rds",
-        meta = "results/hernandez/processed_data/benchmark_metadata.csv",
+        rds = "results/hernandez/final_scores/scaled/{PKN}.rds",
+        meta = "results/hernandez/processed_data/benchmark_metadata.csv"
     output:
         output = "results/hernandez/benchmark_files/{hernandez_methods}-{PKN}.csv",
         meta_out = "results/hernandez/benchmark_files/obs_{hernandez_methods}-{PKN}.csv"
-
     conda:
         "../envs/phospho.yml"
     script:
         "../scripts/04_benchmark/hernandez/01_prepare_bench_input.R"
+
+rule run_mean_rank:
+    input:
+        rds = expand("results/hernandez/final_scores/scaled/{PKN}.rds", PKN = config["hernandez"]["hernandez_PKNs"]),
+        meta =  "results/hernandez/processed_data/benchmark_metadata.csv",
+        overview = "results/hernandez/overview_priors/coverage.csv"
+    output:
+        output = "results/hernandez/benchmark_mean_rank/mean_rank.csv",
+        per_exp = "results/hernandez/benchmark_mean_rank/performance_per_exp.csv",
+        per_kin = "results/hernandez/benchmark_mean_rank/performance_per_kin.csv",
+        pdf = "results/hernandez/benchmark_mean_rank/mean_rank.pdf",
+        boxplot = "results/hernandez/benchmark_mean_rank/bp_rank.pdf"
+    params:
+        mth = config["hernandez"]["hernandez_PKNs"]
+    conda:
+        "../envs/phospho.yml"
+    script:
+        "../scripts/04_benchmark/hernandez/02_decouple_bench.py"
 
 rule run_benchmark:
     input:
@@ -201,3 +244,25 @@ rule run_benchmark:
         "../envs/benchmark.yml"
     script:
         "../scripts/04_benchmark/hernandez/02_decouple_bench.py"
+
+rule compare_performance:
+    input:
+        bench = expand("results/hernandez/benchmark_res/{PKN}/bench_{hernandez_methods}-{PKN}.csv", hernandez_methods = config["hernandez"]["hernandez_methods"], PKN = config["hernandez"]["hernandez_PKNs"])
+    output:
+        auroc = "results/hernandez/benchmark_res/plots/AUROC.pdf",
+        auprc = "results/hernandez/benchmark_res/plots/AUPRC.pdf"
+    conda:
+        "../envs/phospho.yml"
+    script:
+        "../scripts/04_benchmark/hernandez/03_compare_performance.R"
+
+rule overview_bench:
+    input:
+        bench = expand("results/hernandez/benchmark_files/obs_{hernandez_methods}-{PKN}.csv", hernandez_methods = config["hernandez"]["hernandez_methods"], PKN = config["hernandez"]["hernandez_PKNs"])
+    output:
+        ov = "results/hernandez/benchmark_res/overview/overview_bench.res",
+        ov_prior = "results/hernandez/benchmark_res/overview/overview_bench_prior.res"
+    conda:
+        "../envs/phospho.yml"
+    script:
+        "../scripts/04_benchmark/hernandez/04_overview_bench.R"

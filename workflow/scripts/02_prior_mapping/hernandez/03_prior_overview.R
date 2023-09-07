@@ -1,5 +1,6 @@
 if(exists("snakemake")){
   prior_files <- snakemake@input$prior_files
+  overview_file <- snakemake@output$csv
   coverage_pdf <- snakemake@output$kin
   edges_coverage_pdf <- snakemake@output$edges
   pps_coverage_pdf <- snakemake@output$pps

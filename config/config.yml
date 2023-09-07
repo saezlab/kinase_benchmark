@@ -12,5 +12,5 @@ decryptm:
   decryptm_methods: ["INKA", "KARP", "KS", "KSEA_z", "PC1", "RoKAI_z", "UQ", "Wilcox", "fgsea", "mean", "median", "mlm", "norm_fgsea","norm_wmean","number_of_targets","rokai_lm","ulm","viper","wsum"]
 
 hernandez:
-  hernandez_PKNs: ["omnipath", "GPS", "phosphositeplus", "GPSppsp", "GPSppsp_networkin", "GPSppsp_iKiPdb", "jhonson", "ptmsigdb"] #, "networkin", "iKiPdb"
+  hernandez_PKNs: ["omnipath", "GPS", "phosphositeplus", "GPSppsp", "GPSppsp_networkin", "GPSppsp_iKiPdb", "ptmsigdb"] #, "networkin", "iKiPdb", "jhonson"
   hernandez_methods: ["INKA", "KARP", "KS", "KSEA_z", "PC1", "RoKAI_z", "UQ", "Wilcox", "fgsea", "mean", "median", "mlm", "norm_fgsea","norm_wmean","number_of_targets","rokai_lm","ulm","viper","wsum"]

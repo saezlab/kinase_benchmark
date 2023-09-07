@@ -4,23 +4,20 @@
 if(exists("snakemake")){
   input_file <- snakemake@input$rds
   meta_file <- snakemake@input$meta
-  processed_meta <- snakemake@input$kinome
-  perturb <- snakemake@params$perturb
   output_file <- snakemake@output$output
   meta_out <- snakemake@output$meta_out
 }else{
-  input_file <- "results/hernandez/activity_scores/ptmsigdb.rds"
+  input_file <- "results/hernandez/final_scores/scaled/phosphositeplus.rds"
   meta_file <- "results/hernandez/processed_data/benchmark_metadata.csv"
-  meta_out <- "results/hernandez/benchmark_files/obs_KSEA_z-ptmsigdb.csv"
-  output_file <- "results/hernandez/benchmark_files/KSEA_z-ptmsigdb.csv"
+  meta_out <- "results/hernandez/benchmark_files/obs_KSEA_z-phosphositeplus.csv"
+  output_file <- "results/hernandez/benchmark_files/KSEA_z-phosphositeplus.csv"
 }
 
 ## Libraries ---------------------------
 library(tidyverse)
-library(biomaRt)
 
 method_tmp <- str_remove(str_split(output_file, "/")[[1]][4], ".csv")
-input <- paste0("-",str_remove(str_split(input_file, "/")[[1]][4], ".rds"))
+input <- paste0("-",str_remove(str_split(input_file, "/")[[1]][5], ".rds"))
 method <- gsub(input, "", method_tmp)
 
 ## Load scores and meta ---------------------------
@@ -42,11 +39,23 @@ target_df <- obs_targets %>%
 
 ## Get scores for each method ---------------------------
 # change direction to perturbation
-df <- map_dfr(target_df$sample, function(experiment){
-  mat <- t(act_scores[[method]][experiment]) * target_df$sign[target_df$sample == experiment]
-  data.frame(mat) %>%
-    add_column(experiment = experiment, .before = 1)
-})
+if (method == "number_of_targets"){
+  df <- map_dfr(target_df$sample, function(experiment){
+    mat_meth <- data.frame(act_scores[[method]])
+    colnames(mat_meth) <- colnames(act_scores[[method]])
+    mat <- t(act_scores[[method]][experiment]) * 1
+    data.frame(mat) %>%
+      add_column(experiment = experiment, .before = 1)
+  })
+} else {
+  df <- map_dfr(target_df$sample, function(experiment){
+    mat_meth <- data.frame(act_scores[[method]])
+    colnames(mat_meth) <- colnames(act_scores[[method]])
+    mat <- t(mat_meth[experiment]) * target_df$sign[target_df$sample == experiment]
+    data.frame(mat) %>%
+      add_column(experiment = experiment, .before = 1)
+  })
+}
 
 df <- df[df$experiment %in% target_df$sample,]
 

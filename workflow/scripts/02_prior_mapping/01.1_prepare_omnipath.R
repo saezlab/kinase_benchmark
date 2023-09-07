@@ -65,7 +65,6 @@ decryptm_identifiers <- decryptm_df %>%
 
 
 ## Merge with network ---------------------------
-## CPTAC ---------------------------
 omnipath_prior <- left_join(omnipath_ptm_filtered %>% dplyr::select(target_site, enzyme_genesymbol, modification), target_df, by = "target_site", relationship = "many-to-many")
 
 omnipath_prior_df <- omnipath_prior %>%
