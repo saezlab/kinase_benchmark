@@ -7,8 +7,8 @@ if(exists("snakemake")){
   output_agg <- snakemake@output$ov_prior
 }else{
   input_files <- list.files("results/hernandez/benchmark_files", pattern = "obs", full.names = T)
-  output_file <- "results/hernandez/benchmark_res/overview/overview_bench.res"
-  output_agg <- "results/hernandez/benchmark_res/overview/overview_bench_prior.res"
+  output_file <- "results/hernandez/benchmark_res/overview/overview_bench.csv"
+  output_agg <- "results/hernandez/benchmark_res/overview/overview_bench_prior.csv"
 }
 
 ## Libraries ---------------------------

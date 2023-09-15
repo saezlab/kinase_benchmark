@@ -6,11 +6,10 @@ if(exists("snakemake")){
   methods_to_remove <- snakemake@params$rm_methods
   output <- snakemake@output$rds
 }else{
-  scores_ptmsea_file <- "results/activity_scores_ptmsea/hnscc_GPS-scores.gct"
-  scores_file <- "results/activity_scores/GPS/hnscc_GPS.rds"
-  dataset_name <- "hnscc"
+  scores_ptmsea_file <- "results/hernandez/activity_scores_ptmsea/GPS-scores.gct"
+  scores_file <- "results/hernandez/activity_scores/GPS.rds"
   PKN_name <- "GPS"
-  output <- "results/final_scores/GPS/hnscc_GPS.rds"
+  output <- "results/hernandez/final_scores/GPS.rds"
   methods_to_remove <- c("corr_wmean", "corr_wsum", "norm_wsum", "wmean")
 }
 
@@ -24,7 +23,7 @@ ptmsea <- ptmsea %>%
   dplyr::select(colnames(ptmsea)[!str_detect(colnames(ptmsea), "Signature")]) %>%
   dplyr::select(-No.columns.scored) %>%
   column_to_rownames("id")
-
+colnames(ptmsea) <- str_remove(colnames(ptmsea), "^X")
 
 ## combine scores ---------------------------
 scores <- readRDS(scores_file)
