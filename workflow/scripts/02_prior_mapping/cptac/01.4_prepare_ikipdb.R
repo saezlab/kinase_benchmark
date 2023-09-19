@@ -120,6 +120,15 @@ ikipd_prior_df <- ikipd_prior %>%
   dplyr::rename("source" = kinase) %>%
   distinct()
 
+rm_auto_duplicated <- ikipd_prior_df %>%
+  mutate(target_auto = paste(source, str_remove(target, "\\|auto"), sep = "_")) %>%
+  filter(str_detect(target, "auto")) %>%
+  pull(target_auto)
+
+ikipd_prior_df <- ikipd_prior_df %>%
+  mutate(tmp = paste(source, target, sep = "_")) %>%
+  filter(!tmp %in% rm_auto_duplicated) %>%
+  dplyr::select(-tmp)
 
 ## Save processed ikipdb
 write_tsv(ikipd_prior_df, output_file)
