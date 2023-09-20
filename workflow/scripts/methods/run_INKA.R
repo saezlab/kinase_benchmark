@@ -35,7 +35,7 @@ run_INKA <- function(mat,
                      .source = .data$source,
                      .target = .data$target,
                      .mor = .data$mor,
-                     minsize = 0,
+                     minsize = 5,
                      kinase_mapping = T
 ) {
   # Check for NAs/Infs in mat
@@ -53,7 +53,7 @@ run_INKA <- function(mat,
     dplyr::mutate(target = str_remove(target, "\\|auto")) %>%
     dplyr::filter(target %in% rownames(mat)) %>%
     dplyr::group_by(source) %>%
-    dplyr::filter(dplyr::n() >= minsize)
+    dplyr::filter(dplyr::n() >= 0)
 
   # Analysis ----------------------------------------------------------------
   kinases <- network_filtered$source %>%
