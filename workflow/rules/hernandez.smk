@@ -161,6 +161,8 @@ rule activity_estimation:
         script_support = "workflow/scripts/methods/support_functions.R"
     output:
         rds = "results/hernandez/activity_scores/{PKN}.rds"
+    params:
+        rm_auto = "T"
     conda:
         "../envs/phospho.yml"
     script:
@@ -199,6 +201,8 @@ rule scale_scores:
         rds = "results/hernandez/final_scores/{PKN}.rds"
     output:
         output = "results/hernandez/final_scores/scaled/{PKN}.rds"
+    params:
+        scale = "max"
     conda:
         "../envs/phospho.yml"
     script:
@@ -211,6 +215,8 @@ rule prepare_benchmark:
     output:
         output = "results/hernandez/benchmark_files/{hernandez_methods}-{PKN}.csv",
         meta_out = "results/hernandez/benchmark_files/obs_{hernandez_methods}-{PKN}.csv"
+    params:
+        rm_exp = "F"
     conda:
         "../envs/phospho.yml"
     script:
