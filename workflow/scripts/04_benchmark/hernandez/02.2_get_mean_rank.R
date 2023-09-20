@@ -12,7 +12,7 @@ if(exists("snakemake")){
   bp_rank_pdf <- snakemake@output$boxplot
   methods_msk <- snakemake@params$mth
 }else{
-  input_files <- list.files("results/hernandez/final_scores/scaled", full.names = T)
+  input_files <- list.files("results/hernandez/final_scores", full.names = T, pattern = ".rds")
   prior_ov_file <- "results/hernandez/overview_priors/coverage.csv"
   meta_file <- "results/hernandez/processed_data/benchmark_metadata.csv"
   output_file <- "results/hernandez/benchmark_mean_rank/mean_rank.csv"
@@ -35,7 +35,7 @@ obs <- read_csv(meta_file) %>%
 ## Load  activity scores ---------------------------
 coverage_priors <- read_csv(prior_ov_file)
 ranks <- map_dfr(input_files, function(input_file){
-  net <- str_remove(str_split(input_file, "/")[[1]][5], ".rds")
+  net <- str_remove(str_split(input_file, "/")[[1]][4], ".rds")
   act_scores <- readRDS(input_file)
     map_dfr(names(act_scores), function(meth){
       method_act <- act_scores[[meth]]
@@ -92,7 +92,10 @@ ranks <- map_dfr(input_files, function(input_file){
                      targets = targets,
                      rank = rank,
                      kinases = kin_n,
-                     kinases_act = nrow(act_df)) %>%
+                     kinases_act = nrow(act_df),
+                     all_kinases_act = paste(method_act_long %>%
+                                               filter(sample == exp) %>%
+                                               pull(kinase), collapse = ";")) %>%
             mutate(scaled_rank = rank/kinases_act)
         }
 
@@ -100,6 +103,35 @@ ranks <- map_dfr(input_files, function(input_file){
 
     })
 })
+
+overview_kinases <- ranks %>%
+  filter(method %in% methods_msk) %>%
+  filter(!prior == "jhonson") %>%
+  mutate(true_target = case_when(
+    !is.na(rank) ~ targets,
+    is.na(rank) == 0 ~ NA
+  )) %>%
+  group_by(method, prior, sample) %>%
+  summarise(n_kinases = sum(!is.na(rank)),
+            total_kinases = mean(kinases_act),
+            target = paste(true_target %>% na.omit(), collapse = ";"),
+            all_kinases = paste(unique(unlist(str_split(all_kinases_act, ";"))), collapse = ";"))
+
+covered_kinases <- overview_kinases %>%
+  group_by(prior, method) %>%
+  mutate(target = case_when(
+    !target == "" ~ target,
+    target == "" ~ NA
+  )) %>%
+  summarise(TP = sum(n_kinases),
+            n_targets = length(unique(unlist(str_split(target, ";"))) %>% na.omit()),
+            targets =  paste(unique(unlist(str_split(target, ";"))) %>% na.omit(), collapse = ";"),
+            TN = length(unlist(str_split(all_kinases, ";"))),
+            n_kinases = length(unique(unlist(str_split(all_kinases, ";")))),
+            all_kinases = paste(unique(unlist(str_split(all_kinases, ";"))), collapse = ";"))
+
+write_csv(covered_kinases, "results/hernandez/benchmark_res/overview/covered_kinases.csv")
+
 
 mean_rank_df <- ranks %>%
   filter(method %in% methods_msk) %>%
@@ -117,12 +149,23 @@ mean_rank_df$comb = factor(mean_rank_df$comb, levels = unique(mean_rank_df$comb)
 mean_rank_df$method = factor(mean_rank_df$method, levels = unique(mean_rank_df$method))
 mean_rank_df$prior = factor(mean_rank_df$prior, levels = rev(unique(mean_rank_df$prior)))
 
-p1 <- ggplot(mean_rank_df, aes(x = mean_scaled_rank, y = method, color = prior)) +
+p1 <- ggplot(mean_rank_df %>%
+               filter(!prior == "jhonson") %>%
+               mutate(total_kinases = mean_rank/mean_scaled_rank), aes(x = mean_rank, y = method, color = prior)) +
+  geom_point() +
+  geom_errorbar(aes(xmin=mean_rank-sd_rank, xmax=mean_rank+sd_rank), width=.2,
+                position=position_dodge(0.05)) +
+  theme_minimal() +
+  geom_point(aes(x = total_kinases, y = method, color = prior), shape = 2) + facet_grid(prior ~ .)
+
+p2 <- ggplot(mean_rank_df %>%
+               filter(!prior == "jhonson") %>%
+               mutate(total_kinases = mean_rank/mean_scaled_rank), aes(x = mean_scaled_rank, y = method, color = prior)) +
   geom_point() +
   geom_errorbar(aes(xmin=mean_scaled_rank-sd_scaled_rank, xmax=mean_scaled_rank+sd_scaled_rank), width=.2,
                 position=position_dodge(0.05)) +
   theme_minimal() +
-  xlim(-0.1, 1) + facet_grid(prior ~ .)
+  facet_grid(prior ~ .)
 
 all_ranks <- ranks %>%
   filter(method %in% methods_msk) %>%
