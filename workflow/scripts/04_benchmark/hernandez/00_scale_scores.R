@@ -4,9 +4,11 @@
 if(exists("snakemake")){
   input_file <- snakemake@input$rds
   output_file <- snakemake@output$output
+  scaling <- snakemake@params$scale
 }else{
   input_file <- "results/hernandez/final_scores/ptmsigdb.rds"
   output_file <- "results/hernandez/final_scores/scaled/ptmsigdb.rds"
+  scaling <- "max"
 }
 
 ## Libraries ---------------------------
@@ -21,11 +23,16 @@ act_scores <- readRDS(input_file)
 
 scaled_scores <- map(names(act_scores), function(mat_i){
   mat <- act_scores[[mat_i]]
-  if (mat_i == "number_of_targets"){
-    mat
-  } else {
+  if (scaling == "max"){
+    map_dfc(colnames(mat), function(col_i){
+      mat[col_i]/max(abs(mat[,col_i]), na.rm = T)
+    })
+  } else if (scaling == "sd") {
     scale(mat, center = FALSE, scale = TRUE)[,]
+  } else {
+    mat
   }
+
 })
 
 names(scaled_scores) <- names(act_scores)
