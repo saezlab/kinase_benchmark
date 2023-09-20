@@ -5,11 +5,13 @@ if(exists("snakemake")){
   output_file <- snakemake@output$rds
   scripts <- snakemake@input$scripts
   script_support <- snakemake@input$script_support
+  remove_auto <- snakemake@params$rm_auto
 }else{
   dataset <- "results/hernandez/processed_data/benchmark_data.csv"
   PKN <- "results/hernandez/prior/omnipath.tsv"
   PKN_name <- "GPS"
   output_file <- "results/hernandez/activity_scores/omnipath.rds"
+  remove_auto <- T
   scripts <- list.files("workflow/scripts/methods", pattern = "run", full.names = T)
   script_support <- "workflow/scripts/methods/support_functions.R"
 }
@@ -28,8 +30,12 @@ phospho <- read_csv(dataset) %>%
 
 ## Prior knowledge Kinase-Substrate Networks
 prior <- read.table(file = PKN, sep = "\t", header = T)
-prior <- prior %>%
-  dplyr::mutate(target = str_remove(target, "\\|auto"))
+
+remove_auto <- as.logical(remove_auto)
+if (!remove_auto){
+  prior <- prior %>%
+    dplyr::mutate(target = str_remove(target, "\\|auto"))
+}
 
 ## Kinase activity estimation ---------------------------
 results <- map_dfr(1:ncol(phospho), function(i){
