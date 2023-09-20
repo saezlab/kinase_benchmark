@@ -229,6 +229,7 @@ rule run_mean_rank:
         overview = "results/hernandez/overview_priors/coverage.csv"
     output:
         output = "results/hernandez/benchmark_mean_rank/mean_rank.csv",
+        cov_kin = "results/hernandez/benchmark_res/overview/covered_kinases.csv",
         per_exp = "results/hernandez/benchmark_mean_rank/performance_per_exp.csv",
         per_kin = "results/hernandez/benchmark_mean_rank/performance_per_kin.csv",
         pdf = "results/hernandez/benchmark_mean_rank/mean_rank.pdf",

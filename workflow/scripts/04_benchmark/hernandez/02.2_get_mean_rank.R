@@ -4,6 +4,7 @@
 if(exists("snakemake")){
   input_file <- snakemake@input$rds
   meta_file <- snakemake@input$meta
+  cov_kin_file <- snakemake@output$cov_kin
   prior_ov_file <- snakemake@input$overview
   output_file <- snakemake@output$output
   performance_per_exp <- snakemake@output$per_exp
@@ -14,6 +15,7 @@ if(exists("snakemake")){
 }else{
   input_files <- list.files("results/hernandez/final_scores", full.names = T, pattern = ".rds")
   prior_ov_file <- "results/hernandez/overview_priors/coverage.csv"
+  cov_kin_file <- "results/hernandez/benchmark_res/overview/covered_kinases.csv"
   meta_file <- "results/hernandez/processed_data/benchmark_metadata.csv"
   output_file <- "results/hernandez/benchmark_mean_rank/mean_rank.csv"
   performance_per_exp <- "results/hernandez/benchmark_mean_rank/performance_per_exp.csv"
@@ -130,7 +132,7 @@ covered_kinases <- overview_kinases %>%
             n_kinases = length(unique(unlist(str_split(all_kinases, ";")))),
             all_kinases = paste(unique(unlist(str_split(all_kinases, ";"))), collapse = ";"))
 
-write_csv(covered_kinases, "results/hernandez/benchmark_res/overview/covered_kinases.csv")
+write_csv(covered_kinases, cov_kin_file)
 
 
 mean_rank_df <- ranks %>%
