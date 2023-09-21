@@ -122,12 +122,23 @@ rule prior_overview:
         edges = "results/hernandez/overview_priors/coverage_edges.pdf",
         pps = "results/hernandez/overview_priors/coverage_pps.pdf"
     params:
-        height = "6",
-        width = "13"
+        height = "4",
+        width = "6"
     conda:
         "../envs/phospho.yml"
     script:
-        "../scripts/02_prior_mapping/hernandez/01.8_merge_known_predicted.R"
+        "../scripts/02_prior_mapping/hernandez/03_prior_overview.R"
+
+rule prior_compare:
+    input:
+        prior_files = expand("results/hernandez/prior/{PKN}.tsv", PKN = config["hernandez"]["hernandez_PKNs_unmerged"])
+    output:
+        full_jaccard = "results/hernandez/overview_priors/overlap_priors.pdf",
+        kin_jaccard = "results/hernandez/overview_priors/overlap_priors_perKin.pdf"
+    conda:
+        "../envs/phospho.yml"
+    script:
+        "../scripts/02_prior_mapping/hernandez/04_prior_comparison.R"
 
 
 # ------------------------------- PTM-SEA input preparation -------------------------------
@@ -216,7 +227,9 @@ rule prepare_benchmark:
         output = "results/hernandez/benchmark_files/{hernandez_methods}-{PKN}.csv",
         meta_out = "results/hernandez/benchmark_files/obs_{hernandez_methods}-{PKN}.csv"
     params:
-        rm_exp = "F"
+        rm_exp = "F",
+        select_kin = "T",
+        kin_list = ["CHEK1", "MAPK14", "GSK3B", "PRKACA", "MAPK8", "MAPK1", "PRKCA", "RPS6KB1", "CDK2", "MAPK3", "PRKCE", "SRC",   "GSK3A", "ATM",   "AKT1", "PRKCD", "ATR", "PLK1", "CDK1", "AURKA", "CDK7",  "AURKB", "PAK1",  "LATS1", "PRKD1", "BRAF",  "MTOR",  "MARK2", "TTK", "ABL1", "FYN", "MAPK9", "RPS6KA3", "PRKCB", "MAPKAPK2"]
     conda:
         "../envs/phospho.yml"
     script:

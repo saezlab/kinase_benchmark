@@ -7,11 +7,18 @@ if(exists("snakemake")){
   output_file <- snakemake@output$output
   meta_out <- snakemake@output$meta_out
   rm_experiments <- snakemake@params$rm_exp
+  select_kinases <- snakemake@params$select_kin
+  selected_kinases <- snakemake@params$kin_list
 }else{
-  input_file <- "results/hernandez/final_scores/scaled/phosphositeplus.rds"
+  input_file <- "results/hernandez/final_scores/scaled/GPS.rds"
   meta_file <- "results/hernandez/processed_data/benchmark_metadata.csv"
-  meta_out <- "results/hernandez/benchmark_files/obs_KSEA_z-phosphositeplus.csv"
-  output_file <- "results/hernandez/benchmark_files/KSEA_z-phosphositeplus.csv"
+  meta_out <- "results/hernandez/benchmark_files/obs_INKA-GPS.csv"
+  output_file <- "results/hernandez/benchmark_files/INKA-GPS.csv"
+  select_kinases <- "T"
+  selected_kinases <- c("CHEK1", "MAPK14", "GSK3B", "PRKACA", "MAPK8", "MAPK1", "PRKCA", "RPS6KB1", "CDK2",
+                      "MAPK3", "PRKCE", "SRC",   "GSK3A", "ATM",   "AKT1", "PRKCD", "ATR", "PLK1", "CDK1",
+                      "AURKA", "CDK7",  "AURKB", "PAK1",  "LATS1", "PRKD1", "BRAF",  "MTOR",  "MARK2", "TTK",
+                      "ABL1", "FYN", "MAPK9", "RPS6KA3", "PRKCB", "MAPKAPK2")
   rm_experiments <- "T"
 }
 
@@ -23,6 +30,7 @@ input <- paste0("-",str_remove(str_split(input_file, "/")[[1]][5], ".rds"))
 method <- gsub(input, "", method_tmp)
 
 rm_experiments <- as.logical(rm_experiments)
+select_kinases <- as.logical(select_kinases)
 ## Load scores and meta ---------------------------
 act_scores <- readRDS(input_file)
 
@@ -45,20 +53,41 @@ target_df <- obs_targets %>%
 if (method == "number_of_targets"){
   df <- map_dfr(target_df$sample, function(experiment){
     mat_meth <- data.frame(act_scores[[method]])
+    if (select_kinases){
+      mat_meth <- mat_meth[selected_kinases,]
+    }
     colnames(mat_meth) <- colnames(act_scores[[method]])
-    mat <- t(act_scores[[method]][experiment]) * 1
-    data.frame(mat) %>%
-      add_column(experiment = experiment, .before = 1)
+    if (experiment %in% colnames(mat_meth)){
+      mat <- t(act_scores[[method]][experiment]) * 1
+      data.frame(mat) %>%
+        add_column(experiment = experiment, .before = 1)
+    } else {
+      df <- data.frame(matrix(NA, ncol = nrow(mat_meth) + 1))
+      colnames(df) <- c("experiment", rownames(mat_meth))
+      df
+    }
+
   })
 } else {
   df <- map_dfr(target_df$sample, function(experiment){
     mat_meth <- data.frame(act_scores[[method]])
+    if (select_kinases){
+      mat_meth <- mat_meth[selected_kinases,]
+    }
     colnames(mat_meth) <- colnames(act_scores[[method]])
-    mat <- t(mat_meth[experiment]) * target_df$sign[target_df$sample == experiment]
-    data.frame(mat) %>%
-      add_column(experiment = experiment, .before = 1)
+    if (experiment %in% colnames(mat_meth)){
+      mat <- t(mat_meth[experiment]) * target_df$sign[target_df$sample == experiment]
+
+      data.frame(mat) %>%
+        add_column(experiment = experiment, .before = 1)
+    } else {
+      df <- data.frame(matrix(NA, ncol = nrow(mat_meth) + 1))
+      colnames(df) <- c("experiment", rownames(mat_meth))
+      df
+    }
+
   })
-}
+} %>% filter(!is.na(experiment))
 
 df <- df[df$experiment %in% target_df$sample,]
 

@@ -4,8 +4,8 @@ if(exists("snakemake")){
   coverage_pdf <- snakemake@output$kin
   edges_coverage_pdf <- snakemake@output$edges
   pps_coverage_pdf <- snakemake@output$pps
-  height <- snakemake@params$plot_height
-  width <- snakemake@params$plot_width
+  height <- snakemake@params$height
+  width <- snakemake@params$width
 }else{
   prior_files <- list.files("results/hernandez/prior", pattern = "tsv", recursive = T, full.names = T)
   overview_file <- "results/hernandez/overview_priors/coverage.csv"
@@ -54,12 +54,15 @@ PKN_order <- coverage %>%
 coverage$PKN <- factor(coverage$PKN, levels = PKN_order)
 
 text_size <- floor((1/8) * (width*height))
+if (text_size < 9) {
+  text_size <- 9
+}
 
 pps_p <- ggplot(coverage %>% filter(class == "pps")) +
   aes(x = PKN, y = value) +
   geom_bar(stat="identity", color="black", position=position_dodge(), fill = "#47AD7A", width=0.7)+
   theme_minimal() + xlab("") + ylab("") +
-  ggtitle("unique peptides") +
+  ggtitle("unique pps") +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1),
         text = element_text(size = text_size))
 
@@ -67,7 +70,7 @@ edges_p <- ggplot(coverage %>% filter(class == "edges")) +
   aes(x = PKN, y = value) +
   geom_bar(stat="identity", color="black", position=position_dodge(), fill = "#AD477A", width=0.7)+
   theme_minimal() + xlab("") + ylab("") +
-  ggtitle("kinase-peptide links") +
+  ggtitle("kinase-pps links") +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1),
         text = element_text(size = text_size))
 

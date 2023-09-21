@@ -22,6 +22,11 @@ if(exists("snakemake")){
   performance_per_kin <- "results/hernandez/benchmark_mean_rank/performance_per_kin.csv"
   mean_rank_pdf <- "results/hernandez/benchmark_mean_rank/mean_rank.pdf"
   bp_rank_pdf <- "results/hernandez/benchmark_mean_rank/bp_rank.pdf"
+  select_kinases <- "T"
+  selected_kinases <- c("CHEK1", "MAPK14", "GSK3B", "PRKACA", "MAPK8", "MAPK1", "PRKCA", "RPS6KB1", "CDK2",
+                        "MAPK3", "PRKCE", "SRC",   "GSK3A", "ATM",   "AKT1", "PRKCD", "ATR", "PLK1", "CDK1",
+                        "AURKA", "CDK7",  "AURKB", "PAK1",  "LATS1", "PRKD1", "BRAF",  "MTOR",  "MARK2", "TTK",
+                        "ABL1", "FYN", "MAPK9", "RPS6KA3", "PRKCB", "MAPKAPK2")
   methods_msk <- c("INKA", "KARP", "KS", "KSEA_z", "PC1", "RoKAI_z", "UQ", "Wilcox", "fgsea", "mean", "median", "mlm", "norm_fgsea","norm_wmean","number_of_targets","rokai_lm","ulm","viper","wsum")
 }
 
@@ -41,6 +46,10 @@ ranks <- map_dfr(input_files, function(input_file){
   act_scores <- readRDS(input_file)
     map_dfr(names(act_scores), function(meth){
       method_act <- act_scores[[meth]]
+
+      if(select_kinases){
+        method_act <- method_act[selected_kinases,]
+      }
 
       method_act_long <- method_act %>%
         as.data.frame() %>%
