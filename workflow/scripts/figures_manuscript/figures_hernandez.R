@@ -73,7 +73,7 @@ overview_p <- ggplot(coverage_df %>%
   #                                                      label="±",
   #                                                      round(sd_measured_covered, digits = 1),
   #                                                      sep = " ")) +
-  xlab(paste0(nrow(coverage_df)/3, " experiments")) +
+  xlab(paste0(length(unique(coverage_df$experiment)), " experiments")) +
   ylab("# of unique phosphorylation sites") +
   guides(fill=guide_legend(title="upstream kinase"))+
   theme_minimal() +
