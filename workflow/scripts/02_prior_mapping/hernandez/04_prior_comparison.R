@@ -124,10 +124,10 @@ mean_jac_wide <- mean_jac_wide[colnames(mean_jac_wide), colnames(mean_jac_wide)]
 heatmap_kinJacc <- Heatmap(mean_jac_wide)
 
 ## Save plots ---------------------------
-pdf(full_jaccard)
+pdf(full_jaccard, height = 5, width = 5)
 heatmap_fullJacc
 dev.off()
 
-pdf(kin_jaccard)
+pdf(kin_jaccard, height = 5, width = 5)
 heatmap_kinJacc
 dev.off()
