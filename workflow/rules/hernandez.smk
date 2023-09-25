@@ -219,17 +219,27 @@ rule scale_scores:
     script:
         "../scripts/04_benchmark/hernandez/00_scale_scores.R"
 
+rule get_subset:
+    input:
+        rds = expand("results/hernandez/final_scores/scaled/{PKN}.rds", PKN = config["hernandez"]["hernandez_PKNs"])
+    output:
+        output = "results/hernandez/final_scores/subset/{PKN}.rds"
+    params:
+        methods = config["hernandez"]["hernandez_methods"]
+    conda:
+        "../envs/phospho.yml"
+    script:
+        "../scripts/04_benchmark/hernandez/001_get_shared_subset.R"
+
 rule prepare_benchmark:
     input:
-        rds = "results/hernandez/final_scores/scaled/{PKN}.rds",
+        rds = "results/hernandez/final_scores/subset/{PKN}.rds",
         meta = "results/hernandez/processed_data/benchmark_metadata.csv"
     output:
         output = "results/hernandez/benchmark_files/{hernandez_methods}-{PKN}.csv",
         meta_out = "results/hernandez/benchmark_files/obs_{hernandez_methods}-{PKN}.csv"
     params:
-        rm_exp = "F",
-        select_kin = "T",
-        kin_list = ["CHEK1", "MAPK14", "GSK3B", "PRKACA", "MAPK8", "MAPK1", "PRKCA", "RPS6KB1", "CDK2", "MAPK3", "PRKCE", "SRC",   "GSK3A", "ATM",   "AKT1", "PRKCD", "ATR", "PLK1", "CDK1", "AURKA", "CDK7",  "AURKB", "PAK1",  "LATS1", "PRKD1", "BRAF",  "MTOR",  "MARK2", "TTK", "ABL1", "FYN", "MAPK9", "RPS6KA3", "PRKCB", "MAPKAPK2"]
+        rm_exp = "F"
     conda:
         "../envs/phospho.yml"
     script:

@@ -28,16 +28,24 @@ bench_df <- bind_rows(bench_list)
 
 order_m <- bench_df %>%
   filter(metric == "mcauroc") %>%
+  group_by(net) %>%
+  summarise(m_score = mean(score)) %>%
+  arrange(desc(m_score)) %>%
+  pull(net)
+bench_df$net <- factor(bench_df$net, levels = order_m)
+
+order_method <- bench_df %>%
+  filter(metric == "mcauroc") %>%
   group_by(method) %>%
   summarise(m_score = mean(score)) %>%
   arrange(desc(m_score)) %>%
   pull(method)
-bench_df$method <- factor(bench_df$method, levels = order_m)
+bench_df$method <- factor(bench_df$method, levels = order_method)
 
 
 auroc_p <- bench_df %>%
   filter(metric == "mcauroc") %>%
-  ggplot(aes(x=net, y=score, fill=method)) +
+  ggplot(aes(x=method, y=score, fill=net)) +
   geom_boxplot(outlier.size=0.2, lwd=0.2) +
   theme_minimal() +
   theme(text = element_text(size = 9),
@@ -47,7 +55,7 @@ auroc_p <- bench_df %>%
 
 auprc_p <- bench_df %>%
   filter(metric == "mcauprc") %>%
-  ggplot(aes(x=net, y=score, fill=method)) +
+  ggplot(aes(x=method, y=score, fill=net)) +
   geom_boxplot(outlier.size=0.2, lwd=0.2) +
   theme_minimal() +
   theme(text = element_text(size = 9),
