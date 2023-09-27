@@ -165,7 +165,7 @@ rule activity_estimation_ptmsea:
         rds = "results/cptac/activity_scores_ptmsea/log/{normalisation}_{dataset}-{PKN}.log",
         gct = "results/cptac/activity_scores_ptmsea/{normalisation}_{dataset}-{PKN}-scores.gct"
     params:
-        output_folder = "results/activity_scores_ptmsea"
+        output_folder = "results/cptac/activity_scores_ptmsea"
     conda:
         "../envs/phospho.yml"
     script:
