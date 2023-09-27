@@ -12,15 +12,15 @@ if(exists("snakemake")){
   mean_rank_pdf <- snakemake@output$pdf
   bp_rank_pdf <- snakemake@output$boxplot
 }else{
-  input_files <- list.files("results/hernandez/benchmark_files/raw", full.names = T, pattern = ".csv")
+  input_files <- list.files("results/hernandez/benchmark_files/scaled_subset", full.names = T, pattern = ".csv")
   prior_ov_file <- "results/hernandez/overview_priors/coverage.csv"
-  cov_kin_file <- "results/hernandez/benchmark_res/overview/covered_kinases_raw.csv"
+  cov_kin_file <- "results/hernandez/benchmark_res/overview/covered_kinases_scaled_subset.csv"
   meta_file <- "results/hernandez/processed_data/benchmark_metadata.csv"
-  output_file <- "results/hernandez/benchmark_mean_rank/mean_rank_raw.csv"
-  performance_per_exp <- "results/hernandez/benchmark_mean_rank/performance_per_exp_raw.csv"
-  performance_per_kin <- "results/hernandez/benchmark_mean_rank/performance_per_kin_raw.csv"
-  mean_rank_pdf <- "results/hernandez/benchmark_mean_rank/mean_rank_raw.pdf"
-  bp_rank_pdf <- "results/hernandez/benchmark_mean_rank/bp_rank_raw.pdf"
+  output_file <- "results/hernandez/benchmark_mean_rank/mean_rank_scaled_subset.csv"
+  performance_per_exp <- "results/hernandez/benchmark_mean_rank/performance_per_exp_scaled_subset.csv"
+  performance_per_kin <- "results/hernandez/benchmark_mean_rank/performance_per_kin_scaled_subset.csv"
+  mean_rank_pdf <- "results/hernandez/benchmark_mean_rank/mean_rank_scaled_subset.pdf"
+  bp_rank_pdf <- "results/hernandez/benchmark_mean_rank/bp_rank_scaled_subset.pdf"
 }
 
 ## Libraries ---------------------------
@@ -130,25 +130,25 @@ mean_rank_df <- ranks %>%
   summarise(mean_rank = round(mean(rank), digits = 1),
             mean_scaled_rank = round(mean(scaled_rank), digits = 2),
             sd_rank = round(sd(rank), digits = 1),
-            sd_scaled_rank = round(sd(scaled_rank), digits = 2)) %>%
+            sd_scaled_rank = round(sd(scaled_rank), digits = 2),
+            total_kinases = mean(kinases_act)) %>%
   arrange(mean_scaled_rank, mean_rank) %>%
   filter(!is.na(prior)) %>%
   mutate(comb = paste(method, prior, sep = ":"))
+
 
 mean_rank_df$comb = factor(mean_rank_df$comb, levels = unique(mean_rank_df$comb))
 mean_rank_df$method = factor(mean_rank_df$method, levels = unique(mean_rank_df$method))
 mean_rank_df$prior = factor(mean_rank_df$prior, levels = rev(unique(mean_rank_df$prior)))
 
-p1 <- ggplot(mean_rank_df %>%
-               mutate(total_kinases = mean_rank/mean_scaled_rank), aes(x = mean_rank, y = method, color = prior)) +
+p1 <- ggplot(mean_rank_df, aes(x = mean_rank, y = method, color = prior)) +
   geom_point() +
   geom_errorbar(aes(xmin=mean_rank-sd_rank, xmax=mean_rank+sd_rank), width=.2,
                 position=position_dodge(0.05)) +
   theme_minimal() +
   geom_point(aes(x = total_kinases, y = method, color = prior), shape = 2) + facet_grid(prior ~ .)
 
-p2 <- ggplot(mean_rank_df %>%
-               mutate(total_kinases = mean_rank/mean_scaled_rank), aes(x = mean_scaled_rank, y = method, color = prior)) +
+p2 <- ggplot(mean_rank_df, aes(x = mean_scaled_rank, y = method, color = prior)) +
   geom_point() +
   geom_errorbar(aes(xmin=mean_scaled_rank-sd_scaled_rank, xmax=mean_scaled_rank+sd_scaled_rank), width=.2,
                 position=position_dodge(0.05)) +
