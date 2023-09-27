@@ -1,8 +1,8 @@
 if(exists("snakemake")){
-  dataset <- snakemake@input$file_dataset
+  file <- snakemake@input$file_dataset
   output_file <- snakemake@output$gct
 }else{
-  dataset <- "data/CPTAC_phospho/hnscc_phospho_data_median_centered.tsv"
+  file <- "data/CPTAC_phospho/hnscc_phospho_data_median_centered.tsv"
   output_file <- "results/datasets/hnscc.gct"
 }
 
