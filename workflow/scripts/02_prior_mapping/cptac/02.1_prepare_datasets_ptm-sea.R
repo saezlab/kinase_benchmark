@@ -11,10 +11,8 @@ library(cmapR)
 library(tidyverse)
 
 ## Prepare files for PTM-SEA ---------------------------
-dataset <- read_tsv(file = dataset, col_types = cols())
+dataset <- readRDS(file)
 
-dataset <- dataset %>%
-  column_to_rownames("site")
 dataset_m <- as.matrix(dataset)
 
 dataset_gct <- new("GCT", mat=dataset_m)

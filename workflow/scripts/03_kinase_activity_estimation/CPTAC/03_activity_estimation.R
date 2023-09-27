@@ -7,11 +7,11 @@ if(exists("snakemake")){
   scripts <- snakemake@input$scripts
   script_support <- snakemake@input$script_support
 }else{
-  dataset <- "data/CPTAC_phospho/hnscc_phospho_data_median_centered.tsv"
-  dataset_name <- "hnscc"
-  PKN <- "results/prior/GPS.tsv"
+  dataset <- "data/CPTAC_phospho/final/brca_norm2prot_global_lm_log2_medCentRatio.rds"
+  dataset_name <- "brca"
+  PKN <- "results/cptac/prior/GPS.tsv"
   PKN_name <- "GPS"
-  output_file <- "results/activity_scores/hnscc_GPS.rds"
+  output_file <- "results/cptac/activity_scores/GPS/global/global_brca-GPS.rds"
   scripts <- list.files("workflow/scripts/methods", pattern = "run", full.names = T)
   script_support <- "workflow/scripts/methods/support_functions.R"
 }
@@ -25,16 +25,17 @@ map(scripts, source)
 
 ## Load data ---------------------------
 ### phosphoproteomics
-phospho <- read_table(dataset) %>%
-    column_to_rownames("site")
+phospho <- readRDS(dataset)
 
 ## Prior knowledge Kinase-Substrate Networks
 prior <- read.table(file = PKN, sep = "\t", header = T)
 
 ## Kinase activity estimation ---------------------------
 results <- map_dfr(1:ncol(phospho), function(i){
-  mat_i <- phospho[i] %>%
+  mat_i <- phospho[,i] %>%
+    as.data.frame() %>%
     drop_na()
+  colnames(mat_i) <- colnames(phospho)[i]
 
   #prepare network
   prior_tmp <- intersect_regulons(mat_i, prior, .source = "source", .target = "target", minsize = 5)

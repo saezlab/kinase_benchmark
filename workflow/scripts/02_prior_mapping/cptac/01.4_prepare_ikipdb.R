@@ -76,8 +76,8 @@ ikipdb_df <- left_join(ikipdb_df, res_kin, by = "kinase", relationship = "many-t
 ## Prepare CPTAC ---------------------------
 # Map targets to pps in data
 pps <- map_dfr(file_datasets, function(file){
-  df <- read_tsv(file, col_types = cols())
-  data.frame(site = df$site)
+  df <- readRDS(file)
+  data.frame(site = rownames(df))
 })
 
 pps <- pps %>%

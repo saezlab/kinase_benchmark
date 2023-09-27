@@ -3,9 +3,9 @@ if(exists("snakemake")){
   ppsp_file <- snakemake@input$ppsp
   output_file <- snakemake@output$tsv
 }else{
-  gps_file <- "results/prior/GPS.tsv"
-  ppsp_file <- "results/prior/phosphositeplus.tsv"
-  output_file <- "results/prior/GPS_PPSP.tsv"
+  gps_file <- "results/cptac/prior/GPS.tsv"
+  ppsp_file <- "results/cptac/prior/phosphositeplus.tsv"
+  output_file <- "results/cptac/prior/GPS_PPSP.tsv"
 }
 
 ## Libraries ---------------------------

@@ -199,7 +199,7 @@ rule combine_scores:
         file_ptmsea = "results/hernandez/activity_scores_ptmsea/{PKN}-scores.gct",
         file_scores = "results/hernandez/activity_scores/{PKN}.rds"
     output:
-        rds = "results/hernandez/final_scores/{PKN}.rds"
+        rds = "results/hernandez/final_scores/raw/{PKN}.rds"
     conda:
         "../envs/phospho.yml"
     script:
@@ -209,7 +209,7 @@ rule combine_scores:
 # -------------------------------------- BENCHMARK ---------------------------------------
 rule scale_scores:
     input:
-        rds = "results/hernandez/final_scores/{PKN}.rds"
+        rds = "results/hernandez/final_scores/raw/{PKN}.rds"
     output:
         output = "results/hernandez/final_scores/scaled/{PKN}.rds"
     params:
@@ -221,9 +221,11 @@ rule scale_scores:
 
 rule get_subset:
     input:
-        rds = expand("results/hernandez/final_scores/scaled/{PKN}.rds", PKN = config["hernandez"]["hernandez_PKNs"])
+        rds_raw = expand("results/hernandez/final_scores/raw/{PKN}.rds", PKN = config["hernandez"]["hernandez_PKNs"]),
+        rds_scaled = expand("results/hernandez/final_scores/scaled/{PKN}.rds", PKN = config["hernandez"]["hernandez_PKNs"])
     output:
-        output = "results/hernandez/final_scores/subset/{PKN}.rds"
+        output = "results/hernandez/final_scores/subset/{PKN}.rds",
+        output_scaled = "results/hernandez/final_scores/scaled_subset/{PKN}.rds"
     params:
         methods = config["hernandez"]["hernandez_methods"]
     conda:
@@ -233,13 +235,15 @@ rule get_subset:
 
 rule prepare_benchmark:
     input:
-        rds = "results/hernandez/final_scores/subset/{PKN}.rds",
+        rds = "results/hernandez/final_scores/{overlap}/{PKN}.rds",
         meta = "results/hernandez/processed_data/benchmark_metadata.csv"
     output:
-        output = "results/hernandez/benchmark_files/{hernandez_methods}-{PKN}.csv",
-        meta_out = "results/hernandez/benchmark_files/obs_{hernandez_methods}-{PKN}.csv"
+        output = "results/hernandez/benchmark_files/{overlap}/{hernandez_methods}-{PKN}.csv",
+        meta_out = "results/hernandez/benchmark_files/{overlap}/obs_{hernandez_methods}-{PKN}.csv"
     params:
-        rm_exp = "F"
+        rm_exp = "F",
+        filter_exp = "T",
+        msk_exp = ["705_225", "1298_272", "1288_272", "1291_272", "387_117", "1289_272", "1290_272", "1308_272", "699_225"]
     conda:
         "../envs/phospho.yml"
     script:
@@ -247,29 +251,27 @@ rule prepare_benchmark:
 
 rule run_mean_rank:
     input:
-        rds = expand("results/hernandez/final_scores/scaled/{PKN}.rds", PKN = config["hernandez"]["hernandez_PKNs"]),
+        rds = expand("results/hernandez/benchmark_files/{{overlap}}/{hernandez_methods}-{PKN}.csv", hernandez_methods = config["hernandez"]["hernandez_methods"], PKN = config["hernandez"]["hernandez_PKNs"]),
         meta =  "results/hernandez/processed_data/benchmark_metadata.csv",
         overview = "results/hernandez/overview_priors/coverage.csv"
     output:
-        output = "results/hernandez/benchmark_mean_rank/mean_rank.csv",
-        cov_kin = "results/hernandez/benchmark_res/overview/covered_kinases.csv",
-        per_exp = "results/hernandez/benchmark_mean_rank/performance_per_exp.csv",
-        per_kin = "results/hernandez/benchmark_mean_rank/performance_per_kin.csv",
-        pdf = "results/hernandez/benchmark_mean_rank/mean_rank.pdf",
-        boxplot = "results/hernandez/benchmark_mean_rank/bp_rank.pdf"
-    params:
-        mth = config["hernandez"]["hernandez_PKNs"]
+        output = "results/hernandez/benchmark_mean_rank/mean_rank_{overlap}.csv",
+        cov_kin = "results/hernandez/benchmark_res/overview/covered_kinases_{overlap}.csv",
+        per_exp = "results/hernandez/benchmark_mean_rank/performance_per_exp_{overlap}.csv",
+        per_kin = "results/hernandez/benchmark_mean_rank/performance_per_kin_{overlap}.csv",
+        pdf = "results/hernandez/benchmark_mean_rank/mean_rank_{overlap}.pdf",
+        boxplot = "results/hernandez/benchmark_mean_rank/bp_rank_{overlap}.pdf"
     conda:
         "../envs/phospho.yml"
     script:
-        "../scripts/04_benchmark/hernandez/02_decouple_bench.py"
+        "../scripts/04_benchmark/hernandez/02.2_get_mean_rank.R"
 
 rule run_benchmark:
     input:
-        scores = "results/hernandez/benchmark_files/{hernandez_methods}-{PKN}.csv",
-        meta = "results/hernandez/benchmark_files/obs_{hernandez_methods}-{PKN}.csv"
+        scores = "results/hernandez/benchmark_files/{overlap}/{hernandez_methods}-{PKN}.csv",
+        meta = "results/hernandez/benchmark_files/{overlap}/obs_{hernandez_methods}-{PKN}.csv"
     output:
-        output = "results/hernandez/benchmark_res/{PKN}/bench_{hernandez_methods}-{PKN}.csv"
+        output = "results/hernandez/benchmark_res/{PKN}/{overlap}/bench_{hernandez_methods}-{PKN}.csv"
     conda:
         "../envs/benchmark.yml"
     script:
@@ -277,10 +279,10 @@ rule run_benchmark:
 
 rule compare_performance:
     input:
-        bench = expand("results/hernandez/benchmark_res/{PKN}/bench_{hernandez_methods}-{PKN}.csv", hernandez_methods = config["hernandez"]["hernandez_methods"], PKN = config["hernandez"]["hernandez_PKNs"])
+        bench = expand("results/hernandez/benchmark_res/{PKN}/{{overlap}}/bench_{hernandez_methods}-{PKN}.csv", hernandez_methods = config["hernandez"]["hernandez_methods"], PKN = config["hernandez"]["hernandez_PKNs"])
     output:
-        auroc = "results/hernandez/benchmark_res/plots/AUROC.pdf",
-        auprc = "results/hernandez/benchmark_res/plots/AUPRC.pdf"
+        auroc = "results/hernandez/benchmark_res/plots/AUROC_{overlap}.pdf",
+        auprc = "results/hernandez/benchmark_res/plots/AUPRC_{overlap}.pdf"
     conda:
         "../envs/phospho.yml"
     script:
@@ -288,10 +290,10 @@ rule compare_performance:
 
 rule overview_bench:
     input:
-        bench = expand("results/hernandez/benchmark_files/obs_{hernandez_methods}-{PKN}.csv", hernandez_methods = config["hernandez"]["hernandez_methods"], PKN = config["hernandez"]["hernandez_PKNs"])
+        bench = expand("results/hernandez/benchmark_files/{{overlap}}/obs_{hernandez_methods}-{PKN}.csv", hernandez_methods = config["hernandez"]["hernandez_methods"], PKN = config["hernandez"]["hernandez_PKNs"])
     output:
-        ov = "results/hernandez/benchmark_res/overview/overview_bench.res",
-        ov_prior = "results/hernandez/benchmark_res/overview/overview_bench_prior.res"
+        ov = "results/hernandez/benchmark_res/overview/overview_bench_{overlap}.res",
+        ov_prior = "results/hernandez/benchmark_res/overview/overview_bench_prior_{overlap}.res"
     conda:
         "../envs/phospho.yml"
     script:

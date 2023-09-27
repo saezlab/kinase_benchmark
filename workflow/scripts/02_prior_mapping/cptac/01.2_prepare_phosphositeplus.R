@@ -4,8 +4,8 @@ if(exists("snakemake")){
   output_file <- snakemake@output$tsv
 }else{
   ppsp_file <- "data/prior/phosphositeplus"
-  output_file <- "results/prior/phosphositeplus.tsv"
-  file_datasets <- list.files("data/CPTAC_phospho", full.names = T)
+  output_file <- "results/cptac/prior/phosphositeplus.tsv"
+  file_datasets <- list.files("data/CPTAC_phospho/final", full.names = T)
 }
 
 ## Libraries ---------------------------
@@ -23,8 +23,8 @@ phosphositeplus_human <- phosphositeplus %>%
 ## Prepare CPTAC ---------------------------
 # Map targets to pps in data
 pps <- map_dfr(file_datasets, function(file){
-  df <- read_tsv(file, col_types = cols())
-  data.frame(site = df$site)
+  df <- readRDS(file)
+  data.frame(site = rownames(df))
 })
 
 pps <- pps %>%

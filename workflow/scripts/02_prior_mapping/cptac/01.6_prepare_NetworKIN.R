@@ -100,8 +100,8 @@ rownames(mappings_hugo) <- mappings_hugo$gene
 ## Prepare CPTAC ---------------------------
 # Prepare phosphorylation sites in data sets
 pps <- map_dfr(file_datasets, function(file){
-  df <- read_tsv(file, col_types = cols())
-  data.frame(site = df$site)
+  df <- readRDS(file)
+  data.frame(site = rownames(df))
 })
 
 pps <- pps %>%

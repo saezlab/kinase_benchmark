@@ -4,8 +4,8 @@ if(exists("snakemake")){
   output_file <- snakemake@output$tsv
 }else{
   GPS_file <- "data/prior/mmc4.xlsx"
-  output_file <- "results/prior/GPS.tsv"
-  file_datasets <- list.files("data/CPTAC_phospho", full.names = T)
+  output_file <- "results/cptac/prior/GPS.tsv"
+  file_datasets <- list.files("data/CPTAC_phospho/final", full.names = T)
 }
 
 ## Libraries ---------------------------
@@ -40,8 +40,8 @@ rownames(mappings_sp) <- mappings_sp$protein
 ## Prepare CPTAC ---------------------------
 # Prepare phosphorylation sites in data sets
 pps <- map_dfr(file_datasets, function(file){
-  df <- read_tsv(file, col_types = cols())
-  data.frame(site = df$site)
+  df <- readRDS(file)
+  data.frame(site = rownames(df))
 })
 
 pps <- pps %>%

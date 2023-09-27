@@ -7,9 +7,11 @@ configfile: "config/config.yml"
 
 rule all:
     input:
-#        expand("results/final_scores/{PKN}/{normalisation}/{normalisation}_{dataset}-{PKN}.rds", dataset = config["activity_estimation"]["datasets"], PKN = config["activity_estimation"]["PKNs"], normalisation = config["activity_estimation"]["normalisation"]), #CPTAC
+        expand("results/cptac/final_scores/{PKN}/{normalisation}/{normalisation}_{dataset}-{PKN}.rds", dataset = config["activity_estimation"]["datasets"], PKN = config["activity_estimation"]["PKNs"], normalisation = config["activity_estimation"]["normalisation"])
+#        expand("results/final_scores/{PKN}/{normalisation}/{normalisation}_{dataset}-{PKN}.rds", dataset = config["activity_estimation"]["datasets"], PKN = config["activity_estimation"]["PKNs"], normalisation = config["activity_estimation"]["normalisation"]) #CPTAC
 #        expand("results/decryptm/benchmark/{PKN}/bench_{decryptm_methods}-{decryptm_measurement}-{PKN}.csv", decryptm_methods = config["decryptm"]["decryptm_methods"], decryptm_measurement = config["decryptm"]["decryptm_measurement"], PKN = config["decryptm"]["decryptm_PKNs"]),#decryptm
-        "results/hernandez/benchmark_res/plots/AUROC.pdf"
+#        expand("results/hernandez/benchmark_res/plots/AUROC_{overlap}.pdf", overlap = config["hernandez"]["hernandez_overlap"]),
+#        expand("results/hernandez/benchmark_mean_rank/mean_rank_{overlap}.csv", overlap = config["hernandez"]["hernandez_overlap"])
 
 
 # Module for CPTAC data

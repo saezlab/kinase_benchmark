@@ -48,7 +48,7 @@ auroc_p <- bench_df %>%
   ggplot(aes(x=method, y=score, fill=net)) +
   geom_boxplot(outlier.size=0.2, lwd=0.2) +
   theme_minimal() +
-  theme(text = element_text(size = 9),
+  theme(text = element_text(size = 20),
         axis.text.x = element_text(hjust=0.5)) +
   ylab("AUROC") +
   xlab("")
@@ -63,7 +63,7 @@ auprc_p <- bench_df %>%
   ylab("AUPRC") +
   xlab("")
 
-pdf(auroc_plot, width = 10, height = 6)
+pdf(auroc_plot, width = 25, height = 10)
 auroc_p
 dev.off()
 
