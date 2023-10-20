@@ -46,27 +46,27 @@ bench_df$method <- factor(bench_df$method, levels = order_method)
 auroc_p <- bench_df %>%
   filter(metric == "mcauroc") %>%
   ggplot(aes(x=method, y=score, fill=net)) +
-  geom_boxplot(outlier.size=0.2, lwd=0.2) +
+  geom_boxplot(outlier.size=1, lwd=0.6) +
   theme_minimal() +
-  theme(text = element_text(size = 20),
-        axis.text.x = element_text(hjust=0.5)) +
+  theme(text = element_text(size = 14),
+        axis.text.x = element_text(angle = 45, hjust = 0.5)) +
   ylab("AUROC") +
   xlab("")
 
 auprc_p <- bench_df %>%
   filter(metric == "mcauprc") %>%
   ggplot(aes(x=method, y=score, fill=net)) +
-  geom_boxplot(outlier.size=0.2, lwd=0.2) +
+  geom_boxplot(outlier.size=3, lwd=1) +
   theme_minimal() +
   theme(text = element_text(size = 9),
-        axis.text.x = element_text(hjust=0.5)) +
+        axis.text.x = element_text(angle = 45, hjust = 0.5)) +
   ylab("AUPRC") +
   xlab("")
 
-pdf(auroc_plot, width = 25, height = 10)
+pdf(auroc_plot, width = 12, height = 5)
 auroc_p
 dev.off()
 
-pdf(auprc_plot, width = 10, height = 6)
+pdf(auprc_plot, width = 12, height = 5)
 auprc_p
 dev.off()

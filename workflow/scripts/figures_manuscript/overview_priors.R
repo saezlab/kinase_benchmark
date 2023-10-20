@@ -3,6 +3,7 @@ if(exists("snakemake")){
   coverage_pdf <- snakemake@output$kin
   edges_coverage_pdf <- snakemake@output$edges
   pps_coverage_pdf <- snakemake@output$pps
+  kinase_pdf <- snakemake@output$kin_heat
   height <- snakemake@params$plot_height
   width <- snakemake@params$plot_width
 }else{
@@ -10,14 +11,16 @@ if(exists("snakemake")){
   coverage_pdf <- "results/comparison/plots/coverage_kinases.pdf"
   edges_coverage_pdf <- "results/comparison/plots/coverage_edges.pdf"
   pps_coverage_pdf <- "results/comparison/plots/coverage_pps.pdf"
-  height <- 6
-  width <- 13
+  kinase_pdf <- "results/comparison/plots/coverage_pps.pdf"
+  height <- 4
+  width <- 3.2
 }
 height <- as.numeric(height)
 width <- as.numeric(width)
 
 ## Libraries ---------------------------
 library(tidyverse)
+library(pheatmap)
 
 ## Compare coverage ------------------
 prior <- map(prior_files, function(file){read_tsv(file, col_types = cols())})
@@ -48,7 +51,7 @@ PKN_order <- coverage %>%
   pull(PKN)
 coverage$PKN <- factor(coverage$PKN, levels = PKN_order)
 
-text_size <- floor((3/16) * (width*height))
+text_size <- 10
 
 pps_p <- ggplot(coverage %>% filter(class == "pps")) +
   aes(x = PKN, y = value) +
@@ -73,19 +76,44 @@ kin_p <- ggplot(data=coverage %>% filter(class == "kinase"), aes(x=PKN, y=value,
   ggtitle("unique kinases") +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1),
         text = element_text(size = text_size),
-        legend.position = "right",
-        legend.key.size = unit(0.5, 'cm')) +
+        legend.position = "bottom",
+        legend.key.size = unit(0.2, 'cm')) +
   scale_y_continuous(expand = c(0, 0))
 
 pdf(file=coverage_pdf, height = height*0.95, width = width*0.6)
 plot(kin_p)
 dev.off()
 
-pdf(file=edges_coverage_pdf, height = height*0.64, width = width*0.38)
+pdf(file=edges_coverage_pdf, height = height*0.6, width = width*0.5)
 plot(edges_p)
 dev.off()
 
-pdf(file=pps_coverage_pdf, height = height*0.64, width = width*0.38)
+pdf(file=pps_coverage_pdf, height = height*0.54, width = width*0.5)
 plot(pps_p)
 dev.off()
 
+
+resource_df <- map_dfr(names(prior), function(x){
+  df <- prior[[x]]
+  df %>%
+    add_column(resource = x)
+})
+
+kinase_m <- resource_df %>%
+  select(source,resource) %>%
+  add_column(present = 1) %>%
+  distinct() %>%
+  pivot_wider(names_from = source, values_from = present, values_fill = 0) %>%
+  column_to_rownames("resource")
+
+order_kin <- colSums(kinase_m) %>%
+  order()
+kinase_m <- kinase_m[c(PKN_order), order_kin]
+
+coverage_df <- pheatmap(kinase_m, cluster_rows = F,
+         cluster_cols = F, show_colnames = F,
+         treeheight_row = 0, color = c("white", "#477AA3"))
+
+pdf(kinase_pdf, height = height*0.5, width = width*0.65)
+print(coverage_df)
+dev.off()

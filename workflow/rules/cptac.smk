@@ -194,7 +194,7 @@ rule prior_comparison:
         edges = "results/comparison/plots/coverage_edges.pdf",
         pps = "results/comparison/plots/coverage_pps.pdf"
     params:
-        plot_width = "13",
+        plot_width = "13.7",
         plot_height = "6"
     conda:
         "../envs/phospho.yml"
