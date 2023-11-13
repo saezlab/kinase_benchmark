@@ -39,7 +39,7 @@ coverage <- map_dfr(names(prior), function(PKN_idx){
                       "kinases with \nat least 5 targets",
                       "none",
                       "none"),
-             class = c("kinase", "kinase", "edges", "pps"))
+             class = c("kinase", "kinase", "pps", "edges"))
 })
 
 coverage <- coverage %>% arrange(desc(value))
@@ -92,7 +92,7 @@ pdf(file=pps_coverage_pdf, height = height*0.54, width = width*0.5)
 plot(pps_p)
 dev.off()
 
-
+## Kinase overview ------------------
 resource_df <- map_dfr(names(prior), function(x){
   df <- prior[[x]]
   df %>%
@@ -117,3 +117,16 @@ coverage_df <- pheatmap(kinase_m, cluster_rows = F,
 pdf(kinase_pdf, height = height*0.5, width = width*0.65)
 print(coverage_df)
 dev.off()
+
+## Mean Jaccard ------------------
+kinases <- map(prior, 1) %>%
+  unlist %>%
+  unique
+
+map_dfr(kinases, function(kin_idx){
+  target_list <- map(prior, function(df){
+    df %>% filter(source == kin_idx) %>% pull(target)
+  })
+
+
+})
