@@ -1,7 +1,7 @@
 # ------------------------------------ FIGURE 1 ------------------------------------
 rule overview_prior:
     input:
-        prior_files = expand("results/prior/{PKN}.tsv", PKN = config["activity_estimation"]["PKNs"])
+        prior_files = expand("results/prior/{PKN}.tsv", PKN = config["general"]["PKNs"])
     output:
         kin = "results/manuscript_figures/figure_1/coverage_kinases.pdf",
         edges = "results/manuscript_figures/figure_1/coverage_edges.pdf",

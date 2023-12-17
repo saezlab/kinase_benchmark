@@ -10,109 +10,31 @@ rule prepare_omnipath:
         "../scripts/01_data_processing/cptac/format_unnormalized_data.R"
 
 # ------------------------------ INPUT PREPARATION ------------------------------
-rule prepare_omnipath:
+rule map_priors:
     input:
-        file_dataset = expand("data/CPTAC_phospho/final/{dataset}_norm2prot_{normalisation}_lm_log2_medCentRatio.rds", dataset = config["activity_estimation"]["datasets"], normalisation = config["activity_estimation"]["normalisation"])
+        ppsp = "results/prior/{prior}.tsv",
+        file_dataset = expand("data/CPTAC_phospho/final/{dataset}_norm2prot_{normalisation}_lm_log2_medCentRatio.rds", dataset = config["cptac"]["datasets"], normalisation = config["cptac"]["normalisation"])
     output:
-        tsv = "results/cptac/prior/omnipath.tsv"
+        tsv = "results/cptac/prior/{prior}.tsv"
     conda:
         "../envs/phospho.yml"
     script:
-        "../scripts/02_prior_mapping/cptac/01.1_prepare_omnipath.R"
+        "../scripts/02_prior_mapping/cptac/01_prior_mapping.R"
 
-rule prepare_phosphositeplus:
+rule map_merged_priors:
     input:
-        ppsp = "data/prior/phosphositeplus",
-        file_dataset = expand("data/CPTAC_phospho/final/{dataset}_norm2prot_{normalisation}_lm_log2_medCentRatio.rds", dataset = config["activity_estimation"]["datasets"], normalisation = config["activity_estimation"]["normalisation"])
+        ppsp = "results/prior/merged/{known}_{predicted}.tsv",
+        file_dataset = expand("data/CPTAC_phospho/final/{dataset}_norm2prot_{normalisation}_lm_log2_medCentRatio.rds", dataset = config["cptac"]["datasets"], normalisation = config["cptac"]["normalisation"])
     output:
-        tsv = "results/cptac/prior/phosphositeplus.tsv"
+        tsv = "results/cptac/prior/{known}_{predicted}.tsv"
     conda:
         "../envs/phospho.yml"
     script:
-        "../scripts/02_prior_mapping/cptac/01.2_prepare_phosphositeplus.R"
-
-rule prepare_ptmsigdb:
-    input:
-        ptmsig_file = "data/prior/ptm.sig.db.all.uniprot.human.v1.9.0.gmt",
-        file_dataset = expand("data/CPTAC_phospho/final/{dataset}_norm2prot_{normalisation}_lm_log2_medCentRatio.rds", dataset = config["activity_estimation"]["datasets"], normalisation = config["activity_estimation"]["normalisation"])
-    output:
-        tsv = "results/cptac/prior/ptmsigdb.tsv"
-    conda:
-        "../envs/phospho.yml"
-    script:
-        "../scripts/02_prior_mapping/cptac/01.3_prepare_ptmsigdb.R"
-
-rule prepare_ikipdb:
-    input:
-        ptmsig_file = "data/prior/iKiP-DB-Table.tsv",
-        file_dataset = expand("data/CPTAC_phospho/final/{dataset}_norm2prot_{normalisation}_lm_log2_medCentRatio.rds", dataset = config["activity_estimation"]["datasets"], normalisation = config["activity_estimation"]["normalisation"])
-    output:
-        tsv = "results/cptac/prior/iKiPdb.tsv"
-    conda:
-        "../envs/phospho.yml"
-    script:
-        "../scripts/02_prior_mapping/cptac/01.4_prepare_ikipdb.R"
-
-rule prepare_GPS:
-    input:
-        GPS_file = "data/prior/mmc4.xlsx",
-        file_dataset = expand("data/CPTAC_phospho/final/{dataset}_norm2prot_{normalisation}_lm_log2_medCentRatio.rds", dataset = config["activity_estimation"]["datasets"], normalisation = config["activity_estimation"]["normalisation"])
-    output:
-        tsv = "results/cptac/prior/GPS.tsv"
-    conda:
-        "../envs/phospho.yml"
-    script:
-        "../scripts/02_prior_mapping/cptac/01.5_prepare_GPS.R"
-
-rule prepare_NetworKIN:
-    input:
-        networkin_file = "data/prior/networkin_human_predictions_3.1.tsv",
-        file_dataset = expand("data/CPTAC_phospho/final/{dataset}_norm2prot_{normalisation}_lm_log2_medCentRatio.rds", dataset = config["activity_estimation"]["datasets"], normalisation = config["activity_estimation"]["normalisation"])
-    output:
-        tsv = "results/cptac/prior/networkin.tsv"
-    params:
-    	score = 5
-    conda:
-        "../envs/phospho.yml"
-    script:
-        "../scripts/02_prior_mapping/cptac/01.6_prepare_NetworKIN.R"
-
-rule prepare_jhonson:
-    input:
-        ppsp = "data/prior/simplified_jhonson_with_psite.csv",
-        file_dataset = expand("data/CPTAC_phospho/final/{dataset}_norm2prot_{normalisation}_lm_log2_medCentRatio.rds", dataset = config["activity_estimation"]["datasets"], normalisation = config["activity_estimation"]["normalisation"])
-    output:
-        tsv = "results/cptac/prior/jhonson.tsv"
-    conda:
-        "../envs/phospho.yml"
-    script:
-        "../scripts/02_prior_mapping/cptac/01.9_prepare_jhonson.R"
-
-rule merge_GPS_PPSP:
-    input:
-        gps = "results/cptac/prior/GPS.tsv",
-        ppsp = "results/cptac/prior/phosphositeplus.tsv"
-    output:
-        tsv = "results/cptac/prior/GPSppsp.tsv"
-    conda:
-        "../envs/phospho.yml"
-    script:
-        "../scripts/02_prior_mapping/cptac/01.7_merge_GPS_PPSP.R"
-
-rule merge_known_predicted:
-    input:
-        known_file = "results/cptac/prior/{known_targets}.tsv",
-        predicted_file = "results/cptac/prior/{predicted_targets}.tsv"
-    output:
-        tsv = "results/cptac/prior/{known_targets}_{predicted_targets}.tsv"
-    conda:
-        "../envs/phospho.yml"
-    script:
-        "../scripts/02_prior_mapping/cptac/01.8_merge_known_predicted.R"
+        "../scripts/02_prior_mapping/cptac/01_prior_mapping.R"
 
 rule map_kinase_ids:
     input:
-        prior_files = expand("results/cptac/prior/{PKN}.tsv", PKN = config["activity_estimation"]["PKNs"])
+        prior_files = expand("results/cptac/prior/{PKN}.tsv", PKN = config["cptac"]["cptac_PKNs"])
     output:
         tsv = "resources/kinase_mapping.tsv"
     conda:
@@ -188,7 +110,7 @@ rule combine_scores:
 # -------------------------------------- Comparison ---------------------------------------
 rule prior_comparison:
     input:
-        prior_files = expand("results/prior/{PKN}.tsv", PKN = config["activity_estimation"]["PKNs"])
+        prior_files = expand("results/prior/{PKN}.tsv", PKN = config["cptac"]["cptac_PKNs"])
     output:
         kin = "results/comparison/plots/coverage_kinases.pdf",
         edges = "results/comparison/plots/coverage_edges.pdf",
@@ -203,7 +125,7 @@ rule prior_comparison:
 
 rule activity_comparison:
     input:
-        act_files = expand("results/final_scores/{PKN}/{dataset}_{PKN}.rds", PKN = config["activity_estimation"]["PKNs"], dataset = config["activity_estimation"]["datasets"])
+        act_files = expand("results/final_scores/{PKN}/{dataset}_{PKN}.rds", PKN = config["cptac"]["cptac_PKNs"], dataset = config["cptac"]["datasets"])
     output:
         plotSpearman = "results/comparison/plots/spearman_heatmap.pdf",
         plotPearson = "results/comparison/plots/pearson_heatmap.pdf",

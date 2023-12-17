@@ -9,9 +9,9 @@ if(exists("snakemake")){
 }else{
   prior_files <- list.files("results/prior", pattern = "tsv", full.names = T)
   coverage_pdf <- "results/manuscript_figures/figure_1/coverage_merged.pdf"
-  kinase_pdf <- "results/comparison/plots/kinase_overview.pdf"
-  edge_pdf <- "results/comparison/plots/edge_overview.pdf"
-  jaccard_pdf <- "results/comparison/plots/jaccard.pdf"
+  kinase_pdf <- "results/manuscript_figures/figure_1/kinase_overview.pdf"
+  edge_pdf <- "results/manuscript_figures/figure_1/edge_overview.pdf"
+  jaccard_pdf <- "results/manuscript_figures/figure_1/jaccard.pdf"
   height <- 6
   width <- 4
 }

@@ -13,133 +13,27 @@ rule format_input:
 
 # ------------------------------ INPUT PREPARATION ------------------------------
 # ------------------------------ Prior knowledge preparation ------------------------------
-rule prepare_omnipath:
+rule map_priors:
     input:
+        ppsp = "results/prior/{prior}.tsv",
         file_dataset = "results/hernandez/processed_data/benchmark_data.csv"
     output:
-        tsv = "results/hernandez/prior/omnipath.tsv"
+        tsv = "results/hernandez/prior/{prior}.tsv"
     conda:
         "../envs/phospho.yml"
     script:
-        "../scripts/02_prior_mapping/hernandez/01.1_prepare_omnipath.R"
+        "../scripts/02_prior_mapping/hernandez/01_prior_mapping.R"
 
-rule prepare_phosphositeplus:
+rule map_merged_priors:
     input:
-        ppsp = "data/prior/phosphositeplus",
+        ppsp = "results/prior/merged/{known}_{predicted}.tsv",
         file_dataset = "results/hernandez/processed_data/benchmark_data.csv"
     output:
-        tsv = "results/hernandez/prior/phosphositeplus.tsv"
+        tsv = "results/hernandez/prior/{known}_{predicted}.tsv"
     conda:
         "../envs/phospho.yml"
     script:
-        "../scripts/02_prior_mapping/hernandez/01.2_prepare_phosphositeplus.R"
-
-rule prepare_ptmsigdb:
-    input:
-        ptmsig_file = "data/prior/ptm.sig.db.all.uniprot.human.v1.9.0.gmt",
-        file_dataset = "results/hernandez/processed_data/benchmark_data.csv"
-    output:
-        tsv = "results/hernandez/prior/ptmsigdb.tsv"
-    conda:
-        "../envs/phospho.yml"
-    script:
-        "../scripts/02_prior_mapping/hernandez/01.3_prepare_ptmsigdb.R"
-
-rule prepare_ikipdb:
-    input:
-        ptmsig_file = "data/prior/iKiP-DB-Table.tsv",
-        file_dataset = "results/hernandez/processed_data/benchmark_data.csv"
-    output:
-        tsv = "results/hernandez/prior/iKiPdb.tsv"
-    conda:
-        "../envs/phospho.yml"
-    script:
-        "../scripts/02_prior_mapping/hernandez/01.4_prepare_ikipdb.R"
-
-rule prepare_GPS:
-    input:
-        GPS_file = "data/prior/mmc4.xlsx",
-        file_dataset = "results/hernandez/processed_data/benchmark_data.csv"
-    output:
-        tsv = "results/hernandez/prior/GPS.tsv"
-    conda:
-        "../envs/phospho.yml"
-    script:
-        "../scripts/02_prior_mapping/hernandez/01.5_prepare_GPS.R"
-
-rule prepare_NetworKIN:
-    input:
-        networkin_file = "data/prior/networkin_human_predictions_3.1.tsv",
-        file_dataset = "results/hernandez/processed_data/benchmark_data.csv"
-    output:
-        tsv = "results/hernandez/prior/networkin.tsv"
-    params:
-    	score = 5
-    conda:
-        "../envs/phospho.yml"
-    script:
-        "../scripts/02_prior_mapping/hernandez/01.6_prepare_NetworKIN.R"
-
-rule prepare_jhonson:
-    input:
-        ppsp = "data/prior/simplified_jhonson_with_psite.csv",
-        file_dataset = "results/hernandez/processed_data/benchmark_data.csv"
-    output:
-        tsv = "results/hernandez/prior/jhonson.tsv"
-    conda:
-        "../envs/phospho.yml"
-    script:
-        "../scripts/02_prior_mapping/hernandez/01.9_prepare_jhonson.R"
-
-rule merge_GPS_PPSP:
-    input:
-        gps = "results/hernandez/prior/GPS.tsv",
-        ppsp = "results/hernandez/prior/phosphositeplus.tsv"
-    output:
-        tsv = "results/hernandez/prior/GPSppsp.tsv"
-    conda:
-        "../envs/phospho.yml"
-    script:
-        "../scripts/02_prior_mapping/hernandez/01.7_merge_GPS_PPSP.R"
-
-rule merge_known_predicted:
-    input:
-        known_file = "results/hernandez/prior/{known_targets}.tsv",
-        predicted_file = "results/hernandez/prior/{predicted_targets}.tsv"
-    output:
-        tsv = "results/hernandez/prior/{known_targets}_{predicted_targets}.tsv"
-    conda:
-        "../envs/phospho.yml"
-    script:
-        "../scripts/02_prior_mapping/hernandez/01.8_merge_known_predicted.R"
-
-rule prior_overview:
-    input:
-        prior_files = expand("results/hernandez/prior/{PKN}.tsv", PKN = config["hernandez"]["hernandez_PKNs"])
-    output:
-        csv = "results/hernandez/overview_priors/coverage.csv",
-        kin = "results/hernandez/overview_priors/coverage_kinases.pdf",
-        edges = "results/hernandez/overview_priors/coverage_edges.pdf",
-        pps = "results/hernandez/overview_priors/coverage_pps.pdf"
-    params:
-        height = "4",
-        width = "6"
-    conda:
-        "../envs/phospho.yml"
-    script:
-        "../scripts/02_prior_mapping/hernandez/03_prior_overview.R"
-
-rule prior_compare:
-    input:
-        prior_files = expand("results/hernandez/prior/{PKN}.tsv", PKN = config["hernandez"]["hernandez_PKNs_unmerged"])
-    output:
-        full_jaccard = "results/hernandez/overview_priors/overlap_priors.pdf",
-        kin_jaccard = "results/hernandez/overview_priors/overlap_priors_perKin.pdf"
-    conda:
-        "../envs/phospho.yml"
-    script:
-        "../scripts/02_prior_mapping/hernandez/04_prior_comparison.R"
-
+        "../scripts/02_prior_mapping/hernandez/01_prior_mapping.R"
 
 # ------------------------------- PTM-SEA input preparation -------------------------------
 rule ptmsea_datasets:

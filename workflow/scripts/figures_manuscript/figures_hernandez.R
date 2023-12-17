@@ -64,6 +64,18 @@ sd_measured_covered <- sd(coverage_df %>% filter(pps_covered == "known") %>% pul
 
 coverage_df$pps_covered <- factor(coverage_df$pps_covered, levels = c("unknown", "known"))
 
+coverage_df %>% filter(is.na(pps_covered)) %>% pull(n_pps) %>% mean()
+coverage_df %>%
+  mutate(pps_covered = case_when(
+    is.na(pps_covered) ~ "all",
+    !is.na(pps_covered) ~ pps_covered
+  )) %>%
+  filter(!pps_covered == "unknown") %>%
+  pivot_wider(names_from = "pps_covered", values_from = "n_pps") %>%
+  mutate(percentage = known/all) %>%
+  pull(percentage) %>%
+  mean
+
 overview_p <- ggplot(coverage_df %>%
          filter(!pps_covered == "total"), aes(fill=pps_covered, y=n_pps, x=experiment)) +
   geom_bar(position="stack", stat="identity") +
@@ -80,11 +92,11 @@ overview_p <- ggplot(coverage_df %>%
   theme(axis.text.x=element_blank(),
         axis.ticks.x=element_blank(),
         legend.key.size = unit(0.3, "cm"),
-        legend.title = element_text(size = 9),
+        legend.title = element_text(size = 10),
         legend.position = "bottom",
-        text = element_text(size = 9))
+        text = element_text(size = 10))
 
-pdf("results/manuscript_figures/hernandez_benchmark/01_overview.pdf", width = 3.5, height = 3.0)
+pdf("results/manuscript_figures/figure_2/overview_experiment.pdf", width = 2.2, height = 3.0)
 overview_p
 dev.off()
 

@@ -12,8 +12,26 @@ rule all:
 #        expand("results/decryptm/benchmark/{PKN}/bench_{decryptm_methods}-{decryptm_measurement}-{PKN}.csv", decryptm_methods = config["decryptm"]["decryptm_methods"], decryptm_measurement = config["decryptm"]["decryptm_measurement"], PKN = config["decryptm"]["decryptm_PKNs"]),#decryptm
 #        expand("results/hernandez/benchmark_res/plots/AUROC_{overlap}.pdf", overlap = config["hernandez"]["hernandez_overlap"]),
 #        expand("results/hernandez/benchmark_mean_rank/mean_rank_{overlap}.csv", overlap = config["hernandez"]["hernandez_overlap"])
-        "results/manuscript_figures/figure_1/coverage_kinases.pdf"
+#        "results/manuscript_figures/figure_1/coverage_kinases.pdf"
+        # Process priors
+        expand("results/prior/{PKN}.tsv",PKN = config["general"]["PKNs"]),
+        #expand("results/prior/merged/{known}_{predicted}.tsv", known = config["general"]["known_merged"], predicted = config["general"]["predicted_merged"]),
+        # Map to CPTAC
+        expand("results/cptac/prior/{PKN}.tsv",PKN = config["general"]["PKNs"]),
+        #expand("results/cptac/prior/{known}_{predicted}.tsv", known = config["general"]["known_merged"], predicted = config["general"]["predicted_merged"]),
+        # Map to hernandez
+        expand("results/hernandez/prior/{PKN}.tsv",PKN = config["general"]["PKNs"]),
+        #expand("results/hernandez/prior/{known}_{predicted}.tsv", known = config["general"]["known_merged"], predicted = config["general"]["predicted_merged"]),
+        # Activity estimation hernandez
+        expand("results/hernandez/final_scores/raw/{PKN}.rds", PKN = config["general"]["PKNs"]),
+        # Activtiy estimation cptac
+        expand("results/cptac/final_scores/{PKN}/{normalisation}/{normalisation}_{dataset}-{PKN}.rds", dataset = config["cptac"]["datasets"], PKN = config["cptac"]["cptac_PKNs"], normalisation = config["cptac"]["normalisation"])
 
+# Module for prior processing
+module prior:
+    snakefile: "rules/prior.smk"
+    config: config
+use rule * from prior as prior_*
 
 # Module for CPTAC data
 module cptac:
@@ -22,10 +40,10 @@ module cptac:
 use rule * from cptac as cptac_*
 
 # Module for decryptm data
-module decryptm:
-    snakefile: "rules/decryptm.smk"
-    config: config
-use rule * from decryptm as decryptm_*
+#module decryptm:
+#    snakefile: "rules/decryptm.smk"
+#    config: config
+#use rule * from decryptm as decryptm_*
 
 # Module for hernandez data
 module hernandez:

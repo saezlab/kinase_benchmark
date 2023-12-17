@@ -23,6 +23,7 @@ dependencies:
   - r-ggfortify
   - r-ggvenndiagram
   - r-pheatmap
+  - r-corrplot
   - python
   - pandas
   - pip

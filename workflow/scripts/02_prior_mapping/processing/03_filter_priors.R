@@ -2,13 +2,15 @@
 
 ## Snakemake ---------------------------
 if(exists("snakemake")){
-  input_file <- snakemake@input
-  output_file <- snakemake@output
+  input_file <- snakemake@input$raw
+  kinhub_file <- snakemake@input$kinhub
+  quickgo_file <- snakemake@input$go
+  output_file <- snakemake@output$filter
 }else{
-  input_file <- "results/prior/raw/GPS.tsv"
+  input_file <- "results/prior/raw/GSknown.tsv"
   kinhub_file <- "data/kinase_list_kinhub.txt"
   quickgo_file <- "data/QuickGO_kinase_20231214.tsv"
-  output_file <- "results/prior/GPS.tsv"
+  output_file <- "results/prior/GSknown.tsv"
 }
 
 ## Libraries ---------------------------
