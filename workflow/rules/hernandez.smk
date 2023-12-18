@@ -19,6 +19,8 @@ rule map_priors:
         file_dataset = "results/hernandez/processed_data/benchmark_data.csv"
     output:
         tsv = "results/hernandez/prior/{prior}.tsv"
+    wildcard_constraints:
+        prior = '[a-zA-Z]+'
     conda:
         "../envs/phospho.yml"
     script:

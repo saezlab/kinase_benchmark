@@ -91,6 +91,8 @@ rule filter_prior:
         go = "data/QuickGO_kinase_20231214.tsv"
     output:
         filter = "results/prior/{prior}.tsv"
+    wildcard_constraints:
+        prior = '[a-zA-Z]+'
     conda:
         "../envs/phospho.yml"
     script:

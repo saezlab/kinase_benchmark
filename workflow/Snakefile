@@ -15,15 +15,15 @@ rule all:
 #        "results/manuscript_figures/figure_1/coverage_kinases.pdf"
         # Process priors
         expand("results/prior/{PKN}.tsv",PKN = config["general"]["PKNs"]),
-        #expand("results/prior/merged/{known}_{predicted}.tsv", known = config["general"]["known_merged"], predicted = config["general"]["predicted_merged"]),
+        expand("results/prior/merged/{known}_{predicted}.tsv", known = config["general"]["known_merged"], predicted = config["general"]["predicted_merged"]),
         # Map to CPTAC
         expand("results/cptac/prior/{PKN}.tsv",PKN = config["general"]["PKNs"]),
-        #expand("results/cptac/prior/{known}_{predicted}.tsv", known = config["general"]["known_merged"], predicted = config["general"]["predicted_merged"]),
+        expand("results/cptac/prior/{known}_{predicted}.tsv", known = config["general"]["known_merged"], predicted = config["general"]["predicted_merged"]),
         # Map to hernandez
         expand("results/hernandez/prior/{PKN}.tsv",PKN = config["general"]["PKNs"]),
-        #expand("results/hernandez/prior/{known}_{predicted}.tsv", known = config["general"]["known_merged"], predicted = config["general"]["predicted_merged"]),
+        expand("results/hernandez/prior/{known}_{predicted}.tsv", known = config["general"]["known_merged"], predicted = config["general"]["predicted_merged"]),
         # Activity estimation hernandez
-        expand("results/hernandez/final_scores/raw/{PKN}.rds", PKN = config["general"]["PKNs"]),
+        expand("results/hernandez/final_scores/raw/{PKN}.rds", PKN = config["hernandez"]["hernandez_PKNs"]),
         # Activtiy estimation cptac
         expand("results/cptac/final_scores/{PKN}/{normalisation}/{normalisation}_{dataset}-{PKN}.rds", dataset = config["cptac"]["datasets"], PKN = config["cptac"]["cptac_PKNs"], normalisation = config["cptac"]["normalisation"])
 

@@ -16,6 +16,8 @@ rule map_priors:
         file_dataset = expand("data/CPTAC_phospho/final/{dataset}_norm2prot_{normalisation}_lm_log2_medCentRatio.rds", dataset = config["cptac"]["datasets"], normalisation = config["cptac"]["normalisation"])
     output:
         tsv = "results/cptac/prior/{prior}.tsv"
+    wildcard_constraints:
+        prior = '[a-zA-Z]+'
     conda:
         "../envs/phospho.yml"
     script:

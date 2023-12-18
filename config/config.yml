@@ -9,12 +9,12 @@ general:
 
 cptac:
   datasets: ["ucec", "luad", "lscc", "hnscc", "gbm", "ccrcc", "brca"]
-  cptac_PKNs: ["omnipath", "phosphositeplus", "ptmsigdb", "GPS", "iKiPdb", "networkin", "GSknown"]
+  cptac_PKNs: ["omnipath", "phosphositeplus", "ptmsigdb", "GPS", "iKiPdb", "networkin", "GSknown", "GSknown_networkin", "GSknown_iKiPdb"]
   normalisation: ["global", "protein", "site", "subtract", "unnorm"] #"original", "globalLM", "protLM", "siteLM", "subtractProt","unnormalized"
 
 hernandez:
   hernandez_PKNs_unmerged: ["omnipath", "GPS", "phosphositeplus", "networkin", "iKiPdb", "ptmsigdb"] #, "networkin", "iKiPdb", "jhonson"
-  hernandez_PKNs: ["omnipath", "phosphositeplus", "ptmsigdb", "GPS", "iKiPdb", "networkin", "GSknown"]
+  hernandez_PKNs: ["omnipath", "phosphositeplus", "ptmsigdb", "GPS", "iKiPdb", "networkin", "GSknown", "GSknown_networkin", "GSknown_iKiPdb"]
   hernandez_methods: ["KARP", "KS", "KSEA_z", "PC1", "RoKAI_z", "Wilcox", "fgsea", "mean", "median", "mlm","norm_wmean","number_of_targets","rokai_lm","ulm","viper","wsum", "ptmsea"] # "INKA", "UQ", "norm_fgsea"
   hernandez_overlap: ["scaled", "scaled_subset", "raw", "subset"] #scaled is equivalent to all
 
