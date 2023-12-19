@@ -7,11 +7,11 @@ if(exists("snakemake")){
   scripts <- snakemake@input$scripts
   script_support <- snakemake@input$script_support
 }else{
-  dataset <- "data/CPTAC_phospho/final/brca_norm2prot_global_lm_log2_medCentRatio.rds"
-  dataset_name <- "brca"
-  PKN <- "results/cptac/prior/GPS.tsv"
-  PKN_name <- "GPS"
-  output_file <- "results/cptac/activity_scores/GPS/global/global_brca-GPS.rds"
+  dataset <- "data/CPTAC_phospho/final/ccrcc_norm2prot_original_lm_log2_medCentRatio.rds"
+  dataset_name <- "ccrcc"
+  PKN <- "results/cptac/prior/ptmsigdb.tsv"
+  PKN_name <- "ptmsigdb"
+  output_file <- "results/cptac/activity_scores/ptmsigdb/original/original_brca-ptmsigdb.rds"
   scripts <- list.files("workflow/scripts/methods", pattern = "run", full.names = T)
   script_support <- "workflow/scripts/methods/support_functions.R"
 }
@@ -33,7 +33,9 @@ prior <- read.table(file = PKN, sep = "\t", header = T)
 ## Kinase activity estimation ---------------------------
 results <- map_dfr(1:ncol(phospho), function(i){
   mat_i <- phospho[,i] %>%
-    as.data.frame() %>%
+    as.data.frame()
+  rownames(mat_i) <- rownames(phospho)
+  mat_i <- mat_i %>%
     drop_na()
   colnames(mat_i) <- colnames(phospho)[i]
 
