@@ -3,8 +3,8 @@ if(exists("snakemake")){
   file_datasets <- snakemake@input$file_dataset
   output_file <- snakemake@output$tsv
 }else{
-  ppsp_file <- "results/prior/phosphositeplus.tsv"
-  output_file <- "results/cptac/prior/phosphositeplus.tsv"
+  ppsp_file <- "results/prior/merged/GSknown_networkin.tsv"
+  output_file <- "results/cptac/prior/GSknown_networkin.tsv"
   file_datasets <- list.files("data/CPTAC_phospho/final", full.names = T)
 }
 
@@ -46,6 +46,14 @@ target_df <- full_join(pps_df, res, by = "ensembl_gene_id")
 
 ## Merge with network ---------------------------
 if(!any(is.na(network$sequence))){
+  sequence_length <- min(map_dbl(network$sequence, nchar))
+
+  if (sequence_length < 15){
+    surrounding_seq <- (sequence_length-1) / 2
+    target_df <- target_df %>%
+      mutate(surrounding = substr(surrounding, 8-surrounding_seq, 8+surrounding_seq))
+  }
+
   target_df <- target_df %>%
     mutate(target_site = paste0(external_gene_name, "_", surrounding))
 
