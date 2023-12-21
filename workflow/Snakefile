@@ -7,25 +7,13 @@ configfile: "config/config.yml"
 
 rule all:
     input:
-#        expand("results/cptac/final_scores/{PKN}/{normalisation}/{normalisation}_{dataset}-{PKN}.rds", dataset = config["activity_estimation"]["datasets"], PKN = config["activity_estimation"]["PKNs"], normalisation = config["activity_estimation"]["normalisation"])
-#        expand("results/final_scores/{PKN}/{normalisation}/{normalisation}_{dataset}-{PKN}.rds", dataset = config["activity_estimation"]["datasets"], PKN = config["activity_estimation"]["PKNs"], normalisation = config["activity_estimation"]["normalisation"]) #CPTAC
-#        expand("results/decryptm/benchmark/{PKN}/bench_{decryptm_methods}-{decryptm_measurement}-{PKN}.csv", decryptm_methods = config["decryptm"]["decryptm_methods"], decryptm_measurement = config["decryptm"]["decryptm_measurement"], PKN = config["decryptm"]["decryptm_PKNs"]),#decryptm
-#        expand("results/hernandez/benchmark_res/plots/AUROC_{overlap}.pdf", overlap = config["hernandez"]["hernandez_overlap"]),
-#        expand("results/hernandez/benchmark_mean_rank/mean_rank_{overlap}.csv", overlap = config["hernandez"]["hernandez_overlap"])
-#        "results/manuscript_figures/figure_1/coverage_kinases.pdf"
-        # Process priors
-        expand("results/prior/{PKN}.tsv",PKN = config["general"]["PKNs"]),
-        expand("results/prior/merged/{known}_{predicted}.tsv", known = config["general"]["known_merged"], predicted = config["general"]["predicted_merged"]),
-        # Map to CPTAC
-        expand("results/cptac/prior/{PKN}.tsv",PKN = config["general"]["PKNs"]),
-        expand("results/cptac/prior/{known}_{predicted}.tsv", known = config["general"]["known_merged"], predicted = config["general"]["predicted_merged"]),
-        # Map to hernandez
-        expand("results/hernandez/prior/{PKN}.tsv",PKN = config["general"]["PKNs"]),
-        expand("results/hernandez/prior/{known}_{predicted}.tsv", known = config["general"]["known_merged"], predicted = config["general"]["predicted_merged"]),
-        # Activity estimation hernandez
+        expand("results/cptac/final_scores/{PKN}/{normalisation}/{normalisation}_{dataset}-{PKN}.rds", dataset = config["cptac"]["datasets"], PKN = config["cptac"]["cptac_PKNs"], normalisation = config["cptac"]["normalisation"]),
         expand("results/hernandez/final_scores/raw/{PKN}.rds", PKN = config["hernandez"]["hernandez_PKNs"]),
-        # Activtiy estimation cptac
-        expand("results/cptac/final_scores/{PKN}/{normalisation}/{normalisation}_{dataset}-{PKN}.rds", dataset = config["cptac"]["datasets"], PKN = config["cptac"]["cptac_PKNs"], normalisation = config["cptac"]["normalisation"])
+        #expand("results/hernandez/benchmark_res/plots/AUROC_{overlap}.pdf", overlap = config["hernandez"]["hernandez_overlap"]),
+        #expand("results/hernandez/benchmark_mean_rank/mean_rank_{overlap}.csv", overlap = config["hernandez"]["hernandez_overlap"]),
+        #Figures
+        "results/manuscript_figures/figure_1/coverage_merged.pdf",
+        "results/manuscript_figures/figure_2/overview_experiment.pdf"
 
 # Module for prior processing
 module prior:
@@ -39,12 +27,6 @@ module cptac:
     config: config
 use rule * from cptac as cptac_*
 
-# Module for decryptm data
-#module decryptm:
-#    snakefile: "rules/decryptm.smk"
-#    config: config
-#use rule * from decryptm as decryptm_*
-
 # Module for hernandez data
 module hernandez:
     snakefile: "rules/hernandez.smk"
@@ -56,3 +38,11 @@ module figures:
     snakefile: "rules/figures.smk"
     config: config
 use rule * from figures as figures_*
+
+
+#        expand("results/decryptm/benchmark/{PKN}/bench_{decryptm_methods}-{decryptm_measurement}-{PKN}.csv", decryptm_methods = config["decryptm"]["decryptm_methods"], decryptm_measurement = config["decryptm"]["decryptm_measurement"], PKN = config["decryptm"]["decryptm_PKNs"]),#decryptm
+# Module for decryptm data
+#module decryptm:
+#    snakefile: "rules/decryptm.smk"
+#    config: config
+#use rule * from decryptm as decryptm_*

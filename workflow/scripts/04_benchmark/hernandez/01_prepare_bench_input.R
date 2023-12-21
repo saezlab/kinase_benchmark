@@ -8,15 +8,12 @@ if(exists("snakemake")){
   meta_out <- snakemake@output$meta_out
   rm_experiments <- snakemake@params$rm_exp
   filter_experiments <- snakemake@params$filter_exp
-  exp_to_remove <- snakemake@params$msk_exp
 }else{
   input_file <- "results/hernandez/final_scores/scaled/GPSppsp.rds"
   meta_file <- "results/hernandez/processed_data/benchmark_metadata.csv"
   meta_out <- "results/hernandez/benchmark_files/scaled/obs_norm_fgsea-GPSppsp.csv"
   output_file <- "results/hernandez/benchmark_files/scaled/norm_fgsea-GPSppsp.csv"
   rm_experiments <- "T"
-  filter_experiments <- "T"
-  exp_to_remove <- c("705_225", "1298_272", "1288_272", "1291_272", "387_117", "1289_272", "1290_272", "1308_272", "699_225")
 }
 
 ## Libraries ---------------------------
@@ -107,10 +104,6 @@ if (rm_experiments){
   df_filtered <- df
 }
 
-if (filter_experiments){
-  df_filtered <- df_filtered %>%
-    filter(!experiment %in% exp_to_remove)
-}
 
 write_csv(df_filtered, output_file)
 

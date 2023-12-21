@@ -6,6 +6,8 @@ rule format_input:
     output:
         mat = "results/hernandez/processed_data/benchmark_data.csv",
         meta_out = "results/hernandez/processed_data/benchmark_metadata.csv"
+    params:
+        msk_exp = ["705_225", "1298_272", "1288_272", "1291_272", "387_117", "1289_272", "1290_272", "1308_272", "699_225"]
     conda:
         "../envs/phospho.yml"
     script:
@@ -36,6 +38,23 @@ rule map_merged_priors:
         "../envs/phospho.yml"
     script:
         "../scripts/02_prior_mapping/hernandez/01_prior_mapping.R"
+
+rule prior_overview:
+    input:
+        prior_files = expand("results/hernandez/prior/{PKN}.tsv", PKN = config["hernandez"]["hernandez_PKNs"])
+    output:
+        csv = "results/hernandez/overview_priors/coverage.csv",
+        kin = "results/hernandez/overview_priors/coverage_kinases.pdf",
+        edges = "results/hernandez/overview_priors/coverage_edges.pdf",
+        pps = "results/hernandez/overview_priors/coverage_pps.pdf"
+    params:
+        height = "4",
+        width = "6"
+    conda:
+        "../envs/phospho.yml"
+    script:
+        "../scripts/02_prior_mapping/hernandez/03_prior_overview.R"
+
 
 # ------------------------------- PTM-SEA input preparation -------------------------------
 rule ptmsea_datasets:
@@ -69,7 +88,8 @@ rule activity_estimation:
     output:
         rds = "results/hernandez/activity_scores/{PKN}.rds"
     params:
-        rm_auto = "T"
+        rm_auto = "T",
+        minsize = "1"
     conda:
         "../envs/phospho.yml"
     script:
@@ -84,7 +104,8 @@ rule activity_estimation_ptmsea:
         rds = "results/hernandez/activity_scores_ptmsea/log/{PKN}.log",
         gct = "results/hernandez/activity_scores_ptmsea/{PKN}-scores.gct"
     params:
-        output_folder = "results/hernandez/activity_scores_ptmsea"
+        output_folder = "results/hernandez/activity_scores_ptmsea",
+        minsize = "1"
     conda:
         "../envs/phospho.yml"
     script:
@@ -117,8 +138,8 @@ rule scale_scores:
 
 rule get_subset:
     input:
-        rds_raw = expand("results/hernandez/final_scores/raw/{PKN}.rds", PKN = config["hernandez"]["hernandez_PKNs"]),
-        rds_scaled = expand("results/hernandez/final_scores/scaled/{PKN}.rds", PKN = config["hernandez"]["hernandez_PKNs"])
+        rds_raw = expand("results/hernandez/final_scores/raw/{PKN}.rds", PKN = config["hernandez"]["hernandez_PKNs_subset"]),
+        rds_scaled = expand("results/hernandez/final_scores/scaled/{PKN}.rds", PKN = config["hernandez"]["hernandez_PKNs_subset"])
     output:
         output = "results/hernandez/final_scores/subset/{PKN}.rds",
         output_scaled = "results/hernandez/final_scores/scaled_subset/{PKN}.rds"
@@ -137,9 +158,7 @@ rule prepare_benchmark:
         output = "results/hernandez/benchmark_files/{overlap}/{hernandez_methods}-{PKN}.csv",
         meta_out = "results/hernandez/benchmark_files/{overlap}/obs_{hernandez_methods}-{PKN}.csv"
     params:
-        rm_exp = "F",
-        filter_exp = "T",
-        msk_exp = ["705_225", "1298_272", "1288_272", "1291_272", "387_117", "1289_272", "1290_272", "1308_272", "699_225"]
+        rm_exp = "F"
     conda:
         "../envs/phospho.yml"
     script:

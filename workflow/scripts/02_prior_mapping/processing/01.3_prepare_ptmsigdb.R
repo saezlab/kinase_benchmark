@@ -2,7 +2,7 @@ if(exists("snakemake")){
   ptmsig_file <- snakemake@input$ptmsig
   output_file <- snakemake@output$tsv
 }else{
-  ptmsig_file <- "data/prior/ptm.sig.db.all.uniprot.human.v1.9.0.gmt"
+  ptmsig_file <- "data/prior/ptm.sig.db.all.uniprot.human.v2.0.0.gmt"
   output_file <- "results/prior/raw/ptmsigdb.tsv"
 }
 

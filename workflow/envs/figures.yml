@@ -1,0 +1,11 @@
+name: benchmark
+channels:
+  - conda-forge
+  - bioconda
+  - r
+dependencies:
+  - r-base # general dependencies
+  - r-tidyverse
+  - r-corrplot
+  - r-ggpubr
+  - r-pheatmap

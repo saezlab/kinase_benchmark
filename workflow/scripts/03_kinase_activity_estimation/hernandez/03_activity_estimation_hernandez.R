@@ -6,6 +6,7 @@ if(exists("snakemake")){
   scripts <- snakemake@input$scripts
   script_support <- snakemake@input$script_support
   remove_auto <- snakemake@params$rm_auto
+  minsize <- snakemake@params$minsize
 }else{
   dataset <- "results/hernandez/processed_data/benchmark_data.csv"
   PKN <- "results/hernandez/prior/omnipath.tsv"
@@ -14,7 +15,10 @@ if(exists("snakemake")){
   remove_auto <- T
   scripts <- list.files("workflow/scripts/methods", pattern = "run", full.names = T)
   script_support <- "workflow/scripts/methods/support_functions.R"
+  minsize <- 1
 }
+
+minsize <- as.double(minsize)
 
 ## Libraries ---------------------------
 library(decoupleR)
@@ -50,17 +54,17 @@ results <- map_dfr(1:ncol(phospho), function(i){
   prior_i <- prior %>% filter(!source %in% filter_source) %>% ungroup()
 
   # run activity estimation methods
-  KARP <- run_KARP(mat_i, prior)
-  RoKAI_z <- run_zscore_RoKAI(mat_i, prior)
-  KSEA_z <- run_zscore_KSEA(mat_i, prior)
-  INKA <- run_INKA(mat_i, prior, kinase_mapping = F)
-  Rokai_lm <- run_lm_rokai(mat_i, prior)
-  mlm <- run_mlm(mat = as.matrix(mat_i), network = prior_i)
-  ulm <- run_ulm(mat = as.matrix(mat_i), network = prior)
-  wsum <- run_wsum(mat = as.matrix(mat_i), network = prior)
-  fgsea <- run_fgsea(mat = as.matrix(mat_i), network = prior)
-  wmean <- run_wmean(mat = as.matrix(mat_i), network = prior)
-  viper <- run_viper(mat = as.matrix(mat_i), network = prior)
+  KARP <- run_KARP(mat_i, prior, minsize = minsize)
+  RoKAI_z <- run_zscore_RoKAI(mat_i, prior, minsize = minsize)
+  KSEA_z <- run_zscore_KSEA(mat_i, prior, minsize = minsize)
+  INKA <- run_INKA(mat_i, prior, kinase_mapping = F, minsize = minsize)
+  Rokai_lm <- run_lm_rokai(mat_i, prior, minsize = minsize)
+  mlm <- run_mlm(mat = as.matrix(mat_i), network = prior_i, minsize = 5)
+  ulm <- run_ulm(mat = as.matrix(mat_i), network = prior, minsize = minsize)
+  wsum <- run_wsum(mat = as.matrix(mat_i), network = prior, minsize = minsize)
+  fgsea <- run_fgsea(mat = as.matrix(mat_i), network = prior, minsize = minsize)
+  wmean <- run_wmean(mat = as.matrix(mat_i), network = prior, minsize = minsize)
+  viper <- run_viper(mat = as.matrix(mat_i), network = prior, minsize = minsize)
 
   # For mlm add correlated kinases again and assign the same score
   mlm <- mlm %>%

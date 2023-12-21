@@ -4,6 +4,7 @@ if(exists("snakemake")){
   PKN_name <- snakemake@wildcards$PKN
   log <- snakemake@output$rds
   output_folder <- snakemake@params$output_folder
+  minsize <- snakemake@params$minsize
 }else{
   dataset <- "results/hernandez/datasets/benchmark.gct"
   PKN <- "results/hernandez/prior/ptm-sea/{PKN}.gmt"
@@ -11,7 +12,9 @@ if(exists("snakemake")){
   output_folder <- "results/hernandez/activity_scores_ptmsea"
   log <- "results/hernandez/activity_scores_ptmsea/log/GPS.log"
   if(!require("ssGSEA2")) remotes::install_github('nicolerg/ssGSEA2', upgrade='never')
+  minsize <- 1
 }
+minsize <- as.double(minsize)
 
 ## Libraries ---------------------------
 library(ssGSEA2)
@@ -28,7 +31,7 @@ res <- run_ssGSEA2(dataset,
                   statistic = "area.under.RES",
                   output.score.type = "NES",
                   nperm = 50,
-                  min.overlap = 5,
+                  min.overlap = minsize,
                   extended.output = TRUE,
                   global.fdr = FALSE,
                   log.file = log)

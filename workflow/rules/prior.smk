@@ -19,7 +19,7 @@ rule prepare_phosphositeplus:
 
 rule prepare_ptmsigdb:
     input:
-        ptmsig = "data/prior/ptm.sig.db.all.uniprot.human.v1.9.0.gmt"
+        ptmsig = "data/prior/ptm.sig.db.all.uniprot.human.v2.0.0.gmt"
     output:
         tsv = "results/prior/raw/ptmsigdb.tsv"
     conda:

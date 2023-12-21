@@ -1,22 +1,16 @@
 if(exists("snakemake")){
   prior_files <- snakemake@input$prior_files
   coverage_pdf <- snakemake@output$kin
-  edges_coverage_pdf <- snakemake@output$edges
-  pps_coverage_pdf <- snakemake@output$pps
   kinase_pdf <- snakemake@output$kin_heat
-  height <- snakemake@params$plot_height
-  width <- snakemake@params$plot_width
+  edge_pdf <- snakemake@output$edges
+  jaccard_pdf <- snakemake@output$pps
 }else{
   prior_files <- list.files("results/prior", pattern = "tsv", full.names = T)
   coverage_pdf <- "results/manuscript_figures/figure_1/coverage_merged.pdf"
   kinase_pdf <- "results/manuscript_figures/figure_1/kinase_overview.pdf"
   edge_pdf <- "results/manuscript_figures/figure_1/edge_overview.pdf"
   jaccard_pdf <- "results/manuscript_figures/figure_1/jaccard.pdf"
-  height <- 6
-  width <- 4
 }
-height <- as.numeric(height)
-width <- as.numeric(width)
 
 ## Libraries ---------------------------
 library(tidyverse)
@@ -72,7 +66,8 @@ edges_p <- ggplot(coverage %>% filter(class == "edges")) +
   theme_minimal() + xlab("") + ylab("") +
   ggtitle("kinase-peptide links") +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1),
-        text = element_text(size = text_size))
+        text = element_text(size = text_size)) +
+  scale_y_continuous(expand = c(0, 0))
 
 kin_p <- ggplot(data=coverage %>% filter(class == "kinase"), aes(x=PKN, y=value, fill=type)) +
   geom_bar(stat="identity",color="black", position=position_dodge(), width=0.7) +
