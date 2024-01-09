@@ -8,8 +8,8 @@ general:
 
 cptac:
   datasets: ["ucec", "luad", "lscc", "hnscc", "gbm", "ccrcc", "brca"]
-  cptac_PKNs: ["omnipath", "phosphositeplus", "ptmsigdb", "GPS", "iKiPdb", "networkin", "GSknown", "GSknown_networkin", "GSknown_iKiPdb"]
-  normalisation: ["original"] #, "global", "protein", "site", "subtract", "unnorm"
+  cptac_PKNs: ["GSknown"]
+  normalisation: ["original", "global", "protein", "site", "subtract", "unnorm"] #
 
 hernandez:
   hernandez_PKNs: ["omnipath", "phosphositeplus", "ptmsigdb", "GPS", "iKiPdb", "networkin", "GSknown", "GSknown_networkin", "GSknown_iKiPdb"]
@@ -25,3 +25,4 @@ decryptm:
 
 figures:
   PKN_figure1: ["omnipath", "phosphositeplus", "ptmsigdb", "GPS", "iKiPdb", "networkin"]
+  PKN_figure2: ["omnipath", "phosphositeplus", "ptmsigdb", "GPS", "iKiPdb", "networkin", "GSknown"]

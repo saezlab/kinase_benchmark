@@ -6,16 +6,21 @@ if(exists("snakemake")){
   meta_file <- snakemake@input$meta
   auroc_plot <- snakemake@output$auroc
   overview_meta <- snakemake@output$meta_over
+  rank_file <- snakemake@input$rank
+  rank_plot <- snakemake@output$rankPlt
 }else{
   bench_files <- list.files("results/hernandez/benchmark_res",
                             pattern = "bench", recursive = TRUE, full.names = T)
   auroc_plot <- "results/manuscript_figures/figure_3/auroc_res.pdf"
   meta_file <- "results/hernandez/processed_data/benchmark_metadata.csv"
   overview_meta <- "results/manuscript_figures/figure_3/overview_kin.pdf"
+  rank_file <- "results/hernandez/benchmark_mean_rank/mean_rank_scaled.csv"
+  rank_plot <- "results/manuscript_figures/figure_3/mean_rank.pdf"
 }
 
 ## Libraries ---------------------------
 library(tidyverse)
+library(corrplot)
 
 ## Overview kinases ---------------------------
 hernandez_meta <- read_csv(meta_file, col_types = cols())
@@ -99,3 +104,16 @@ auroc_p
 dev.off()
 
 ## Mean rank ---------------------------
+rank_df <- read_csv(rank_file, col_types = cols())
+
+rank_wide <- rank_df %>%
+  select(method, prior, mean_rank) %>%
+  mutate(mean_rank = round(mean_rank)) %>%
+  pivot_wider(names_from = prior, values_from = mean_rank) %>%
+  filter(method != "number_of_targets") %>%
+  column_to_rownames("method") %>%
+  as.matrix()
+
+pdf(rank_plot, height = 7, width = 7)
+corrplot(rank_wide, method = 'color', is.corr = F, addCoef.col = 'white',tl.col = 'black', col = COL1('Blues', 200)[50:200])
+dev.off()

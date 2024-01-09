@@ -17,7 +17,7 @@ rule act_comparison:
     input:
         bench = "results/hernandez/processed_data/benchmark_data.csv",
         benchMeta = "results/hernandez/processed_data/benchmark_metadata.csv",
-        prior_files = expand("results/prior/{PKN}.tsv", PKN = config["figures"]["PKN_figure1"]),
+        prior_files = expand("results/hernandez/prior/{PKN}.tsv", PKN = config["figures"]["PKN_figure1"]),
         act =  expand("results/hernandez/final_scores/scaled/{PKN}.rds", PKN = config["figures"]["PKN_figure1"])
     output:
         overview = "results/manuscript_figures/figure_2/overview_experiment.pdf",
@@ -33,11 +33,13 @@ rule act_comparison:
 # ------------------------------------ FIGURE 3 ------------------------------------
 rule benchmark_figure:
     input:
-        bench_files = expand("results/hernandez/benchmark_res/{PKN}/scaled/bench_{methods}-{PKN}.csv", PKN = config["figures"]["PKN_figure1"], methods = config["hernandez"]["hernandez_methods"]),
-        meta = "results/hernandez/processed_data/benchmark_metadata.csv"
+        bench_files = expand("results/hernandez/benchmark_res/{PKN}/scaled/bench_{methods}-{PKN}.csv", PKN = config["figures"]["PKN_figure2"], methods = config["hernandez"]["hernandez_methods"]),
+        meta = "results/hernandez/processed_data/benchmark_metadata.csv",
+        rank = "results/hernandez/benchmark_mean_rank/mean_rank_scaled.csv"
     output:
         auroc = "results/manuscript_figures/figure_3/auroc_res.pdf",
-        meta_over = "results/manuscript_figures/figure_3/overview_kin.pdf"
+        meta_over = "results/manuscript_figures/figure_3/overview_kin.pdf",
+        rankPlt = "results/manuscript_figures/figure_3/mean_rank.pdf"
     conda:
         "../envs/figures.yml"
     script:

@@ -136,7 +136,7 @@ colnames(mean_correlation) <- colnames(method_comparison[[1]])
 rownames(mean_correlation) <- rownames(method_comparison[[1]])
 
 pdf(cor_methods_p, height = 3, width = 3.5)
-corrplot(mean_correlation, col.lim=c(0, 1), is.corr = FALSE, type = 'lower', tl.col = 'black', order = 'hclust', cl.pos = 'r')
+corrplot(mean_correlation, col.lim=c(0, 1), is.corr = FALSE, type = 'lower', tl.col = 'black', order = 'hclust', cl.pos = 'r', col = COL1('Blues'))
 dev.off()
 
 ## Prior comparison ---------------------------
@@ -170,6 +170,6 @@ colnames(mean_correlation) <- colnames(prior_comparison[[1]])
 rownames(mean_correlation) <- rownames(prior_comparison[[1]])
 
 pdf(cor_priors_p, height = 3, width = 3.5)
-corrplot(mean_correlation, col.lim=c(0, 1), is.corr = FALSE, type = 'lower', tl.col = 'black', order = 'hclust',  cl.pos = 'r')
+corrplot(mean_correlation, col.lim=c(0, 1), is.corr = FALSE, type = 'lower', tl.col = 'black', order = 'hclust',  cl.pos = 'r', col = COL1('Blues'))
 dev.off()
 

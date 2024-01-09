@@ -3,15 +3,19 @@
 ## Snakemake ---------------------------
 if(exists("snakemake")){
   input_file <- snakemake@input$rds
+  input_hernandez <- snakemake@input$hernandez
   meta_file <- snakemake@input$meta
+  meta_hernandez <- snakemake@input$metah
   output_file <- snakemake@output$output
   meta_out <- snakemake@output$meta_out
   rm_experiments <- snakemake@params$rm_exp
 }else{
   input_file <- "results/hijazi/04_final_scores/scaled/GSknown.rds"
+  input_hernandez <- "results/hernandez/final_scores/scaled/GSknown.rds"
   meta_file <- "results/hijazi/01_processed_data/benchmark_metadataPrior.csv"
-  meta_out <- "results/hijazi/05_benchmark_files/scaled/obs_number_of_targets-GSknown.csv"
-  output_file <- "results/hijazi/05_benchmark_files/scaled/number_of_targets-GSknown.csv"
+  meta_hernandez <- "results/hernandez/processed_data/benchmark_metadata.csv"
+  meta_out <- "results/hijazi/05_benchmark_files/merged/obs_number_of_targets-GSknown.csv"
+  output_file <- "results/hijazi/05_benchmark_files/merged/number_of_targets-GSknown.csv"
   rm_experiments <- "F"
 }
 
@@ -24,9 +28,28 @@ method <- gsub(input, "", method_tmp)
 
 rm_experiments <- as.logical(rm_experiments)
 ## Load scores and meta ---------------------------
-act_scores <- readRDS(input_file)
+act_scores_hijazi <- readRDS(input_file)
+act_scores_hernandez <- readRDS(input_hernandez)
 
-obs <- read_csv(meta_file, col_types = cols())
+## merge datasets
+act_scores <- map(names(act_scores_hijazi), function(method_idx){
+  hijazi <- act_scores_hijazi[[method_idx]] %>%
+    as.data.frame() %>%
+    rownames_to_column("kinase")
+  hernandez <- act_scores_hernandez[[method_idx]] %>%
+    as.data.frame() %>%
+    rownames_to_column("kinase")
+
+  full_join(hijazi, hernandez, by = "kinase") %>%
+    column_to_rownames("kinase")
+})
+names(act_scores) <- names(act_scores_hijazi)
+
+obs_hijazi <- read_csv(meta_file, col_types = cols()) %>%
+  dplyr::select(id, sign, target)
+obs_hernandez <- read_csv(meta_hernandez, col_types = cols()) %>%
+  dplyr::select(id, sign, target)
+obs <- rbind(obs_hijazi, obs_hernandez)
 
 # Set perturb
 obs_targets <- obs %>%
@@ -47,7 +70,7 @@ if (method == "number_of_targets"){
     mat_meth <- data.frame(act_scores[[method]])
     colnames(mat_meth) <- colnames(act_scores[[method]])
     if (experiment %in% colnames(mat_meth)){
-      mat <- t(act_scores[[method]][,experiment]) * 1
+      mat <- t(act_scores[[method]][experiment]) * 1
       mat[mat == 0] <- NA
       data.frame(mat) %>%
         add_column(experiment = experiment, .before = 1)

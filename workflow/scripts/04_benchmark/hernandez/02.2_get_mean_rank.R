@@ -12,20 +12,19 @@ if(exists("snakemake")){
   mean_rank_pdf <- snakemake@output$pdf
   bp_rank_pdf <- snakemake@output$boxplot
 }else{
-  input_files <- list.files("results/hernandez/benchmark_files/scaled_subset", full.names = T, pattern = ".csv")
+  input_files <- list.files("results/hernandez/benchmark_files/scaled", full.names = T, pattern = ".csv")
   prior_ov_file <- "results/hernandez/overview_priors/coverage.csv"
-  cov_kin_file <- "results/hernandez/benchmark_res/overview/covered_kinases_scaled_subset.csv"
+  cov_kin_file <- "results/hernandez/benchmark_res/overview/covered_kinases_scaled.csv"
   meta_file <- "results/hernandez/processed_data/benchmark_metadata.csv"
   output_file <- "results/hernandez/benchmark_mean_rank/mean_rank_scaled_subset.csv"
-  performance_per_exp <- "results/hernandez/benchmark_mean_rank/performance_per_exp_scaled_subset.csv"
-  performance_per_kin <- "results/hernandez/benchmark_mean_rank/performance_per_kin_scaled_subset.csv"
-  mean_rank_pdf <- "results/hernandez/benchmark_mean_rank/mean_rank_scaled_subset.pdf"
-  bp_rank_pdf <- "results/hernandez/benchmark_mean_rank/bp_rank_scaled_subset.pdf"
+  performance_per_exp <- "results/hernandez/benchmark_mean_rank/performance_per_exp_scaled.csv"
+  performance_per_kin <- "results/hernandez/benchmark_mean_rank/performance_per_kin_scaled.csv"
+  mean_rank_pdf <- "results/hernandez/benchmark_mean_rank/mean_rank_scaled.pdf"
+  bp_rank_pdf <- "results/hernandez/benchmark_mean_rank/bp_rank_scaled.pdf"
 }
 
 ## Libraries ---------------------------
 library(tidyverse)
-
 
 ## Load  meta ---------------------------
 obs <- read_csv(meta_file) %>%
@@ -36,6 +35,8 @@ input_files <- input_files[!str_detect(input_files, "obs")]
 
 ## Load  activity scores ---------------------------
 coverage_priors <- read_csv(prior_ov_file)
+
+## Get rank ---------------------------
 ranks <- map_dfr(input_files, function(input_file){
   net <- str_split(str_remove(str_split(input_file, "/")[[1]][5], ".csv"), "-")[[1]][2]
   meth <- str_split(str_remove(str_split(input_file, "/")[[1]][5], ".csv"), "-")[[1]][1]
@@ -92,10 +93,16 @@ ranks <- map_dfr(input_files, function(input_file){
                                              pull(kinase), collapse = ";")) %>%
           mutate(scaled_rank = rank/kinases_act)
       }
-
     })
-
 })
+
+ranks %>%
+  filter(prior == "GSknown") %>%
+  filter(!method == "number_of_targets") %>%
+  group_by(targets) %>%
+  summarise(mean_rank = mean(rank, na.rm = T)) %>%
+  filter(!is.na(mean_rank))
+
 
 overview_kinases <- ranks %>%
   mutate(true_target = case_when(

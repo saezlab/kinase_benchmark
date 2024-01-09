@@ -8,10 +8,10 @@ if(exists("snakemake")){
   remove_auto <- snakemake@params$rm_auto
   minsize <- snakemake@params$minsize
 }else{
-  dataset <- "results/hernandez/processed_data/benchmark_data.csv"
-  PKN <- "results/hernandez/prior/GSknown_iKiPdb.tsv"
-  PKN_name <- "GSknown_iKiPdb"
-  output_file <- "results/hernandez/activity_scores/GSknown_iKiPdb.rds"
+  dataset <- "results/hijazi/01_processed_data/benchmark_data.csv"
+  PKN <- "results/hijazi/02_prior/ptmsigdb.tsv"
+  PKN_name <- "ptmsigdb"
+  output_file <- "results/hijazi/03_activity_scores/ptmsigdb.rds"
   remove_auto <- T
   scripts <- list.files("workflow/scripts/methods", pattern = "run", full.names = T)
   script_support <- "workflow/scripts/methods/support_functions.R"
@@ -29,7 +29,7 @@ map(scripts, source)
 
 ## Load data ---------------------------
 ### phosphoproteomics
-phospho <- read_csv(dataset) %>%
+phospho <- read_csv(dataset, col_types = cols()) %>%
   column_to_rownames("ID")
 
 ## Prior knowledge Kinase-Substrate Networks

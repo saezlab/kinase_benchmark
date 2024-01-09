@@ -89,7 +89,7 @@ rule activity_estimation:
         rds = "results/hernandez/activity_scores/{PKN}.rds"
     params:
         rm_auto = "T",
-        minsize = "1"
+        minsize = "3"
     conda:
         "../envs/phospho.yml"
     script:
@@ -105,7 +105,7 @@ rule activity_estimation_ptmsea:
         gct = "results/hernandez/activity_scores_ptmsea/{PKN}-scores.gct"
     params:
         output_folder = "results/hernandez/activity_scores_ptmsea",
-        minsize = "1"
+        minsize = "3"
     conda:
         "../envs/phospho.yml"
     script:
