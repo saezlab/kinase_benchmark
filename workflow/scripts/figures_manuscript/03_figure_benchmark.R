@@ -4,18 +4,27 @@
 if(exists("snakemake")){
   bench_files <- snakemake@input$bench_files
   meta_file <- snakemake@input$meta
+  meta_hijazi <- snakemake@input$hijazi
   auroc_plot <- snakemake@output$auroc
   overview_meta <- snakemake@output$meta_over
   rank_file <- snakemake@input$rank
   rank_plot <- snakemake@output$rankPlt
+  kinase_rank <- snakemake@input$kin
+  kin_file <- snakemake@output$rankKin
+  prior_size <- snakemake@input$prior
 }else{
-  bench_files <- list.files("results/hernandez/benchmark_res",
+  bench_files <- list.files("results/hijazi/06_benchmark_res",
                             pattern = "bench", recursive = TRUE, full.names = T)
+  bench_files <- bench_files[str_detect(bench_files, "merged")]
   auroc_plot <- "results/manuscript_figures/figure_3/auroc_res.pdf"
+  prior_size <- "results/hernandez/overview_priors/coverage.csv"
+  kinase_rank <- "results/hijazi/06_mean_rank/performance_per_kin_merged.csv"
   meta_file <- "results/hernandez/processed_data/benchmark_metadata.csv"
+  meta_hijazi <- "results/hijazi/01_processed_data/benchmark_metadataPrior.csv"
   overview_meta <- "results/manuscript_figures/figure_3/overview_kin.pdf"
-  rank_file <- "results/hernandez/benchmark_mean_rank/mean_rank_scaled.csv"
+  rank_file <- "results/hijazi/06_mean_rank/full_rank_merged.csv"
   rank_plot <- "results/manuscript_figures/figure_3/mean_rank.pdf"
+  kin_file <- "results/manuscript_figures/figure_3/kinase_GSknown.csv"
 }
 
 ## Libraries ---------------------------
@@ -23,7 +32,19 @@ library(tidyverse)
 library(corrplot)
 
 ## Overview kinases ---------------------------
-hernandez_meta <- read_csv(meta_file, col_types = cols())
+if (any(str_detect(bench_files, "merged"))){
+  meta_hi <- read_csv(meta_hijazi, col_types = cols()) %>%
+    dplyr::select(id, sign, target)
+  meta_hernandez <- read_csv(meta_file, col_types = cols()) %>%
+    dplyr::select(id, sign, target)
+  hernandez_meta <- rbind(meta_hi, meta_hernandez) %>%
+    separate_rows(target, sep = ";")
+} else if (any(str_detect(bench_files, "scaled"))){
+  hernandez_meta <- read_csv(meta_file, col_types = cols()) %>%
+    dplyr::select(id, sign, target)
+}
+
+
 
 kin_df <- table(hernandez_meta$target, hernandez_meta$sign) %>%
   as.data.frame() %>%
@@ -49,9 +70,9 @@ kin_p <- ggplot(kin_df, aes(x = kinase, y = Freq, fill = perturbation)) +
   theme(legend.key.size = unit(0.3, "cm"),
         legend.title = element_text(size = 11),
         legend.position = "bottom",
-        text = element_text(size = 11))
+        text = element_text(size = 10))
 
-pdf(overview_meta, width = 2.7, height = 4)
+pdf(overview_meta, width = 2.7, height = 7)
 kin_p
 dev.off()
 
@@ -94,7 +115,7 @@ auroc_p <- bench_df %>%
   theme(text = element_text(size = 11),
         axis.text.x = element_text(angle = 45, hjust = 1),
         legend.key.size = unit(0.4, 'cm')) +
-  ylim(0.5, 0.93) +
+  ylim(0.5, 0.83) +
   geom_hline(yintercept = 0.5, linetype="dotted", lwd = 1) +
   ylab("AUROC") +
   xlab("")
@@ -104,16 +125,45 @@ auroc_p
 dev.off()
 
 ## Mean rank ---------------------------
-rank_df <- read_csv(rank_file, col_types = cols())
+priors <- map_chr(str_split(bench_files, "/"), 4) %>% unique()
+rank_df <- read_csv(rank_file, col_types = cols()) %>%
+  filter(prior %in% priors)
+rank_df$prior <- factor(rank_df$prior, levels = order_m)
+rank_df$method <- factor(rank_df$method, levels = order_method)
 
-rank_wide <- rank_df %>%
-  select(method, prior, mean_rank) %>%
-  mutate(mean_rank = round(mean_rank)) %>%
-  pivot_wider(names_from = prior, values_from = mean_rank) %>%
-  filter(method != "number_of_targets") %>%
-  column_to_rownames("method") %>%
-  as.matrix()
+rank_p <- rank_df %>%
+  filter(!is.na(scaled_rank)) %>%
+  ggplot(aes(x=method, y=scaled_rank, fill=prior)) +
+  geom_boxplot(outlier.size=0.2, lwd=0.8) +
+  theme_bw() +
+  scale_fill_manual(values = custom_palette) +
+  theme(text = element_text(size = 11),
+        axis.text.x = element_text(angle = 45, hjust = 1),
+        legend.key.size = unit(0.4, 'cm')) +
+  geom_hline(yintercept = 0.5, linetype="dotted", lwd = 1) +
+  ylab("scaled rank") +
+  xlab("")
 
-pdf(rank_plot, height = 7, width = 7)
-corrplot(rank_wide, method = 'color', is.corr = F, addCoef.col = 'white',tl.col = 'black', col = COL1('Blues', 200)[50:200])
+pdf(rank_plot, width = 6.5, height = 3)
+rank_p
 dev.off()
+
+
+## Mean rank per kinase ---------------------------
+kin_rank <- read_csv(kinase_rank, col_types = cols())
+
+kin_gsknown <- kin_rank %>%
+  filter(prior == "GSknown") %>%
+  arrange(mean_rank) %>%
+  mutate(mean_rank = round(mean_rank)) %>%
+  dplyr::select(targets, mean_rank) %>%
+  mutate(range = case_when(
+    mean_rank <= 10 ~ 6,
+    mean_rank > 10 & mean_rank <= 20 ~ 5,
+    mean_rank > 20 & mean_rank <= 30 ~ 4,
+    mean_rank > 30 & mean_rank <= 40 ~ 3,
+    mean_rank > 40 & mean_rank <= 50 ~ 2,
+    mean_rank > 50 ~ 1
+))
+
+write_csv(kin_gsknown, kin_file)

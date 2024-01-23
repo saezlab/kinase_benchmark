@@ -9,14 +9,15 @@ rule all:
     input:
         #expand("results/cptac/final_scores/{PKN}/{normalisation}/{normalisation}_{dataset}-{PKN}.rds", dataset = config["cptac"]["datasets"], PKN = config["cptac"]["cptac_PKNs"], normalisation = config["cptac"]["normalisation"]),
         "results/hijazi/06_benchmark_res/plots/AUPRC_scaled.pdf",
-        "results/hijazi/06_benchmark_res/plots/AUPRC_merged.pdf"
+        "results/hijazi/06_benchmark_res/plots/AUPRC_merged.pdf",
         #expand("results/hernandez/final_scores/raw/{PKN}.rds", PKN = config["hernandez"]["hernandez_PKNs"]),
         #expand("results/hernandez/benchmark_res/plots/AUROC_{overlap}.pdf", overlap = config["hernandez"]["hernandez_overlap"]),
         #expand("results/hernandez/benchmark_mean_rank/mean_rank_{overlap}.csv", overlap = config["hernandez"]["hernandez_overlap"]),
         #Figures
-        #"results/manuscript_figures/figure_1/coverage_merged.pdf",
-        #"results/manuscript_figures/figure_2/overview_experiment.pdf",
-        #"results/manuscript_figures/figure_3/auroc_res.pdf"
+        "results/manuscript_figures/figure_1/coverage_merged.pdf",
+        "results/manuscript_figures/figure_2/overview_experiment.pdf",
+        "results/manuscript_figures/figure_3/auroc_res.pdf",
+        "results/hijazi/06_mean_rank/mean_rank_merged.csv"
 
 # Module for prior processing
 module prior:

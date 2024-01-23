@@ -4,8 +4,12 @@
 if(exists("snakemake")){
   benchmark_file <- snakemake@input$bench
   benchmark_meta <- snakemake@input$benchMeta
+  hijazi_file <- snakemake@input$hijazi
+  hijazi_meta <- snakemake@input$hijMeta
   priors <- snakemake@input$prior_files
+  hijazi_priors <- snakemake@input$hijPrior
   input_file <- snakemake@input$act
+  hijazi_activity <- snakemake@input$hijAct
   methods <- snakemake@params$methods
   overview_data_p <- snakemake@output$overview
   cor_methods_p <- snakemake@output$corrMeth
@@ -13,8 +17,12 @@ if(exists("snakemake")){
 }else{
   benchmark_file <- "results/hernandez/processed_data/benchmark_data.csv"
   benchmark_meta <- "results/hernandez/processed_data/benchmark_metadata.csv"
+  hijazi_file <- "results/hijazi/01_processed_data/benchmark_data.csv"
+  hijazi_meta <- "results/hijazi/01_processed_data/benchmark_metadataPrior.csv"
   priors <- list.files("results/hernandez/prior", pattern = ".tsv", full.names = T)
+  hijazi_priors <- list.files("results/hijazi/02_prior", pattern = ".tsv", full.names = T)
   input_file <- list.files("results/hernandez/final_scores/scaled", full.names = T)
+  hijazi_activity <- list.files("results/hijazi/04_final_scores/scaled", full.names = T)
   methods <- c("KARP", "KS", "KSEA_z", "PC1", "RoKAI_z", "Wilcox", "fgsea", "mean", "median", "mlm" ,"norm_wmean","number_of_targets","rokai_lm","ulm","viper","wsum", "ptmsea")
   overview_data_p <- "results/manuscript_figures/figure_2/overview_experiment.pdf"
   cor_methods_p <- "results/manuscript_figures/figure_2/corrplot_methods.pdf"
@@ -30,7 +38,11 @@ library(corrplot)
 hernandez <- read_csv(benchmark_file, col_types = cols()) %>%
   column_to_rownames("ID")
 
+hijazi <- read_csv(hijazi_file, col_types = cols()) %>%
+  column_to_rownames("ID")
+
 hernandez_meta <- read_csv(benchmark_meta, col_types = cols())
+hijazi_meta <- read_csv(hijazi_meta, col_types = cols())
 
 all_targets <- map(priors, function(p_file){
   read_tsv(p_file, col_types = cols()) %>% pull(target)
@@ -39,21 +51,39 @@ all_targets <- map(priors, function(p_file){
   unique() %>%
   str_remove("\\|auto")
 
+all_targets_hijazi <- map(hijazi_priors, function(p_file){
+  read_tsv(p_file, col_types = cols()) %>% pull(target)
+}) %>%
+  unlist %>%
+  unique() %>%
+  str_remove("\\|auto")
+
 hernandez_filtered <- hernandez[colnames(hernandez) %in% hernandez_meta$id]
+hijazi_filtered <- hijazi[colnames(hijazi) %in% hijazi_meta$id]
 hernandez_meta <- hernandez_meta %>%
   filter(id %in% colnames(hernandez_filtered))
+hijazi_meta <- hijazi_meta %>%
+  filter(id %in% colnames(hijazi_filtered))
 
 ### Coverage ---------------------------
-coverage_df <- data.frame(experiment = colnames(hernandez_filtered),
-                          measures_pps = colSums(!is.na(hernandez_filtered)))
+coverage_df <- data.frame(experiment = c(colnames(hernandez_filtered),
+                                         colnames(hijazi_filtered)),
+                          measures_pps = c(colSums(!is.na(hernandez_filtered)),
+                                           colSums(!is.na(hijazi_filtered))))
 
 measured_in_prior <- map_dbl(colnames(hernandez_filtered), function(col_i){
   msk <- !is.na(hernandez_filtered[[col_i]])
   sum(rownames(hernandez_filtered)[msk] %in% all_targets)
 })
 
+measured_in_prior_hijazi <- map_dbl(colnames(hijazi_filtered), function(col_i){
+  msk <- !is.na(hijazi_filtered[[col_i]])
+  sum(rownames(hijazi_filtered)[msk] %in% all_targets_hijazi)
+})
+
 coverage_df <- coverage_df %>%
-  add_column(pps_in_prior = measured_in_prior) %>%
+  add_column(pps_in_prior = c(measured_in_prior,
+                              measured_in_prior_hijazi)) %>%
   mutate(not_in_prior = measures_pps - pps_in_prior)
 
 coverage_df <- coverage_df %>%
@@ -96,7 +126,7 @@ overview_p <- ggplot(coverage_df %>%
         legend.position = "bottom",
         text = element_text(size = 10))
 
-pdf(overview_data_p, width = 2.2, height = 3.0)
+pdf(overview_data_p, width = 6, height = 3.0)
 overview_p
 dev.off()
 
@@ -104,8 +134,29 @@ dev.off()
 methods <- methods[!methods == "number_of_targets"]
 
 act_list <- map(input_file, readRDS)
+act_list_hijazi <- map(hijazi_activity, readRDS)
+
 names(act_list) <- str_remove(map_chr(str_split(input_file, "\\/"), 5), ".rds")
-act_list <- map(act_list, function(x) x[methods])
+names(act_list_hijazi) <- str_remove(map_chr(str_split(hijazi_activity, "\\/"), 5), ".rds")
+act_list_merged <- map(names(act_list), function(x){
+  hernan <- act_list[[x]]
+  hijaz <- act_list_hijazi[[x]]
+
+  merged_act <- map(methods, function(met_id){
+    full_join(hernan[[met_id]] %>%
+                data.frame() %>%
+                rownames_to_column("ID"),
+              hijaz[[met_id]] %>%
+                data.frame() %>%
+                rownames_to_column("ID"),
+              by = "ID") %>%
+      column_to_rownames("ID")
+  })
+  names(merged_act) <- methods
+  merged_act
+} )
+names(act_list_merged) <- names(act_list)
+act_list <- act_list_merged
 
 method_comparison <- map(names(act_list), function(prior_idx){
   scores <- act_list[[prior_idx]]
@@ -136,7 +187,10 @@ colnames(mean_correlation) <- colnames(method_comparison[[1]])
 rownames(mean_correlation) <- rownames(method_comparison[[1]])
 
 pdf(cor_methods_p, height = 3, width = 3.5)
-corrplot(mean_correlation, col.lim=c(0, 1), is.corr = FALSE, type = 'lower', tl.col = 'black', order = 'hclust', cl.pos = 'r', col = COL1('Blues'))
+corrplot(mean_correlation,
+         col.lim=c(min(mean_correlation), 1),
+         is.corr = FALSE, type = 'lower',
+         tl.col = 'black', order = 'hclust', cl.pos = 'r')
 dev.off()
 
 ## Prior comparison ---------------------------

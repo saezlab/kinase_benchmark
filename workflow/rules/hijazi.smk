@@ -175,3 +175,20 @@ rule compare_performance:
     script:
         "../scripts/04_benchmark/hernandez/03_compare_performance.R"
 
+# -------------------------------------- RANK ---------------------------------------
+rule run_mean_rank:
+    input:
+        rds = expand("results/hijazi/05_benchmark_files/{{overlap}}/{hernandez_methods}-{PKN}.csv", hernandez_methods = config["hernandez"]["hernandez_methods"], PKN = config["hernandez"]["hernandez_PKNs"]),
+        meta =  "results/hernandez/processed_data/benchmark_metadata.csv",
+        hijazi = "results/hijazi/01_processed_data/benchmark_metadataPrior.csv",
+        overview = "results/hernandez/overview_priors/coverage.csv"
+    output:
+        output = "results/hijazi/06_mean_rank/mean_rank_{overlap}.csv",
+        cov_kin = "results/hijazi/06_mean_rank/overview/covered_kinases_{overlap}.csv",
+        per_exp = "results/hijazi/06_mean_rank/performance_per_exp_{overlap}.csv",
+        per_kin = "results/hijazi/06_mean_rank/performance_per_kin_{overlap}.csv",
+        full = "results/hijazi/06_mean_rank/full_rank_{overlap}.csv"
+    conda:
+        "../envs/phospho.yml"
+    script:
+        "../scripts/04_benchmark/hijazi/02_mean_rank_merged.R"
