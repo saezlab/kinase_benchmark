@@ -12,6 +12,8 @@ if(exists("snakemake")){
   kinase_rank <- snakemake@input$kin
   kin_file <- snakemake@output$rankKin
   prior_size <- snakemake@input$prior
+  heat_plot <- snakemake@output$heat
+  medRank_plot <- snakemake@output$medRank
 }else{
   bench_files <- list.files("results/hijazi/06_benchmark_res",
                             pattern = "bench", recursive = TRUE, full.names = T)
@@ -25,11 +27,15 @@ if(exists("snakemake")){
   rank_file <- "results/hijazi/06_mean_rank/full_rank_merged.csv"
   rank_plot <- "results/manuscript_figures/figure_3/mean_rank.pdf"
   kin_file <- "results/manuscript_figures/figure_3/kinase_GSknown.csv"
+  heat_plot <- "results/manuscript_figures/figure_3/median_auroc.pdf"
+  medRank_plot <- "results/manuscript_figures/figure_3/median_rank.pdf"
 }
 
 ## Libraries ---------------------------
 library(tidyverse)
 library(corrplot)
+library(ComplexHeatmap)
+library(circlize)
 
 ## Overview kinases ---------------------------
 if (any(str_detect(bench_files, "merged"))){
@@ -44,12 +50,10 @@ if (any(str_detect(bench_files, "merged"))){
     dplyr::select(id, sign, target)
 }
 
-
-
 kin_df <- table(hernandez_meta$target, hernandez_meta$sign) %>%
   as.data.frame() %>%
-  rename("kinase" = Var1) %>%
-  rename("perturbation" = Var2) %>%
+  dplyr::rename("kinase" = Var1) %>%
+  dplyr::rename("perturbation" = Var2) %>%
   mutate(perturbation = recode(perturbation,
                                "1" = "up",
                                "-1" = "down"))
@@ -124,6 +128,21 @@ pdf(auroc_plot, width = 6.5, height = 3)
 auroc_p
 dev.off()
 
+## AUROC Median heatmap
+med_mat <- bench_df %>%
+  filter(!method == "number_of_targets") %>%
+  group_by(net, method) %>%
+  summarise(score = mean(score)) %>%
+  ungroup() %>%
+  pivot_wider(names_from = "method", values_from = "score") %>%
+  column_to_rownames("net")
+
+col_fun = colorRamp2(c(min(med_mat), max(med_mat)), c("white", "deeppink4"))
+
+pdf(heat_plot, width = 6, height = 3.5)
+Heatmap(med_mat, row_split = 3, column_split = 4,border = TRUE, rect_gp = gpar(col = "white", lwd = 1), col = col_fun)
+dev.off()
+
 ## Mean rank ---------------------------
 priors <- map_chr(str_split(bench_files, "/"), 4) %>% unique()
 rank_df <- read_csv(rank_file, col_types = cols()) %>%
@@ -148,6 +167,21 @@ pdf(rank_plot, width = 6.5, height = 3)
 rank_p
 dev.off()
 
+## scaled Median rank heatmap
+medRank_mat <- rank_df %>%
+  filter(!is.na(scaled_rank)) %>%
+  filter(!method == "number_of_targets") %>%
+  group_by(prior, method) %>%
+  summarise(scaled_rank = mean(scaled_rank)) %>%
+  ungroup() %>%
+  pivot_wider(names_from = "method", values_from = "scaled_rank") %>%
+  column_to_rownames("prior")
+
+col_fun = colorRamp2(c(min(medRank_mat), max(medRank_mat)), c("deepskyblue4", "white"))
+
+pdf(medRank_plot, width = 6, height = 3.5)
+Heatmap(medRank_mat, row_split = 3, column_split = 4,border = TRUE, rect_gp = gpar(col = "white", lwd = 1), col = col_fun)
+dev.off()
 
 ## Mean rank per kinase ---------------------------
 kin_rank <- read_csv(kinase_rank, col_types = cols())

@@ -47,7 +47,9 @@ rule benchmark_figure:
         auroc = "results/manuscript_figures/figure_3/auroc_res.pdf",
         meta_over = "results/manuscript_figures/figure_3/overview_kin.pdf",
         rankPlt = "results/manuscript_figures/figure_3/mean_rank.pdf",
-        rankKin = "results/manuscript_figures/figure_3/kinase_GSknown.csv"
+        rankKin = "results/manuscript_figures/figure_3/kinase_GSknown.csv",
+        heat = "results/manuscript_figures/figure_3/median_auroc.pdf",
+        medRank = "results/manuscript_figures/figure_3/median_rank.pdf"
     conda:
         "../envs/figures.yml"
     script:
