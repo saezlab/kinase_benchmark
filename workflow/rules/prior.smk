@@ -59,6 +59,19 @@ rule prepare_NetworKIN:
     script:
         "../scripts/02_prior_mapping/processing/01.6_prepare_NetworKIN.R"
 
+rule prepare_johnson:
+    input:
+        ppsp = "data/johnson_library/pps_fifteenmer_ser_thr_percent.tsv",
+        tyr = "data/johnson_library/pps_fifteenmer_tyr_percent.tsv"
+    params:
+    	  perc = lambda w: w.perc
+    output:
+        tsv = "results/prior/raw/johnson{perc}.tsv"
+    conda:
+        "../envs/phospho.yml"
+    script:
+        "../scripts/02_prior_mapping/processing/01.7_prepare_johnson.R"
+
 # ------------------------------ MERGE PRIOR ------------------------------
 rule merge_GPS_PPSP:
     input:
@@ -92,7 +105,7 @@ rule filter_prior:
     output:
         filter = "results/prior/{prior}.tsv"
     wildcard_constraints:
-        prior = '[a-zA-Z]+'
+        prior = '[a-zA-Z0-9]+'
     conda:
         "../envs/phospho.yml"
     script:

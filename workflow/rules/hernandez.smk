@@ -22,7 +22,7 @@ rule map_priors:
     output:
         tsv = "results/hernandez/prior/{prior}.tsv"
     wildcard_constraints:
-        prior = '[a-zA-Z]+'
+        prior = '[a-zA-Z0-9]+'
     conda:
         "../envs/phospho.yml"
     script:
