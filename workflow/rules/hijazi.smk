@@ -178,7 +178,7 @@ rule compare_performance:
 # -------------------------------------- RANK ---------------------------------------
 rule run_mean_rank:
     input:
-        rds = expand("results/hijazi/05_benchmark_files/{{overlap}}/{hernandez_methods}-{PKN}.csv", hernandez_methods = config["hernandez"]["hernandez_methods"], PKN = config["hernandez"]["hernandez_PKNs"]),
+        rds = expand("results/hijazi/05_benchmark_files/{{overlap}}/{hernandez_methods}-{PKN}.csv", hernandez_methods = config["hernandez"]["hernandez_methods"], PKN = config["figures"]["PKN_figure2"]),
         meta =  "results/hernandez/processed_data/benchmark_metadata.csv",
         hijazi = "results/hijazi/01_processed_data/benchmark_metadataPrior.csv",
         overview = "results/hernandez/overview_priors/coverage.csv"

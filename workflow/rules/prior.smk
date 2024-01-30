@@ -72,6 +72,16 @@ rule prepare_johnson:
     script:
         "../scripts/02_prior_mapping/processing/01.7_prepare_johnson.R"
 
+rule shuffle_net:
+    input:
+        tsv = "results/prior/raw/phosphositeplus.tsv"
+    output:
+        shuffled = "results/prior/raw/shuffled.tsv"
+    conda:
+        "../envs/phospho.yml"
+    script:
+        "../scripts/02_prior_mapping/processing/01.8_shuffle_network.R"
+
 # ------------------------------ MERGE PRIOR ------------------------------
 rule merge_GPS_PPSP:
     input:

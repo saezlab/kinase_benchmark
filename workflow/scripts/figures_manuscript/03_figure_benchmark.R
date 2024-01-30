@@ -140,7 +140,9 @@ med_mat <- bench_df %>%
 col_fun = colorRamp2(c(min(med_mat), max(med_mat)), c("white", "deeppink4"))
 
 pdf(heat_plot, width = 6, height = 3.5)
-Heatmap(med_mat, row_split = 3, column_split = 4,border = TRUE, rect_gp = gpar(col = "white", lwd = 1), col = col_fun)
+Heatmap(med_mat, row_split = 3, column_split = 4,border = TRUE, rect_gp = gpar(col = "white", lwd = 1), col = col_fun,
+        cell_fun = function(j, i, x, y, width, height, fill) {
+          grid.text(sprintf("%.2f", med_mat[i, j]), x, y, gp = gpar(fontsize = 6))})
 dev.off()
 
 ## Mean rank ---------------------------
@@ -180,7 +182,9 @@ medRank_mat <- rank_df %>%
 col_fun = colorRamp2(c(min(medRank_mat), max(medRank_mat)), c("deepskyblue4", "white"))
 
 pdf(medRank_plot, width = 6, height = 3.5)
-Heatmap(medRank_mat, row_split = 3, column_split = 4,border = TRUE, rect_gp = gpar(col = "white", lwd = 1), col = col_fun)
+Heatmap(medRank_mat, row_split = 3, column_split = 4,border = TRUE, rect_gp = gpar(col = "white", lwd = 1), col = col_fun,
+        cell_fun = function(j, i, x, y, width, height, fill) {
+          grid.text(sprintf("%.2f", medRank_mat[i, j]), x, y, gp = gpar(fontsize = 6))})
 dev.off()
 
 ## Mean rank per kinase ---------------------------

@@ -2,18 +2,18 @@ project_name: "kinase_activity_estimation"
 
 general:
   datasets: ["ucec", "luad", "lscc", "hnscc", "gbm", "ccrcc", "brca"]
-  PKNs: ["omnipath", "phosphositeplus", "ptmsigdb", "GPS", "iKiPdb", "networkin", "GSknown"] #, "omnipath", "ptmsigdb", "jhonson", "phosphositeplus", "ptmsigdb", "iKiPdb", "GPS", "phosphositeplus", "GPSppsp_networkin", "GPSppsp_iKiPdb"
-  known_merged: ["GSknown"]
+  PKNs: ["omnipath", "phosphositeplus", "ptmsigdb", "GPS", "iKiPdb", "networkin", "shuffled"] #, "omnipath", "ptmsigdb", "jhonson", "phosphositeplus", "ptmsigdb", "iKiPdb", "GPS", "phosphositeplus", "GPSppsp_networkin", "GPSppsp_iKiPdb"
+  known_merged: ["phosphositeplus"]
   predicted_merged: ["networkin", "iKiPdb"]
 
 cptac:
   datasets: ["ucec", "luad", "lscc", "hnscc", "gbm", "ccrcc", "brca"]
-  cptac_PKNs: ["GSknown"]
-  normalisation: ["original", "global", "protein", "site", "subtract", "unnorm"] #
+  cptac_PKNs: ["phosphositeplus", "phosphositeplus_networkin", "phosphositeplus_iKiPdb", "shuffled"]
+  normalisation: ["original"] #, "global", "protein", "site", "subtract", "unnorm"
 
 hernandez:
-  hernandez_PKNs: ["omnipath", "phosphositeplus", "ptmsigdb", "GPS", "iKiPdb", "networkin", "GSknown", "johnson99", "GSknown_networkin", "GSknown_iKiPdb", "GSknown_johnson99", "johnson95", "johnson90", "GSknown_johnson95", "GSknown_johnson90"] #"johnson95", "johnson90", "GSknown_johnson95", "GSknown_johnson90"
-  hernandez_PKNs_subset: ["GSknown", "GSknown_networkin", "GSknown_iKiPdb"]
+  hernandez_PKNs: ["shuffled", "omnipath", "phosphositeplus", "ptmsigdb", "GPS", "iKiPdb", "networkin", "johnson99", "phosphositeplus_networkin", "phosphositeplus_iKiPdb"] #"johnson95", "johnson90", "GSknown_johnson95", "GSknown_johnson90", , "GSknown_johnson99", "johnson95", "johnson90", "GSknown_johnson95", "GSknown_johnson90"
+  hernandez_PKNs_subset: ["phosphositeplus", "phosphositeplus_networkin", "phosphositeplus_iKiPdb"]
   hernandez_methods: ["KARP", "KS", "KSEA_z", "PC1", "RoKAI_z", "Wilcox", "fgsea", "mean", "median", "mlm","norm_wmean","number_of_targets","rokai_lm","ulm","viper","wsum", "ptmsea"] # "INKA", "UQ", "norm_fgsea"
   hernandez_overlap: ["scaled", "raw"] #scaled is equivalent to all #"scaled_subset", "subset"
 
@@ -25,4 +25,4 @@ decryptm:
 
 figures:
   PKN_figure1: ["omnipath", "phosphositeplus", "ptmsigdb", "GPS", "iKiPdb", "networkin"]
-  PKN_figure2: ["omnipath", "phosphositeplus", "ptmsigdb", "GPS", "iKiPdb", "networkin", "GSknown"]
+  PKN_figure2: ["omnipath", "phosphositeplus", "ptmsigdb", "GPS", "iKiPdb", "networkin", "shuffled"]
