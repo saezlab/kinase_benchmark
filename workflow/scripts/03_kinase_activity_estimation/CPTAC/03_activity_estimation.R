@@ -7,11 +7,11 @@ if(exists("snakemake")){
   scripts <- snakemake@input$scripts
   script_support <- snakemake@input$script_support
 }else{
-  dataset <- "data/CPTAC_phospho/final/ccrcc_norm2prot_original_lm_log2_medCentRatio.rds"
-  dataset_name <- "ccrcc"
-  PKN <- "results/cptac/prior/ptmsigdb.tsv"
-  PKN_name <- "ptmsigdb"
-  output_file <- "results/cptac/activity_scores/ptmsigdb/original/original_brca-ptmsigdb.rds"
+  dataset <- "data/CPTAC_phospho/final/luad_norm2prot_original_lm_log2_medCentRatio.rds"
+  dataset_name <- "luad"
+  PKN <- "results/cptac/prior/phosphositeplus_iKiPdb.tsv"
+  PKN_name <- "phosphositeplus_iKiPdb"
+  output_file <- "results/cptac/activity_scores/phosphositeplus_iKiPdb/original/original_luad-phosphositeplus_iKiPdb.rds"
   scripts <- list.files("workflow/scripts/methods", pattern = "run", full.names = T)
   script_support <- "workflow/scripts/methods/support_functions.R"
 }
@@ -32,37 +32,52 @@ prior <- read.table(file = PKN, sep = "\t", header = T)
 
 ## Kinase activity estimation ---------------------------
 results <- map_dfr(1:ncol(phospho), function(i){
-  mat_i <- phospho[,i] %>%
-    as.data.frame()
-  rownames(mat_i) <- rownames(phospho)
-  mat_i <- mat_i %>%
+  mat_i <- phospho[i] %>%
     drop_na()
-  colnames(mat_i) <- colnames(phospho)[i]
-
-  #prepare network
-  prior_tmp <- intersect_regulons(mat_i, prior, .source = "source", .target = "target", minsize = 5)
-  cor.source <- check_corr(prior_tmp)
-  filter_source <- cor.source %>% filter(correlation > 0.9) %>% pull(source.2) %>% unique()
-
-  if (dataset_name == "luad" & PKN_name == "iKiPdb"){
-    filter_source <- "EPHB3"
-  }
-
-  prior_i <- prior %>% filter(!source %in% filter_source) %>% ungroup()
 
   # run activity estimation methods
-  KARP <- run_KARP(mat_i, prior)
-  RoKAI_z <- run_zscore_RoKAI(mat_i, prior)
-  KSEA_z <- run_zscore_KSEA(mat_i, prior)
-  INKA <- run_INKA(mat_i, prior)
-  Rokai_lm <- run_lm_rokai(mat_i, prior)
-  mlm <- run_mlm(mat = as.matrix(mat_i), network = prior_i)
-  ulm <- run_ulm(mat = as.matrix(mat_i), network = prior)
-  wsum <- run_wsum(mat = as.matrix(mat_i), network = prior)
-  fgsea <- run_fgsea(mat = as.matrix(mat_i), network = prior)
-  wmean <- run_wmean(mat = as.matrix(mat_i), network = prior)
-  viper <- run_viper(mat = as.matrix(mat_i), network = prior)
+  KARP <- run_KARP(mat_i, prior, minsize = minsize)
+  RoKAI_z <- run_zscore_RoKAI(mat_i, prior, minsize = minsize)
+  KSEA_z <- run_zscore_KSEA(mat_i, prior, minsize = minsize)
+  INKA <- run_INKA(mat_i, prior, kinase_mapping = F, minsize = minsize)
+  Rokai_lm <- run_lm_rokai(mat_i, prior, minsize = minsize)
+  ulm <- run_ulm(mat = as.matrix(mat_i), network = prior, minsize = minsize)
+  wsum <- run_wsum(mat = as.matrix(mat_i), network = prior, minsize = minsize)
+  fgsea <- run_fgsea(mat = as.matrix(mat_i), network = prior, minsize = minsize)
+  wmean <- run_wmean(mat = as.matrix(mat_i), network = prior, minsize = minsize)
+  viper <- run_viper(mat = as.matrix(mat_i), network = prior, minsize = minsize)
 
+  run.mlm.cor <- function(mat, network) {
+    tmp <- FALSE
+    #prepare network
+    prior_tmp <- intersect_regulons(mat, network, .source = "source", .target = "target", minsize = minsize)
+    cor.source <- check_corr(prior_tmp)
+    i <- 0
+
+    while (any(class(tmp) == "error") | any(class(tmp) == "logical")) {
+      if (i == 0){
+        remove <- 0.9
+      } else {
+        remove <- unique(cor.source$correlation)[i]
+      }
+
+      filter_source <- cor.source %>% filter(correlation >= remove) %>% pull(source.2) %>% unique()
+
+      prior_i <- network %>% filter(!source %in% filter_source) %>% ungroup()
+
+      tmp <- tryCatch(run_mlm(mat = as.matrix(mat), network = prior_i, minsize = minsize),
+                      error=function(e) e, warning=function(w) w)
+
+      i <- i + 1
+    }
+
+    mlm <- run_mlm(mat = as.matrix(mat_i), network = prior_i, minsize = minsize)
+    return(list(score = mlm, filter_kin = filter_source, cor = cor.source))
+  } # test correlation sequentially
+  mlm_list <- run.mlm.cor(mat = mat_i, network = prior)
+  mlm <- mlm_list$score
+  filter_source <- mlm_list$filter_kin
+  cor.source <- mlm_list$cor
   # For mlm add correlated kinases again and assign the same score
   mlm <- mlm %>%
     dplyr::select(c(source, condition, score, statistic)) %>%
@@ -99,9 +114,8 @@ results <- map_dfr(1:ncol(phospho), function(i){
     dplyr::select(c(source, condition, score, statistic)) %>%
     dplyr::rename("method" = "statistic")
 
-  results <- rbind(KARP, RoKAI_z, KSEA_z, INKA, Rokai_lm, ulm, mlm,
-                   wsum, fgsea, wmean, viper) %>%
-    filter(!is.infinite(score))
+  rbind(KARP, RoKAI_z, KSEA_z, INKA, Rokai_lm, ulm, mlm,
+        wsum, fgsea, wmean, viper)
 })
 
 # Run methods implemented by Eric Kai from Zhang group
