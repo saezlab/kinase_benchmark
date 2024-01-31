@@ -29,6 +29,7 @@ if(exists("snakemake")){
   kin_file <- "results/manuscript_figures/figure_3/kinase_GSknown.csv"
   heat_plot <- "results/manuscript_figures/figure_3/median_auroc.pdf"
   medRank_plot <- "results/manuscript_figures/figure_3/median_rank.pdf"
+  gene_citations <- "resources/protein_citations.csv"
 }
 
 ## Libraries ---------------------------
@@ -191,7 +192,7 @@ dev.off()
 kin_rank <- read_csv(kinase_rank, col_types = cols())
 
 kin_gsknown <- kin_rank %>%
-  filter(prior == "GSknown") %>%
+  filter(prior == "phosphositeplus") %>%
   arrange(mean_rank) %>%
   mutate(mean_rank = round(mean_rank)) %>%
   dplyr::select(targets, mean_rank) %>%
@@ -205,3 +206,24 @@ kin_gsknown <- kin_rank %>%
 ))
 
 write_csv(kin_gsknown, kin_file)
+
+## Compare to number of citations
+overview_citations <- read_csv(gene_citations, col_types = cols())
+
+kin_citations <- kin_gsknown %>%
+  left_join(overview_citations %>% rename("targets" = Symbol), by = "targets")
+
+ggplot(kin_citations, aes(x = mean_rank, y = log(citations))) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+
+cor(kin_citations$mean_rank, log(kin_citations$citations))
+cor(kin_citations$mean_rank, log(kin_citations$citations))
+
+# Filter for human kinases
+citations_human <- overview_citations %>%
+  filter(`#tax_id` == "9606") %>%
+  group_by(GeneID) %>%
+  summarise(citations = n())
+
+citations_human
