@@ -29,6 +29,7 @@ phospho <- readRDS(dataset)
 
 ## Prior knowledge Kinase-Substrate Networks
 prior <- read.table(file = PKN, sep = "\t", header = T)
+minsize <- 5
 
 ## Kinase activity estimation ---------------------------
 results <- map_dfr(1:ncol(phospho), function(i){
