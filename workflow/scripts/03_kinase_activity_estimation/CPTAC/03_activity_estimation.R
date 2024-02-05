@@ -7,11 +7,11 @@ if(exists("snakemake")){
   scripts <- snakemake@input$scripts
   script_support <- snakemake@input$script_support
 }else{
-  dataset <- "data/CPTAC_phospho/final/luad_norm2prot_original_lm_log2_medCentRatio.rds"
-  dataset_name <- "luad"
-  PKN <- "results/cptac/prior/phosphositeplus_iKiPdb.tsv"
-  PKN_name <- "phosphositeplus_iKiPdb"
-  output_file <- "results/cptac/activity_scores/phosphositeplus_iKiPdb/original/original_luad-phosphositeplus_iKiPdb.rds"
+  dataset <- "data/CPTAC_phospho/final/lscc_norm2prot_original_lm_log2_medCentRatio.rds"
+  dataset_name <- "lscc"
+  PKN <- "results/cptac/prior/shuffledKIP.tsv"
+  PKN_name <- "shuffledKIP"
+  output_file <- "results/cptac/activity_scores/shuffledKIP/final/final_lscc-shuffledKIP.rds"
   scripts <- list.files("workflow/scripts/methods", pattern = "run", full.names = T)
   script_support <- "workflow/scripts/methods/support_functions.R"
 }
@@ -33,8 +33,17 @@ minsize <- 5
 
 ## Kinase activity estimation ---------------------------
 results <- map_dfr(1:ncol(phospho), function(i){
-  mat_i <- phospho[i] %>%
-    drop_na()
+  if(str_detect(dataset, "original")){
+    mat_i <- phospho[i] %>%
+      drop_na()
+  } else {
+    mat_i <- phospho[,i] %>%
+      data.frame() %>%
+      drop_na()
+
+    colnames(mat_i) <- colnames(phospho)[i]
+  }
+
 
   # run activity estimation methods
   KARP <- run_KARP(mat_i, prior, minsize = minsize)
