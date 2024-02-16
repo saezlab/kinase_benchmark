@@ -8,10 +8,10 @@ if(exists("snakemake")){
   meta_out <- snakemake@output$meta_out
   rm_experiments <- snakemake@params$rm_exp
 }else{
-  input_file <- "results/hijazi/04_final_scores/scaled/GSknown.rds"
-  meta_file <- "results/hijazi/01_processed_data/benchmark_metadataPrior.csv"
-  meta_out <- "results/hijazi/05_benchmark_files/scaled/obs_number_of_targets-GSknown.csv"
-  output_file <- "results/hijazi/05_benchmark_files/scaled/number_of_targets-GSknown.csv"
+  input_file <- "results/hernandez/final_scores/scaled/phosphositeplus_networkin.rds"
+  meta_file <- "results/hernandez/processed_data/benchmark_metadata.csv"
+  meta_out <- "results/hernandez/benchmark_files/scaled/obs_number_of_targets-phosphositeplus_networkin.csv"
+  output_file <- "results/hernandez/benchmark_files/scaled/number_of_targets-phosphositeplus_networkin.csv"
   rm_experiments <- "F"
 }
 
@@ -49,8 +49,10 @@ if (method == "number_of_targets"){
     if (experiment %in% colnames(mat_meth)){
       mat <- t(act_scores[[method]][,experiment]) * 1
       mat[mat == 0] <- NA
-      data.frame(mat) %>%
+      df <- data.frame(mat) %>%
         add_column(experiment = experiment, .before = 1)
+      colnames(df) <- c("experiment", rownames(mat_meth))
+      df
     } else {
       df <- data.frame(matrix(NA, ncol = nrow(mat_meth) + 1))
       colnames(df) <- c("experiment", rownames(mat_meth))

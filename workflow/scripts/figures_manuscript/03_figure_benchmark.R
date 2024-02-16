@@ -14,6 +14,8 @@ if(exists("snakemake")){
   prior_size <- snakemake@input$prior
   heat_plot <- snakemake@output$heat
   medRank_plot <- snakemake@output$medRank
+  gene_citations <- snakemake@input$cit
+  cor_plot <- snakemake@output$cor
 }else{
   bench_files <- list.files("results/hijazi/06_benchmark_res",
                             pattern = "bench", recursive = TRUE, full.names = T)
@@ -30,6 +32,7 @@ if(exists("snakemake")){
   heat_plot <- "results/manuscript_figures/figure_3/median_auroc.pdf"
   medRank_plot <- "results/manuscript_figures/figure_3/median_rank.pdf"
   gene_citations <- "resources/protein_citations.csv"
+  cor_plot <- "results/manuscript_figures/figure_3/study_bias.pdf"
 }
 
 ## Libraries ---------------------------
@@ -91,7 +94,8 @@ bench_list <- map(bench_files, function(file){
 })
 
 bench_list <- bench_list[!(map_dbl(bench_list, nrow) == 0)]
-bench_df <- bind_rows(bench_list)
+bench_df <- bind_rows(bench_list) %>%
+  filter(!method == "number_of_targets")
 
 order_m <- bench_df %>%
   filter(metric == "mcauroc") %>%
@@ -149,7 +153,8 @@ dev.off()
 ## Mean rank ---------------------------
 priors <- map_chr(str_split(bench_files, "/"), 4) %>% unique()
 rank_df <- read_csv(rank_file, col_types = cols()) %>%
-  filter(prior %in% priors)
+  filter(prior %in% priors) %>%
+  filter(!method == "number_of_targets")
 rank_df$prior <- factor(rank_df$prior, levels = order_m)
 rank_df$method <- factor(rank_df$method, levels = order_method)
 
@@ -213,17 +218,21 @@ overview_citations <- read_csv(gene_citations, col_types = cols())
 kin_citations <- kin_gsknown %>%
   left_join(overview_citations %>% rename("targets" = Symbol), by = "targets")
 
-ggplot(kin_citations, aes(x = mean_rank, y = log(citations))) +
-  geom_point() +
-  geom_smooth(method = "lm", se = FALSE)
+cor_p <- ggplot(kin_citations, aes(x = mean_rank, y = log(citations))) +
+  geom_point(size = 0.8) +
+  geom_smooth(method = "lm", se = FALSE, lwd = 0.6, fullrange = TRUE, color = "steelblue3") +
+  theme_bw() +
+  theme(text = element_text(size = 11),
+        legend.key.size = unit(0.4, 'cm'))  +
+  geom_text(aes(label = targets), check_overlap = TRUE, size = 2.2, nudge_x = 0.1, nudge_y = 0.1)+
+  ylab("log (# pubmed IDs)") +
+  xlab("mean rank") +
+  ggtitle(paste0("Pearson correlation: ", round(cor(kin_citations$mean_rank, log(kin_citations$citations)), digits = 2)))
 
-cor(kin_citations$mean_rank, log(kin_citations$citations))
-cor(kin_citations$mean_rank, log(kin_citations$citations))
+cor.test(kin_citations$mean_rank, log(kin_citations$citations))
 
-# Filter for human kinases
-citations_human <- overview_citations %>%
-  filter(`#tax_id` == "9606") %>%
-  group_by(GeneID) %>%
-  summarise(citations = n())
+pdf(cor_plot, width = 4, height = 2.7)
+cor_p
+dev.off()
 
-citations_human
+

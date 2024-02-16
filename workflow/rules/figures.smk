@@ -6,7 +6,9 @@ rule overview_prior:
         kin = "results/manuscript_figures/figure_1/coverage_merged.pdf",
         edges = "results/manuscript_figures/figure_1/edge_overview.pdf",
         pps =  "results/manuscript_figures/figure_1/jaccard.pdf",
-        kin_heat = "results/manuscript_figures/figure_1/kinase_overview.pdf"
+        kin_heat = "results/manuscript_figures/figure_1/kinase_overview.pdf",
+        kin_type = "results/manuscript_figures/figure_1/kinase_type.pdf",
+        reg = "results/manuscript_figures/figure_1/regulon_size.pdf"
     conda:
         "../envs/figures.yml"
     script:
@@ -42,15 +44,28 @@ rule benchmark_figure:
         rank = "results/hijazi/06_mean_rank/full_rank_merged.csv",
         hijazi = "results/hijazi/01_processed_data/benchmark_metadataPrior.csv",
         kin = "results/hijazi/06_mean_rank/performance_per_kin_merged.csv",
-        prior = "results/hernandez/overview_priors/coverage.csv"
+        prior = "results/hernandez/overview_priors/coverage.csv",
+        cit = "resources/protein_citations.csv"
     output:
         auroc = "results/manuscript_figures/figure_3/auroc_res.pdf",
         meta_over = "results/manuscript_figures/figure_3/overview_kin.pdf",
         rankPlt = "results/manuscript_figures/figure_3/mean_rank.pdf",
         rankKin = "results/manuscript_figures/figure_3/kinase_GSknown.csv",
         heat = "results/manuscript_figures/figure_3/median_auroc.pdf",
-        medRank = "results/manuscript_figures/figure_3/median_rank.pdf"
+        medRank = "results/manuscript_figures/figure_3/median_rank.pdf",
+        cor = "results/manuscript_figures/figure_3/study_bias.pdf"
     conda:
         "../envs/figures.yml"
     script:
         "../scripts/figures_manuscript/03_figure_benchmark.R"
+
+rule citation_info:
+    input:
+        gene = "data/gene2pubmed",
+        info = "data/gene_info"
+    output:
+        out = "resources/protein_citations.csv"
+    conda:
+        "../envs/figures.yml"
+    script:
+        "../scripts/01_data_processing/protein_citations.R"

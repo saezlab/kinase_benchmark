@@ -82,6 +82,26 @@ rule shuffle_net:
     script:
         "../scripts/02_prior_mapping/processing/01.8_shuffle_network.R"
 
+rule shuffle_iKiP:
+    input:
+        tsv = "results/prior/raw/phosphositeplus_networkin.tsv"
+    output:
+        shuffled = "results/prior/raw/shuffledNET.tsv"
+    conda:
+        "../envs/phospho.yml"
+    script:
+        "../scripts/02_prior_mapping/processing/01.8_shuffle_network.R"
+
+rule shuffle_NetworKIN:
+    input:
+        tsv = "results/prior/raw/phosphositeplus_iKiPdb.tsv"
+    output:
+        shuffled = "results/prior/raw/shuffledKIP.tsv"
+    conda:
+        "../envs/phospho.yml"
+    script:
+        "../scripts/02_prior_mapping/processing/01.8_shuffle_network.R"
+
 # ------------------------------ MERGE PRIOR ------------------------------
 rule merge_GPS_PPSP:
     input:

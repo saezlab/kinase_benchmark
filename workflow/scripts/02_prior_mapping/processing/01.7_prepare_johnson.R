@@ -6,10 +6,14 @@ if(exists("snakemake")){
 }else{
   ppsp_file <- "data/johnson_library/pps_fifteenmer_ser_thr_percent.tsv"
   tyr_file <- "data/johnson_library/pps_fifteenmer_tyr_percent.tsv"
-  par <- 99
+  par <- 15
   output_file <- "results/prior/raw/johnson99.tsv"
 }
-par <- as.numeric(par)
+par_quant <- par >= 100
+if (par_quant){
+  par <- as.numeric(par)/100
+}
+
 
 ## Libraries ---------------------------
 library(tidyverse)
@@ -31,14 +35,29 @@ tyr_long <- net_tyr %>%
 full_net <- rbind(net_long, tyr_long) %>%
   add_column(mor = 1)
 
-johnson_df <- full_net %>%
-  filter(percentile >= par) %>%
-  mutate(target = map_chr(str_split(id, "\\|"), 1)) %>%
-  mutate(target_protein = map_chr(str_split(target, "_"), 1)) %>%
-  mutate(position = map_chr(str_split(target, "_"), 2)) %>%
-  mutate(sequence = map_chr(str_split(id, "\\|"), 2)) %>%
-  dplyr::select(source, target, target_protein, position, mor, sequence) %>%
-  distinct(.keep_all = TRUE)
+if (par_quant){
+  johnson_df <- full_net %>%
+    filter(percentile >= par) %>%
+    mutate(target = map_chr(str_split(id, "\\|"), 1)) %>%
+    mutate(target_protein = map_chr(str_split(target, "_"), 1)) %>%
+    mutate(position = map_chr(str_split(target, "_"), 2)) %>%
+    mutate(sequence = map_chr(str_split(id, "\\|"), 2)) %>%
+    dplyr::select(source, target, target_protein, position, mor, sequence) %>%
+    distinct(.keep_all = TRUE)
+} else {
+  johnson_df <- full_net %>%
+    group_by(id) %>%
+    arrange(desc(percentile)) %>%
+    dplyr::slice(1:par) %>%
+    ungroup() %>%
+    mutate(target = map_chr(str_split(id, "\\|"), 1)) %>%
+    mutate(target_protein = map_chr(str_split(target, "_"), 1)) %>%
+    mutate(position = map_chr(str_split(target, "_"), 2)) %>%
+    mutate(sequence = map_chr(str_split(id, "\\|"), 2)) %>%
+    dplyr::select(source, target, target_protein, position, mor, sequence) %>%
+    distinct(.keep_all = TRUE)
+}
+
 
 ## Change kinases to common gene names
 source_keys <- unique(johnson_df$source)

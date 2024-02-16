@@ -140,6 +140,8 @@ rule get_subset:
     input:
         rds_raw = expand("results/hernandez/final_scores/raw/{PKN}.rds", PKN = config["hernandez"]["hernandez_PKNs_subset"]),
         rds_scaled = expand("results/hernandez/final_scores/scaled/{PKN}.rds", PKN = config["hernandez"]["hernandez_PKNs_subset"])
+    wildcard_constraints:
+        PKN = '[.*phosphositeplus.*]'
     output:
         output = "results/hernandez/final_scores/subset/{PKN}.rds",
         output_scaled = "results/hernandez/final_scores/scaled_subset/{PKN}.rds"

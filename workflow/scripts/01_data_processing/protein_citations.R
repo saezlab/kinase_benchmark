@@ -2,8 +2,9 @@
 
 ## Snakemake ---------------------------
 if(exists("snakemake")){
-  input_file <- snakemake@input
-  output_file <- snakemake@output
+  gene_citations <- snakemake@input$gene
+  info_file <- snakemake@input$info
+  output_file <- snakemake@output$out
 }else{
   gene_citations <- "data/gene2pubmed"
   info_file <- "data/gene_info"

@@ -16,6 +16,8 @@ if(exists("snakemake")){
   bench_files <- list.files("results/hijazi/06_benchmark_res",
                             pattern = "bench", recursive = TRUE, full.names = T)
   bench_files <- bench_files[str_detect(bench_files, "merged")]
+  bench_files <- bench_files[!str_detect(bench_files, "number_of_targets")]
+  bench_files <- bench_files[!str_detect(bench_files, "GSknown")]
 }
 
 ## Libraries ---------------------------
@@ -32,10 +34,25 @@ bench_list <- map(bench_files, function(file){
 })
 
 bench_list <- bench_list[!(map_dbl(bench_list, nrow) == 0)]
+
 bench_df <- bind_rows(bench_list) %>%
   filter(metric == "mcauroc") %>%
   filter(method != "number_of_targets")
 
+order_net <- bench_df %>%
+  group_by(net) %>%
+  summarise(AUROC = median(score)) %>%
+  arrange(desc(AUROC)) %>%
+  pull(net)
+
+order_method <- bench_df %>%
+  group_by(method) %>%
+  summarise(AUROC = median(score)) %>%
+  arrange(desc(AUROC)) %>%
+  pull(method)
+
+bench_df$net <- factor(bench_df$net, levels = order_net)
+bench_df$method <- factor(bench_df$method, levels = order_method)
 
 ### change format into matrix for AUROC and AUPRC
 prior_mat <- bench_df %>%

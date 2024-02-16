@@ -76,6 +76,8 @@ rule activity_estimation:
         script_support = "workflow/scripts/methods/support_functions.R"
     output:
         rds = "results/cptac/activity_scores/{PKN}/{normalisation}/{normalisation}_{dataset}-{PKN}.rds"
+    params:
+        auto = "T"
     conda:
         "../envs/phospho.yml"
     script:

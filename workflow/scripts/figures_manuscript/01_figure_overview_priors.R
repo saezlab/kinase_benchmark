@@ -4,12 +4,16 @@ if(exists("snakemake")){
   kinase_pdf <- snakemake@output$kin_heat
   edge_pdf <- snakemake@output$edges
   jaccard_pdf <- snakemake@output$pps
+  kintype_pdf <- snakemake@output$kin_type
+  regulonsize_pdf <- snakemake@output$reg
 }else{
   prior_files <- list.files("results/prior", pattern = "tsv", full.names = T)
   coverage_pdf <- "results/manuscript_figures/figure_1/coverage_merged.pdf"
   kinase_pdf <- "results/manuscript_figures/figure_1/kinase_overview.pdf"
   edge_pdf <- "results/manuscript_figures/figure_1/edge_overview.pdf"
   jaccard_pdf <- "results/manuscript_figures/figure_1/jaccard.pdf"
+  kintype_pdf <- "results/manuscript_figures/figure_1/kinase_type.pdf"
+  regulonsize_pdf <- "results/manuscript_figures/figure_1/regulon_size.pdf"
 }
 
 ## Libraries ---------------------------
@@ -238,7 +242,37 @@ kin_type$kinase <- factor(kin_type$kinase, levels = c("Serine/Threonine", "Tyros
 kin_type$resource <- factor(kin_type$resource, levels = unique(kin_type %>% arrange(desc(n)) %>% pull(resource)))
 
 cbPalette <- c("#56B4E9", "#009E73",  "#CC79A7", "#E69F00")
-ggplot(kin_type, aes(x = resource, y = n, fill = kinase)) +
+
+kintype_p <- ggplot(kin_type, aes(x = resource, y = n, fill = kinase)) +
   geom_bar(stat="identity", color="black", position=position_dodge())+
   theme_minimal() +
-  scale_fill_manual(values=cbPalette)
+  scale_fill_manual(values=cbPalette) +
+  xlab("") + ylab("number of kinases") + guides(fill=guide_legend(title="kinase class")) +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1),
+        text = element_text(size = 10),
+        legend.key.size = unit(0.2, 'cm'))
+
+pdf(kintype_pdf, height = 4, width = 4.5)
+kintype_p
+dev.off()
+
+## Mean set size
+set_size <- map_dfr(names(prior), function(prior_idx){
+  prior[[prior_idx]] %>%
+    group_by(source) %>%
+    summarise(n_targets = n()) %>%
+    add_column(prior = prior_idx)
+})
+
+regulonsize_p <- ggplot(set_size, aes(x = prior, y = n_targets)) +
+  geom_boxplot() +
+  theme_minimal() +
+  xlab("") + ylab("regulon size") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1),
+        text = element_text(size = 10),
+        legend.key.size = unit(0.2, 'cm'))
+
+pdf(regulonsize_pdf, height = 4, width = 3)
+regulonsize_p
+dev.off()
+

@@ -1,0 +1,12 @@
+name: ora
+channels:
+  - conda-forge
+  - bioconda
+  - r
+dependencies:
+  - r-base # general dependencies
+  - r-tidyverse
+  - bioconductor-piano
+  - r-reshape2
+  - r-pheatmap
+  - bioconductor-gseabase

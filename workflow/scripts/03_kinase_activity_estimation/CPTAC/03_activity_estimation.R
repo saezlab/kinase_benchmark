@@ -6,6 +6,7 @@ if(exists("snakemake")){
   output_file <- snakemake@output$rds
   scripts <- snakemake@input$scripts
   script_support <- snakemake@input$script_support
+  remove_auto <- snakemake@params$auto
 }else{
   dataset <- "data/CPTAC_phospho/final/lscc_norm2prot_original_lm_log2_medCentRatio.rds"
   dataset_name <- "lscc"
@@ -30,6 +31,12 @@ phospho <- readRDS(dataset)
 ## Prior knowledge Kinase-Substrate Networks
 prior <- read.table(file = PKN, sep = "\t", header = T)
 minsize <- 5
+
+remove_auto <- as.logical(remove_auto)
+if (remove_auto){
+  prior <- prior %>%
+    dplyr::mutate(target = str_remove(target, "\\|auto"))
+}
 
 ## Kinase activity estimation ---------------------------
 results <- map_dfr(1:ncol(phospho), function(i){
