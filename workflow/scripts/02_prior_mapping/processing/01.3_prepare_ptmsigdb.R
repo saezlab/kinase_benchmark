@@ -2,8 +2,8 @@ if(exists("snakemake")){
   ptmsig_file <- snakemake@input$ptmsig
   output_file <- snakemake@output$tsv
 }else{
-  ptmsig_file <- "data/prior/ptm.sig.db.all.uniprot.human.v2.0.0.gmt"
-  output_file <- "results/prior/raw/ptmsigdb.tsv"
+  ptmsig_file <- "data/kinase_libraries/prior/ptm.sig.db.all.uniprot.human.v2.0.0.gmt"
+  output_file <- "results/00_prior/raw/ptmsigdb.tsv"
 }
 
 ## Libraries ---------------------------
@@ -22,6 +22,7 @@ PTMsig_df <- map_dfr(names(PTMsigDB.kinase), function(kin){
 
 PTMsig_df <- PTMsig_df %>%
   mutate(source = str_remove(source, "KINASE-PSP_")) %>%
+  mutate(source = str_remove(source, "KINASE-iKiP_")) %>%
   mutate(target_site = str_remove(target_site, "-p;u")) %>%
   mutate(target = map_chr(str_split(map_chr(str_split(target_site, ";"), 1), "-"), 1)) %>%
   mutate(position = map_chr(str_split(target_site, ";"), 2))

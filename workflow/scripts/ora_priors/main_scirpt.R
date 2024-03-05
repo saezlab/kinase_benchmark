@@ -33,8 +33,26 @@ ora_res_df$n_targets <- ora_res_df$`Significant (in gene set)` + ora_res_df$`Sig
 ora_res_df_reduced <- ora_res_df[which(ora_res_df$n_targets > 20),]
 ora_res_df_reduced$pathway <- gsub(".+[.]","",row.names(ora_res_df_reduced))
 
-ora_res_df_reduced_wide <- dcast(data = ora_res_df_reduced, formula = pathway~kinase, value.var = "p-value")
-pheatmap(ora_res_df_reduced_wide[,-1])
+ora_res_df_reduced_wide <- dcast(data = ora_res_df_reduced_wide, formula = pathway~kinase, value.var = "p-value")
+pheatmap(cor(ora_res_df_reduced_wide[,-1]), cutree_rows = 6, cutree_cols = 6)
+
+regulation_power <- colSums(ora_res_df_reduced_wide[,-1] <= 0.05)
+names(regulation_power) <- names(ora_res_df_reduced_wide[,-1])
+regulation_power <- as.data.frame(regulation_power) %>%
+  rownames_to_column("targets")
+
+rank <- read_csv("results/manuscript_figures/figure_3/kinase_GSknown.csv")
+
+df <- full_join(rank, regulation_power, by = "targets")
+df %>%
+  ggplot(aes(x = mean_rank, y = regulation_power)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE, lwd = 0.6, fullrange = TRUE, color = "steelblue3") +
+  theme_bw()
+
+lm(mean_rank ~ 1 + regulation_power, data = df)
+
+plot(dens)
 
 write_csv(ora_res_df, file = "results/ora_targets/ora_res_df.csv")
 write_csv(ora_res_df_reduced_wide, file = "results/ora_targets/ora_res_df_reduced_wide.csv")

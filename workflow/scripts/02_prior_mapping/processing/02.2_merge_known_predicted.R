@@ -3,9 +3,9 @@ if(exists("snakemake")){
   predicted_file <- snakemake@input$predicted_file
   output_file <- snakemake@output$tsv
 }else{
-  known_file <- "results/prior/raw/GPS.tsv"
-  predicted_file <- "results/prior/raw/networkin.tsv"
-  output_file <- "results/prior/raw/GPS_networkin.tsv"
+  known_file <- "results/00_prior/GPS.tsv"
+  predicted_file <- "results/00_prior/networkin.tsv"
+  output_file <- "results/00_prior/merged/GPS_networkin.tsv"
 }
 
 ## Libraries ---------------------------

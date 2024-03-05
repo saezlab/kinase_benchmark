@@ -3,14 +3,12 @@
 ## Snakemake ---------------------------
 if(exists("snakemake")){
   input_file <- snakemake@input$raw
-  kinhub_file <- snakemake@input$kinhub
-  quickgo_file <- snakemake@input$go
+  kinhub_file <- snakemake@input$kin
   output_file <- snakemake@output$filter
 }else{
-  input_file <- "results/prior/raw/johnson90.tsv"
-  kinhub_file <- "data/kinase_list_kinhub.txt"
-  quickgo_file <- "data/QuickGO_kinase_20231214.tsv"
-  output_file <- "results/prior/johnson90.tsv"
+  input_file <- "results/00_prior/raw/phosformer5.tsv"
+  kinhub_file <- "data/misc/kinase_list.tsv"
+  output_file <- "results/00_prior/phosformer5.tsv"
 }
 
 ## Libraries ---------------------------
@@ -19,22 +17,9 @@ library(biomaRt)
 
 ## Load data ---------------------------
 net <- read_tsv(input_file, col_types = cols())
+kin_list <- read_tsv(kinhub_file, col_types = cols())
 
-kinhub <- read_tsv(kinhub_file, col_types = cols())
-quickgo <- read_tsv(quickgo_file, col_types = cols())
-
-kinases <- unique(c(kinhub$`HGNC Name`, quickgo$SYMBOL))
-kinases <- kinases[!is.na(kinases)]
-
-# Add uniprot id of kinases to identify autophosphorylation
-mart <- useEnsembl(biomart = "genes", dataset = "hsapiens_gene_ensembl")
-
-gene_name <- getBM(attributes = c('external_gene_name'),
-                   values = kinases,
-                   mart = mart)
-
-kinases <- kinases[kinases %in% gene_name$external_gene_name]
-
+kinases <- kin_list$kinase
 
 ## Check kinases not covered in data ---------------------------
 net %>%

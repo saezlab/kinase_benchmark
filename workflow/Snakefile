@@ -7,7 +7,9 @@ configfile: "config/config.yml"
 
 rule all:
     input:
-        expand("results/cptac/activity_scores/{PKN}/original/original_{dataset}-{PKN}.rds", dataset = config["cptac"]["datasets"], PKN = config["cptac"]["cptac_PKNs"]),
+        expand("results/00_prior/{prior}.tsv", prior = config["general"]["PKNs"]),
+        expand("results/00_prior/merged/{merged}.tsv", merged = config["general"]["merged"])
+        #expand("results/cptac/activity_scores/{PKN}/original/original_{dataset}-{PKN}.rds", dataset = config["cptac"]["datasets"], PKN = config["cptac"]["cptac_PKNs"]),
         #"results/hijazi/06_benchmark_res/plots/AUPRC_scaled.pdf",
         #"results/hijazi/06_benchmark_res/plots/AUPRC_merged.pdf",
         #expand("results/hernandez/final_scores/raw/{PKN}.rds", PKN = config["hernandez"]["hernandez_PKNs"])
