@@ -35,7 +35,7 @@ net_long <- left_join(net, kins_mapping, by = "gene", relationship = "many-to-ma
 
 net_long <- net_long %>%
   mutate(source = recode(source,
-                         "PDPK2" = "PDPK2",
+                         "PDPK2" = "PDPK2P",
                          "KS6R" = "RSKR"))
 
 ## Save processed phosphositeplus

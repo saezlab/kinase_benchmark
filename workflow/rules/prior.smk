@@ -8,7 +8,7 @@ rule prepare_omnipath:
     conda:
         "../envs/phospho.yml"
     script:
-        "../scripts/02_prior_mapping/processing/01.1_prepare_omnipath.R"
+        "../scripts/00_prior_processing/01.1_prepare_omnipath.R"
 
 rule prepare_phosphositeplus:
     input:
@@ -18,7 +18,7 @@ rule prepare_phosphositeplus:
     conda:
         "../envs/phospho.yml"
     script:
-        "../scripts/02_prior_mapping/processing/01.2_prepare_phosphositeplus.R"
+        "../scripts/00_prior_processing/01.2_prepare_phosphositeplus.R"
 
 rule prepare_ptmsigdb:
     input:
@@ -28,7 +28,7 @@ rule prepare_ptmsigdb:
     conda:
         "../envs/phospho.yml"
     script:
-        "../scripts/02_prior_mapping/processing/01.3_prepare_ptmsigdb.R"
+        "../scripts/00_prior_processing/01.3_prepare_ptmsigdb.R"
 
 rule prepare_ikipdb:
     input:
@@ -38,7 +38,7 @@ rule prepare_ikipdb:
     conda:
         "../envs/phospho.yml"
     script:
-        "../scripts/02_prior_mapping/processing/01.4_prepare_ikipdb.R"
+        "../scripts/00_prior_processing/01.4_prepare_ikipdb.R"
 
 rule prepare_GPS:
     input:
@@ -48,7 +48,7 @@ rule prepare_GPS:
     conda:
         "../envs/phospho.yml"
     script:
-        "../scripts/02_prior_mapping/processing/01.5_prepare_GPS.R"
+        "../scripts/00_prior_processing/01.5_prepare_GPS.R"
 
 rule prepare_NetworKIN:
     input:
@@ -60,7 +60,7 @@ rule prepare_NetworKIN:
     conda:
         "../envs/phospho.yml"
     script:
-        "../scripts/02_prior_mapping/processing/01.6_prepare_NetworKIN.R"
+        "../scripts/00_prior_processing/01.6_prepare_NetworKIN.R"
 
 rule prepare_johnson:
     input:
@@ -73,7 +73,7 @@ rule prepare_johnson:
     conda:
         "../envs/phospho.yml"
     script:
-        "../scripts/02_prior_mapping/processing/01.7_prepare_johnson.R"
+        "../scripts/00_prior_processing/01.7_prepare_johnson.R"
 
 rule prepare_phosformer:
     input:
@@ -83,7 +83,7 @@ rule prepare_phosformer:
     conda:
         "../envs/phospho.yml"
     script:
-        "../scripts/02_prior_mapping/processing/01.8_prepare_phosformer.R"
+        "../scripts/00_prior_processing/01.8_prepare_phosformer.R"
 
 rule shuffle_net:
     input:
@@ -93,7 +93,7 @@ rule shuffle_net:
     conda:
         "../envs/phospho.yml"
     script:
-        "../scripts/02_prior_mapping/processing/01.9_shuffle_network.R"
+        "../scripts/00_prior_processing/01.9_shuffle_network.R"
 
 rule shuffle_iKiP:
     input:
@@ -103,7 +103,7 @@ rule shuffle_iKiP:
     conda:
         "../envs/phospho.yml"
     script:
-        "../scripts/02_prior_mapping/processing/01.9_shuffle_network.R"
+        "../scripts/00_prior_processing/01.9_shuffle_network.R"
 
 rule shuffle_NetworKIN:
     input:
@@ -113,7 +113,7 @@ rule shuffle_NetworKIN:
     conda:
         "../envs/phospho.yml"
     script:
-        "../scripts/02_prior_mapping/processing/01.9_shuffle_network.R"
+        "../scripts/00_prior_processing/01.9_shuffle_network.R"
 
 # ------------------------------ MERGE PRIOR ------------------------------
 rule merge_GPS_PPSP:
@@ -126,7 +126,7 @@ rule merge_GPS_PPSP:
     conda:
         "../envs/phospho.yml"
     script:
-        "../scripts/02_prior_mapping/processing/02.1_merge_GPS_PPSP.R"
+        "../scripts/00_prior_processing/02.1_merge_GPS_PPSP.R"
 
 rule merge_known_predicted:
     input:
@@ -137,7 +137,7 @@ rule merge_known_predicted:
     conda:
         "../envs/phospho.yml"
     script:
-        "../scripts/02_prior_mapping/processing/02.2_merge_known_predicted.R"
+        "../scripts/00_prior_processing/02.2_merge_known_predicted.R"
 
 # ------------------------------ FILTER PRIOR ------------------------------
 rule kinase_list:
@@ -149,7 +149,7 @@ rule kinase_list:
     conda:
         "../envs/phospho.yml"
     script:
-        "../scripts/02_prior_mapping/processing/03_generate_kinaseList.R"
+        "../scripts/00_prior_processing/03_generate_kinaseList.R"
 
 
 rule filter_prior:
@@ -163,6 +163,6 @@ rule filter_prior:
     conda:
         "../envs/phospho.yml"
     script:
-        "../scripts/02_prior_mapping/processing/03_filter_priors.R"
+        "../scripts/00_prior_processing/03_filter_priors.R"
 
 
