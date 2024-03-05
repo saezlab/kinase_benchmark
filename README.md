@@ -1,21 +1,38 @@
-# kinase_review
+# Systematic comparison of methods for kinase activity estimation
 
-In this project we will compare methods that estimate kinase activity from 
-phosphoproteomic data.
+<!-- badges: start -->
+<!-- badges: end -->
 
-These methods include:
-- RoKAI
-- KEA3
-- INKA
-- IKAP
-- KSEA App
+## Overview
+In this study, we present a flexible framework to assess different combinations of computational algorithms and kinase-substrate libraries 
+for the inference of kinase activities. For the benchmark, we use a set of kinase perturbation experiments to evaluate which combination
+is able to recapitulate the perturbed kinases from the phosphoproteomics data.
+
+## Kinase substrate libraries
+We have included the following kinase-substrate libraries:
+- PhosphoSitePlus
+- PTMsigDB
+- Omnipath
+- Gold Standard set of GPS 6.0
+- iKiP-db
+- NetworKIN
+
+Additionally have tested the combination with predicted targets including the Kinase Library and Phosformer.
+
+## Methods
+We have included the following methods for the comparison:
+- fgsea
+- KARP
+- Kologomorov-Smirnov
+- linear model (RoKAI, decoupler)
+- mean
+- normalised mean
+- median
+- multivarite linear model
+- PC1
 - PTM-SEA
-- (KARP)
-- (KinasePA)
-
-KARP has no code available and KinasePA cannot be compared to the other
-methods as it is intended for multiple condition analysis. 
-
-We will prepare the input (CPTAC, perturbation data) for each methods, run them
-and compare the results by correlating the activities and calculating a jaccard
-index for the top differentially active kinases.
+- sum
+- upper quantile
+- viper
+- Wilcox
+- z-score (KSEA, RoKAI)
