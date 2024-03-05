@@ -8,10 +8,8 @@ configfile: "config/config.yml"
 rule all:
     input:
         expand("results/00_prior/{prior}.tsv", prior = config["general"]["PKNs"]),
-        expand("results/00_prior/merged/{merged}.tsv", merged = config["general"]["merged"]),
-        expand("results/01_processed_data/CPTAC/mapped_priors/ptm-sea/{PKN}.gmt",  PKN = config["cptac"]["cptac_PKNs"]),
-        expand("results/01_processed_data/hernandez/mapped_priors/ptm-sea/{PKN}.gmt",  PKN = config["hernandez"]["hernandez_PKNs"]),
-        expand("results/01_processed_data/hijazi/mapped_priors/ptm-sea/{PKN}.gmt",  PKN = config["hijazi"]["hijazi_PKNs"])
+        expand("results/02_activity_scores/hernandez/final_scores/{PKN}.rds",  PKN = config["hernandez"]["hernandez_PKNs"]),
+        expand("results/02_activity_scores/hijazi/final_scores/{PKN}.rds",  PKN = config["hijazi"]["hijazi_PKNs"])
         #expand("results/cptac/activity_scores/{PKN}/original/original_{dataset}-{PKN}.rds", dataset = config["cptac"]["datasets"], PKN = config["cptac"]["cptac_PKNs"]),
         #"results/hijazi/06_benchmark_res/plots/AUPRC_scaled.pdf",
         #"results/hijazi/06_benchmark_res/plots/AUPRC_merged.pdf",
@@ -45,28 +43,16 @@ module processing_hernandez:
 use rule * from processing_hernandez as processing_hernandez_*
 
 # Module for hijazi processing
+module activity_estimation:
+    snakefile: "rules/activity_estimation.smk"
+    config: config
+use rule * from activity_estimation as activity_estimation_*
+
+# Module for activity estimation
 module processing_hijazi:
     snakefile: "rules/processing_hijazi.smk"
     config: config
 use rule * from processing_hijazi as processing_hijazi_*
-
-# Module for CPTAC data
-module processing_cptac:
-    snakefile: "rules/processing_cptac.smk"
-    config: config
-use rule * from processing_cptac as processing_cptac_*
-
-# Module for hernandez data
-module hernandez:
-    snakefile: "rules/hernandez.smk"
-    config: config
-use rule * from hernandez as hernandez_*
-
-# Module for hijazi data
-module hijazi:
-    snakefile: "rules/hijazi.smk"
-    config: config
-use rule * from hijazi as hijazi_*
 
 # Module for figures
 module figures:
@@ -75,9 +61,3 @@ module figures:
 use rule * from figures as figures_*
 
 
-#        expand("results/decryptm/benchmark/{PKN}/bench_{decryptm_methods}-{decryptm_measurement}-{PKN}.csv", decryptm_methods = config["decryptm"]["decryptm_methods"], decryptm_measurement = config["decryptm"]["decryptm_measurement"], PKN = config["decryptm"]["decryptm_PKNs"]),#decryptm
-# Module for decryptm data
-#module decryptm:
-#    snakefile: "rules/decryptm.smk"
-#    config: config
-#use rule * from decryptm as decryptm_*

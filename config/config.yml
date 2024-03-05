@@ -10,22 +10,16 @@ cptac:
   normalisation: ["original"] #, "global", "protein", "site", "subtract", "unnorm"
 
 hernandez:
-  hernandez_PKNs: ["phosphositeplus"] #"johnson95", "johnson90", "GSknown_johnson95", "GSknown_johnson90", , "GSknown_johnson99", "johnson95", "johnson90", "GSknown_johnson95", "GSknown_johnson90"
-  hernandez_PKNs_subset: ["phosphositeplus", "phosphositeplus_networkin", "phosphositeplus_iKiPdb"] #"phosphositeplus_johnson9900","phosphositeplus_johnson9950", "phosphositeplus_johnson15", "phosphositeplus_johnson9990",
+  hernandez_PKNs: ["omnipath", "phosphositeplus", "ptmsigdb", "GPS", "iKiPdb", "networkin", "shuffled"]
+  hernandez_PKNs_subset: ["phosphositeplus", "phosphositeplus_networkin", "phosphositeplus_iKiPdb"]
   hernandez_methods: ["KARP", "KS", "KSEA_z", "PC1", "RoKAI_z", "Wilcox", "fgsea", "mean", "median", "mlm","norm_wmean","number_of_targets","rokai_lm","ulm","viper","wsum", "ptmsea"] # "INKA", "UQ", "norm_fgsea"
   hernandez_overlap: ["scaled", "raw"] #scaled is equivalent to all #"scaled_subset", "subset"
 
 hijazi:
-  hijazi_PKNs: ["phosphositeplus"] #"johnson95", "johnson90", "GSknown_johnson95", "GSknown_johnson90", , "GSknown_johnson99", "johnson95", "johnson90", "GSknown_johnson95", "GSknown_johnson90"
-  hernandez_PKNs_subset: ["phosphositeplus", "phosphositeplus_networkin", "phosphositeplus_iKiPdb"] #"phosphositeplus_johnson9900","phosphositeplus_johnson9950", "phosphositeplus_johnson15", "phosphositeplus_johnson9990",
+  hijazi_PKNs: ["omnipath", "phosphositeplus", "ptmsigdb", "GPS", "iKiPdb", "networkin", "shuffled"]
+  hernandez_PKNs_subset: ["phosphositeplus", "phosphositeplus_networkin", "phosphositeplus_iKiPdb"]
   hernandez_methods: ["KARP", "KS", "KSEA_z", "PC1", "RoKAI_z", "Wilcox", "fgsea", "mean", "median", "mlm","norm_wmean","number_of_targets","rokai_lm","ulm","viper","wsum", "ptmsea"] # "INKA", "UQ", "norm_fgsea"
   hernandez_overlap: ["scaled", "raw"] #scaled is equivalent to all #"scaled_subset", "subset"
-
-decryptm:
-  decryptm_set: ["10_Kinase_Inhibitors", "Combination_Treatments_AZD4547_Gefitinib", "Combination_Treatments_AZD4547_Lapatinib", "Combination_Treatments_Selumetinib_MK2206", "Dasatinib_Triplicates", "BCRABL_Inhibitors", "HER2_Inhibitors", "3_EGFR_Inhibitors"]
-  decryptm_PKNs: ["omnipath", "GPS", "phosphositeplus", "GPSppsp", "GPSppsp_networkin", "GPSppsp_iKiPdb", "jhonson", "ptmsigdb"] #, "networkin", "iKiPdb"
-  decryptm_measurement: ["R2_pEC50"]
-  decryptm_methods: ["INKA", "KARP", "KS", "KSEA_z", "PC1", "RoKAI_z", "UQ", "Wilcox", "fgsea", "mean", "median", "mlm", "norm_fgsea","norm_wmean","number_of_targets","rokai_lm","ulm","viper","wsum"]
 
 figures:
   PKN_figure1: ["omnipath", "phosphositeplus", "ptmsigdb", "GPS", "iKiPdb", "networkin"]

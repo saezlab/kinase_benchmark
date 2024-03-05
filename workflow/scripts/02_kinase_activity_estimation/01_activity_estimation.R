@@ -43,6 +43,17 @@ if (!remove_auto){
 
 ## Kinase activity estimation ---------------------------
 results <- map_dfr(1:ncol(phospho), function(i){
+  if(str_detect(dataset, "original")){
+    mat_i <- phospho[i] %>%
+      drop_na()
+  } else {
+    mat_i <- phospho[,i] %>%
+      data.frame() %>%
+      drop_na()
+
+    colnames(mat_i) <- colnames(phospho)[i]
+  }
+
   mat_i <- phospho[i] %>%
     drop_na()
 
