@@ -8,7 +8,10 @@ configfile: "config/config.yml"
 rule all:
     input:
         expand("results/00_prior/{prior}.tsv", prior = config["general"]["PKNs"]),
-        expand("results/00_prior/merged/{merged}.tsv", merged = config["general"]["merged"])
+        expand("results/00_prior/merged/{merged}.tsv", merged = config["general"]["merged"]),
+        expand("results/01_processed_data/CPTAC/mapped_priors/ptm-sea/{PKN}.gmt",  PKN = config["cptac"]["cptac_PKNs"]),
+        expand("results/01_processed_data/hernandez/mapped_priors/ptm-sea/{PKN}.gmt",  PKN = config["hernandez"]["hernandez_PKNs"]),
+        expand("results/01_processed_data/hijazi/mapped_priors/ptm-sea/{PKN}.gmt",  PKN = config["hijazi"]["hijazi_PKNs"])
         #expand("results/cptac/activity_scores/{PKN}/original/original_{dataset}-{PKN}.rds", dataset = config["cptac"]["datasets"], PKN = config["cptac"]["cptac_PKNs"]),
         #"results/hijazi/06_benchmark_res/plots/AUPRC_scaled.pdf",
         #"results/hijazi/06_benchmark_res/plots/AUPRC_merged.pdf",
@@ -29,11 +32,29 @@ module prior:
     config: config
 use rule * from prior as prior_*
 
-# Module for CPTAC data
-module cptac:
-    snakefile: "rules/cptac.smk"
+# Module for cptac processing
+module processing_cptac:
+    snakefile: "rules/processing_cptac.smk"
     config: config
-use rule * from cptac as cptac_*
+use rule * from processing_cptac as processing_cptac_*
+
+# Module for hernandez processing
+module processing_hernandez:
+    snakefile: "rules/processing_hernandez.smk"
+    config: config
+use rule * from processing_hernandez as processing_hernandez_*
+
+# Module for hijazi processing
+module processing_hijazi:
+    snakefile: "rules/processing_hijazi.smk"
+    config: config
+use rule * from processing_hijazi as processing_hijazi_*
+
+# Module for CPTAC data
+module processing_cptac:
+    snakefile: "rules/processing_cptac.smk"
+    config: config
+use rule * from processing_cptac as processing_cptac_*
 
 # Module for hernandez data
 module hernandez:
