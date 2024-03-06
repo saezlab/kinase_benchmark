@@ -11,7 +11,7 @@ rule format_input:
         targets = "data/datasets/hijazi/targets_hijazi.tsv"
     output:
         mat = "results/01_processed_data/hijazi/data/benchmark_data.csv",
-        meta_out = "results/01_processed_data/hijazi/data/benchmark_metadataPrior.csv",
+        meta_out = "results/01_processed_data/hijazi/data/benchmark_metadata.csv",
         meta_discover = "results/01_processed_data/hijazi/data/benchmark_metadataDiscoverX.csv"
     conda:
         "../envs/phospho.yml"

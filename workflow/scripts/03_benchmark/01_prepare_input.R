@@ -3,57 +3,53 @@
 ## Snakemake ---------------------------
 if(exists("snakemake")){
   input_file <- snakemake@input$rds
-  input_hernandez <- snakemake@input$hernandez
   meta_file <- snakemake@input$meta
-  meta_hernandez <- snakemake@input$metah
   output_file <- snakemake@output$output
   meta_out <- snakemake@output$meta_out
   rm_experiments <- snakemake@params$rm_exp
+  scale_data <- snakemake@params$scale
 }else{
-  input_file <- "results/hijazi/04_final_scores/scaled/GSknown.rds"
-  input_hernandez <- "results/hernandez/final_scores/scaled/GSknown.rds"
-  meta_file <- "results/hijazi/01_processed_data/benchmark_metadataPrior.csv"
-  meta_hernandez <- "results/hernandez/processed_data/benchmark_metadata.csv"
-  meta_out <- "results/hijazi/05_benchmark_files/merged/obs_number_of_targets-GSknown.csv"
-  output_file <- "results/hijazi/05_benchmark_files/merged/number_of_targets-GSknown.csv"
+  input_file <- "results/02_activity_scores/hernandez/final_scores/omnipath.rds"
+  meta_file <- "results/01_processed_data/hernandez/data/benchmark_metadata.csv"
+  meta_out <- "results/03_benchmark/hernandez/01_input_bench/obs_KARP-omnipath.csv"
+  output_file <- "results/03_benchmark/hernandez/01_input_bench/KARP-omnipath.csv"
   rm_experiments <- "F"
+  scale_data <- "T"
 }
 
 ## Libraries ---------------------------
 library(tidyverse)
+source("workflow/scripts/03_benchmark/helper_functions.R")
 
+## Define method and prior ---------------------------
 method_tmp <- str_remove(str_split(output_file, "/")[[1]][5], ".csv")
 input <- paste0("-",str_remove(str_split(input_file, "/")[[1]][5], ".rds"))
 method <- gsub(input, "", method_tmp)
 
-rm_experiments <- as.logical(rm_experiments)
 ## Load scores and meta ---------------------------
-act_scores_hijazi <- readRDS(input_file)
-act_scores_hernandez <- readRDS(input_hernandez)
+act_scores <- readRDS(input_file)
 
-## merge datasets
-act_scores <- map(names(act_scores_hijazi), function(method_idx){
-  hijazi <- act_scores_hijazi[[method_idx]] %>%
-    as.data.frame() %>%
-    rownames_to_column("kinase")
-  hernandez <- act_scores_hernandez[[method_idx]] %>%
-    as.data.frame() %>%
-    rownames_to_column("kinase")
+if (any(names(act_scores) == "number_of_targets")){
+  tmp <- act_scores["number_of_targets"]
+  if(scale_data){
+    act_scores <- map(act_scores, scale_scores)
+  }
+  act_scores["number_of_targets"] <- tmp
+} else {
+  if(scale_data){
+    act_scores <- map(act_scores, scale_scores)
+  }
+}
 
-  full_join(hijazi, hernandez, by = "kinase") %>%
-    column_to_rownames("kinase")
-})
-names(act_scores) <- names(act_scores_hijazi)
+# Scale data based on standard deviation
+if(scale_data){
+  act_scores <- map(act_scores, scale_scores)
+}
 
-obs_hijazi <- read_csv(meta_file, col_types = cols()) %>%
-  dplyr::select(id, sign, target)
-obs_hernandez <- read_csv(meta_hernandez, col_types = cols()) %>%
-  dplyr::select(id, sign, target)
-obs <- rbind(obs_hijazi, obs_hernandez)
-
-# Set perturb
+# Prepare meta_data
+obs <- read_csv(meta_file, col_types = cols())
 obs_targets <- obs %>%
-    dplyr::rename("perturb" = target)
+  dplyr::rename("perturb" = target)
 
 # filter out experiments with unknown target (e.g. several members)
 target_df <- obs_targets %>%
@@ -70,10 +66,12 @@ if (method == "number_of_targets"){
     mat_meth <- data.frame(act_scores[[method]])
     colnames(mat_meth) <- colnames(act_scores[[method]])
     if (experiment %in% colnames(mat_meth)){
-      mat <- t(act_scores[[method]][experiment]) * 1
+      mat <- t(act_scores[[method]][,experiment]) * 1
       mat[mat == 0] <- NA
-      data.frame(mat) %>%
+      df <- data.frame(mat) %>%
         add_column(experiment = experiment, .before = 1)
+      colnames(df) <- c("experiment", rownames(mat_meth))
+      df
     } else {
       df <- data.frame(matrix(NA, ncol = nrow(mat_meth) + 1))
       colnames(df) <- c("experiment", rownames(mat_meth))

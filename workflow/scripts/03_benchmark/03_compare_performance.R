@@ -6,7 +6,7 @@ if(exists("snakemake")){
   auroc_plot <- snakemake@output$auroc
   auprc_plot <- snakemake@output$auprc
 }else{
-  bench_files <- list.files("results/hernandez/benchmark_res",
+  bench_files <- list.files("results/03_benchmark/hernandez/02_benchmark_res",
                            pattern = "bench", recursive = TRUE, full.names = T)
   auroc_plot <- "results/hernandez/benchmark_res/plots/AUROC.pdf"
   auprc_plot <- "results/hernandez/benchmark_res/plots/AUPRC.pdf"
@@ -20,7 +20,7 @@ bench_list <- map(bench_files, function(file){
   read.csv(file, col.names = c("rows", "groupby", "group", "source",
                                "method", "metric", "score", "ci")) %>%
     dplyr::select(-rows) %>%
-    add_column(net = str_split(file, "/")[[1]][4])
+    add_column(net = str_split(file, "/")[[1]][5])
 })
 
 bench_list <- bench_list[!(map_dbl(bench_list, nrow) == 0)]

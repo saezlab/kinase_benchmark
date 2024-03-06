@@ -8,8 +8,8 @@ configfile: "config/config.yml"
 rule all:
     input:
         expand("results/00_prior/{prior}.tsv", prior = config["general"]["PKNs"]),
-        expand("results/02_activity_scores/hernandez/final_scores/{PKN}.rds",  PKN = config["hernandez"]["hernandez_PKNs"]),
-        expand("results/02_activity_scores/hijazi/final_scores/{PKN}.rds",  PKN = config["hijazi"]["hijazi_PKNs"])
+        expand("results/03_benchmark/{dataset}/03_benchmark_comp/AUROC.pdf", dataset = ["hernandez", "hijazi", "merged"])
+        #expand("results/03_benchmark/{dataset}/02_benchmark_res/{PKN}/bench_{hernandez_methods}-{PKN}.csv", dataset = ["hernandez", "hijazi", "merged"], PKN = config["hernandez"]["hernandez_PKNs"], hernandez_methods = config["hernandez"]["hernandez_methods"])
         #expand("results/cptac/activity_scores/{PKN}/original/original_{dataset}-{PKN}.rds", dataset = config["cptac"]["datasets"], PKN = config["cptac"]["cptac_PKNs"]),
         #"results/hijazi/06_benchmark_res/plots/AUPRC_scaled.pdf",
         #"results/hijazi/06_benchmark_res/plots/AUPRC_merged.pdf",
@@ -53,6 +53,12 @@ module processing_hijazi:
     snakefile: "rules/processing_hijazi.smk"
     config: config
 use rule * from processing_hijazi as processing_hijazi_*
+
+# Module for benchmark
+module benchmark:
+    snakefile: "rules/benchmark.smk"
+    config: config
+use rule * from benchmark as benchmark_*
 
 # Module for figures
 module figures:
