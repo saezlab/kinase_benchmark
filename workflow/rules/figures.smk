@@ -29,7 +29,7 @@ rule act_comparison:
         corrMeth = "results/manuscript_figures/figure_2/corrplot_methods.pdf",
         corrPrior = "results/manuscript_figures/figure_2/corrplot_priors.pdf"
     params:
-        methods = config["hernandez"]["hernandez_methods"]
+        methods = config["perturbation"]["methods"]
     conda:
         "../envs/figures.yml"
     script:
@@ -38,9 +38,9 @@ rule act_comparison:
 # ------------------------------------ FIGURE 3 ------------------------------------
 rule benchmark_figure:
     input:
-        bench_files = expand("results/03_benchmark/merged/02_benchmark_res/{PKN}/bench_{methods}-{PKN}.csv", PKN = config["figures"]["PKN_figure2"], methods = config["hernandez"]["hernandez_methods"]),
+        bench_files = expand("results/03_benchmark/merged/02_benchmark_res/{PKN}/bench_{methods}-{PKN}.csv", PKN = config["figures"]["PKN_figure2"], methods = config["perturbation"]["methods"]),
         meta = "results/01_processed_data/merged/data/benchmark_metadata.csv",
-        rank = expand("results/03_benchmark/merged/02_mean_rank/{PKN}/{methods}-{PKN}.csv", PKN = config["figures"]["PKN_figure2"], methods = config["hernandez"]["hernandez_methods"]),
+        rank = expand("results/03_benchmark/merged/02_mean_rank/{PKN}/{methods}-{PKN}.csv", PKN = config["figures"]["PKN_figure2"], methods = config["perturbation"]["methods"]),
         cit = "resources/protein_citations.csv"
     output:
         auroc = "results/manuscript_figures/figure_3/auroc_res.pdf",
