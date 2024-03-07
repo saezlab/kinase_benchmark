@@ -19,4 +19,6 @@ obs_hernandez <- read_csv(meta_hernandez, col_types = cols()) %>%
   dplyr::select(id, sign, target)
 obs <- rbind(obs_hijazi, obs_hernandez)
 
+obs <- separate_rows(obs, target, sep = ";")
+
 write_csv(obs, meta_out)

@@ -48,6 +48,17 @@ rule run_benchmark:
     script:
         "../scripts/03_benchmark/02_run_bench.py"
 
+rule mean_rank:
+    input:
+        scores = "results/03_benchmark/{dataset}/01_input_bench/{hernandez_methods}-{PKN}.csv",
+        meta = "results/03_benchmark/{dataset}/01_input_bench/obs_{hernandez_methods}-{PKN}.csv"
+    output:
+        output = "results/03_benchmark/{dataset}/02_mean_rank/{PKN}/{hernandez_methods}-{PKN}.csv"
+    conda:
+        "../envs/phospho.yml"
+    script:
+        "../scripts/03_benchmark/02_mean_rank.R"
+
 rule compare_performance:
     input:
         bench = expand("results/03_benchmark/{{dataset}}/02_benchmark_res/{PKN}/bench_{hernandez_methods}-{PKN}.csv", hernandez_methods = config["hernandez"]["hernandez_methods"], PKN = config["hernandez"]["hernandez_PKNs"])
@@ -58,3 +69,16 @@ rule compare_performance:
         "../envs/phospho.yml"
     script:
         "../scripts/03_benchmark/03_compare_performance.R"
+
+rule compare_rank:
+    input:
+        bench = expand("results/03_benchmark/{{dataset}}/02_mean_rank/{PKN}/{hernandez_methods}-{PKN}.csv", hernandez_methods = config["hernandez"]["hernandez_methods"], PKN = config["hernandez"]["hernandez_PKNs"])
+    output:
+        ov =  "results/03_benchmark/{dataset}/03_benchmark_comp/overview.csv",
+        rank = "results/03_benchmark/{dataset}/03_benchmark_comp/combined_ranks.csv",
+        kin = "results/03_benchmark/{dataset}/03_benchmark_comp/kinase_ranks.csv",
+        exp = "results/03_benchmark/{dataset}/03_benchmark_comp/experiment_ranks.csv"
+    conda:
+        "../envs/phospho.yml"
+    script:
+        "../scripts/03_benchmark/03_compare_rank.R"

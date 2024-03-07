@@ -9,20 +9,18 @@ if(exists("snakemake")){
   priors <- snakemake@input$prior_files
   hijazi_priors <- snakemake@input$hijPrior
   input_file <- snakemake@input$act
-  hijazi_activity <- snakemake@input$hijAct
   methods <- snakemake@params$methods
   overview_data_p <- snakemake@output$overview
   cor_methods_p <- snakemake@output$corrMeth
   cor_priors_p <- snakemake@output$corrPrior
 }else{
-  benchmark_file <- "results/hernandez/processed_data/benchmark_data.csv"
-  benchmark_meta <- "results/hernandez/processed_data/benchmark_metadata.csv"
-  hijazi_file <- "results/hijazi/01_processed_data/benchmark_data.csv"
-  hijazi_meta <- "results/hijazi/01_processed_data/benchmark_metadataPrior.csv"
-  priors <- list.files("results/hernandez/prior", pattern = ".tsv", full.names = T)
-  hijazi_priors <- list.files("results/hijazi/02_prior", pattern = ".tsv", full.names = T)
-  input_file <- list.files("results/hernandez/final_scores/scaled", full.names = T)
-  hijazi_activity <- list.files("results/hijazi/04_final_scores/scaled", full.names = T)
+  benchmark_file <- "results/01_processed_data/hernandez/data/benchmark_data.csv"
+  benchmark_meta <- "results/01_processed_data/hernandez/data/benchmark_metadata.csv"
+  hijazi_file <- "results/01_processed_data/hijazi/data/benchmark_data.csv"
+  hijazi_meta <- "results/01_processed_data/hijazi/data/benchmark_metadata.csv"
+  priors <- list.files("results/01_processed_data/hernandez/mapped_priors", pattern = ".tsv", full.names = T)
+  hijazi_priors <- list.files("results/01_processed_data/hijazi/mapped_priors", pattern = ".tsv", full.names = T)
+  input_file <- list.files("results/02_activity_scores/merged/final_scores", full.names = T)
   methods <- c("KARP", "KS", "KSEA_z", "PC1", "RoKAI_z", "Wilcox", "fgsea", "mean", "median", "mlm" ,"norm_wmean","number_of_targets","rokai_lm","ulm","viper","wsum", "ptmsea")
   overview_data_p <- "results/manuscript_figures/figure_2/overview_experiment.pdf"
   cor_methods_p <- "results/manuscript_figures/figure_2/corrplot_methods.pdf"
@@ -134,32 +132,11 @@ dev.off()
 methods <- methods[!methods == "number_of_targets"]
 
 act_list <- map(input_file, readRDS)
-act_list_hijazi <- map(hijazi_activity, readRDS)
-
-names(act_list) <- str_remove(map_chr(str_split(input_file, "\\/"), 5), ".rds")
-names(act_list_hijazi) <- str_remove(map_chr(str_split(hijazi_activity, "\\/"), 5), ".rds")
-act_list_merged <- map(names(act_list), function(x){
-  hernan <- act_list[[x]]
-  hijaz <- act_list_hijazi[[x]]
-
-  merged_act <- map(methods, function(met_id){
-    full_join(hernan[[met_id]] %>%
-                data.frame() %>%
-                rownames_to_column("ID"),
-              hijaz[[met_id]] %>%
-                data.frame() %>%
-                rownames_to_column("ID"),
-              by = "ID") %>%
-      column_to_rownames("ID")
-  })
-  names(merged_act) <- methods
-  merged_act
-} )
-names(act_list_merged) <- names(act_list)
-act_list <- act_list_merged
+names(act_list) <- map_chr(str_split(input_file, "/"), 5) %>% str_remove(".rds")
 
 method_comparison <- map(names(act_list), function(prior_idx){
   scores <- act_list[[prior_idx]]
+  scores <- scores[names(scores) %in% methods]
 
   scores_all <- map(names(scores), function(method_idx){
     score_long <- scores[[method_idx]] %>%

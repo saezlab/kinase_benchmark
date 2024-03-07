@@ -7,7 +7,7 @@ if(exists("snakemake")){
   kintype_pdf <- snakemake@output$kin_type
   regulonsize_pdf <- snakemake@output$reg
 }else{
-  prior_files <- list.files("results/prior", pattern = "tsv", full.names = T)
+  prior_files <- list.files("results/00_prior", pattern = "tsv", full.names = T)
   coverage_pdf <- "results/manuscript_figures/figure_1/coverage_merged.pdf"
   kinase_pdf <- "results/manuscript_figures/figure_1/kinase_overview.pdf"
   edge_pdf <- "results/manuscript_figures/figure_1/edge_overview.pdf"
@@ -27,7 +27,7 @@ prior <- map(prior_files, function(file){read_tsv(file, col_types = cols()) %>%
     dplyr::filter(mor == 1) %>%
     filter(!str_detect(source, "-family")) %>%
     filter(!str_detect(source, "-subfamily"))})
-names(prior) <- str_remove(str_remove(prior_files, "results/prior/"), ".tsv")
+names(prior) <- str_remove(str_remove(prior_files, "results/00_prior/"), ".tsv")
 
 coverage <- map_dfr(names(prior), function(PKN_idx){
   PKN <- prior[[PKN_idx]]

@@ -4,34 +4,28 @@
 if(exists("snakemake")){
   bench_files <- snakemake@input$bench_files
   meta_file <- snakemake@input$meta
-  meta_hijazi <- snakemake@input$hijazi
   auroc_plot <- snakemake@output$auroc
   overview_meta <- snakemake@output$meta_over
-  rank_file <- snakemake@input$rank
+  rank_files <- snakemake@input$rank
   rank_plot <- snakemake@output$rankPlt
-  kinase_rank <- snakemake@input$kin
   kin_file <- snakemake@output$rankKin
-  prior_size <- snakemake@input$prior
   heat_plot <- snakemake@output$heat
   medRank_plot <- snakemake@output$medRank
   gene_citations <- snakemake@input$cit
   cor_plot <- snakemake@output$cor
 }else{
-  bench_files <- list.files("results/hijazi/06_benchmark_res",
+  bench_files <- list.files("results/03_benchmark/merged/02_benchmark_res",
                             pattern = "bench", recursive = TRUE, full.names = T)
-  bench_files <- bench_files[str_detect(bench_files, "merged")]
-  auroc_plot <- "results/manuscript_figures/figure_3/auroc_res.pdf"
-  prior_size <- "results/hernandez/overview_priors/coverage.csv"
-  kinase_rank <- "results/hijazi/06_mean_rank/performance_per_kin_merged.csv"
-  meta_file <- "results/hernandez/processed_data/benchmark_metadata.csv"
-  meta_hijazi <- "results/hijazi/01_processed_data/benchmark_metadataPrior.csv"
+  meta_file <- "results/01_processed_data/merged/data/benchmark_metadata.csv"
+  rank_files <- list.files("results/03_benchmark/merged/02_mean_rank/",
+                            recursive = TRUE, full.names = T)
+  gene_citations <- "resources/protein_citations.csv"
   overview_meta <- "results/manuscript_figures/figure_3/overview_kin.pdf"
-  rank_file <- "results/hijazi/06_mean_rank/full_rank_merged.csv"
+  auroc_plot <- "results/manuscript_figures/figure_3/auroc_res.pdf"
   rank_plot <- "results/manuscript_figures/figure_3/mean_rank.pdf"
   kin_file <- "results/manuscript_figures/figure_3/kinase_GSknown.csv"
   heat_plot <- "results/manuscript_figures/figure_3/median_auroc.pdf"
   medRank_plot <- "results/manuscript_figures/figure_3/median_rank.pdf"
-  gene_citations <- "resources/protein_citations.csv"
   cor_plot <- "results/manuscript_figures/figure_3/study_bias.pdf"
 }
 
@@ -42,17 +36,9 @@ library(ComplexHeatmap)
 library(circlize)
 
 ## Overview kinases ---------------------------
-if (any(str_detect(bench_files, "merged"))){
-  meta_hi <- read_csv(meta_hijazi, col_types = cols()) %>%
+hernandez_meta <- read_csv(meta_file, col_types = cols()) %>%
     dplyr::select(id, sign, target)
-  meta_hernandez <- read_csv(meta_file, col_types = cols()) %>%
-    dplyr::select(id, sign, target)
-  hernandez_meta <- rbind(meta_hi, meta_hernandez) %>%
-    separate_rows(target, sep = ";")
-} else if (any(str_detect(bench_files, "scaled"))){
-  hernandez_meta <- read_csv(meta_file, col_types = cols()) %>%
-    dplyr::select(id, sign, target)
-}
+hernandez_meta <- separate_rows(hernandez_meta, target, sep = ";")
 
 kin_df <- table(hernandez_meta$target, hernandez_meta$sign) %>%
   as.data.frame() %>%
@@ -90,7 +76,7 @@ bench_list <- map(bench_files, function(file){
   read.csv(file, col.names = c("rows", "groupby", "group", "source",
                                "method", "metric", "score", "ci")) %>%
     dplyr::select(-rows) %>%
-    add_column(net = str_split(file, "/")[[1]][4])
+    add_column(net = str_split(file, "/")[[1]][5])
 })
 
 bench_list <- bench_list[!(map_dbl(bench_list, nrow) == 0)]
@@ -145,14 +131,15 @@ med_mat <- bench_df %>%
 col_fun = colorRamp2(c(min(med_mat), max(med_mat)), c("white", "deeppink4"))
 
 pdf(heat_plot, width = 6, height = 3.5)
-Heatmap(med_mat, row_split = 3, column_split = 4,border = TRUE, rect_gp = gpar(col = "white", lwd = 1), col = col_fun,
+Heatmap(med_mat, row_split = 4, column_split = 4,border = TRUE, rect_gp = gpar(col = "white", lwd = 1), col = col_fun,
         cell_fun = function(j, i, x, y, width, height, fill) {
           grid.text(sprintf("%.2f", med_mat[i, j]), x, y, gp = gpar(fontsize = 6))})
 dev.off()
 
 ## Mean rank ---------------------------
-priors <- map_chr(str_split(bench_files, "/"), 4) %>% unique()
-rank_df <- read_csv(rank_file, col_types = cols()) %>%
+priors <- map_chr(str_split(bench_files, "/"), 5) %>% unique()
+rank_df <- map_dfr(rank_files, function(x) read_csv(x, col_types = cols()))
+rank_df <- rank_df %>%
   filter(prior %in% priors) %>%
   filter(!method == "number_of_targets")
 rank_df$prior <- factor(rank_df$prior, levels = order_m)
@@ -188,27 +175,20 @@ medRank_mat <- rank_df %>%
 col_fun = colorRamp2(c(min(medRank_mat), max(medRank_mat)), c("deepskyblue4", "white"))
 
 pdf(medRank_plot, width = 6, height = 3.5)
-Heatmap(medRank_mat, row_split = 3, column_split = 4,border = TRUE, rect_gp = gpar(col = "white", lwd = 1), col = col_fun,
+Heatmap(medRank_mat, row_split = 4, column_split = 4,border = TRUE, rect_gp = gpar(col = "white", lwd = 1), col = col_fun,
         cell_fun = function(j, i, x, y, width, height, fill) {
           grid.text(sprintf("%.2f", medRank_mat[i, j]), x, y, gp = gpar(fontsize = 6))})
 dev.off()
 
 ## Mean rank per kinase ---------------------------
-kin_rank <- read_csv(kinase_rank, col_types = cols())
-
-kin_gsknown <- kin_rank %>%
+kin_gsknown <- rank_df %>%
   filter(prior == "phosphositeplus") %>%
+  group_by(targets) %>%
+  summarise(mean_rank = mean(rank, na.rm = T)) %>%
+  filter(!is.na(mean_rank)) %>%
   arrange(mean_rank) %>%
   mutate(mean_rank = round(mean_rank)) %>%
-  dplyr::select(targets, mean_rank) %>%
-  mutate(range = case_when(
-    mean_rank <= 10 ~ 6,
-    mean_rank > 10 & mean_rank <= 20 ~ 5,
-    mean_rank > 20 & mean_rank <= 30 ~ 4,
-    mean_rank > 30 & mean_rank <= 40 ~ 3,
-    mean_rank > 40 & mean_rank <= 50 ~ 2,
-    mean_rank > 50 ~ 1
-))
+  dplyr::select(targets, mean_rank)
 
 write_csv(kin_gsknown, kin_file)
 

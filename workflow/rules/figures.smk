@@ -1,7 +1,7 @@
 # ------------------------------------ FIGURE 1 ------------------------------------
 rule overview_prior:
     input:
-        prior_files = expand("results/prior/{PKN}.tsv", PKN = config["figures"]["PKN_figure1"])
+        prior_files = expand("results/00_prior/{PKN}.tsv", PKN = config["figures"]["PKN_figure1"])
     output:
         kin = "results/manuscript_figures/figure_1/coverage_merged.pdf",
         edges = "results/manuscript_figures/figure_1/edge_overview.pdf",
@@ -12,19 +12,18 @@ rule overview_prior:
     conda:
         "../envs/figures.yml"
     script:
-        "../scripts/figures_manuscript/01_figure_overview_priors.R"
+        "../scripts/05_figures_manuscript/01_figure_overview_priors.R"
 
 # ------------------------------------ FIGURE 2 ------------------------------------
 rule act_comparison:
     input:
-        bench = "results/hernandez/processed_data/benchmark_data.csv",
-        benchMeta = "results/hernandez/processed_data/benchmark_metadata.csv",
-        hijazi = "results/hijazi/01_processed_data/benchmark_data.csv",
-        hijMeta = "results/hijazi/01_processed_data/benchmark_metadataPrior.csv",
-        prior_files = expand("results/hernandez/prior/{PKN}.tsv", PKN = config["figures"]["PKN_figure1"]),
-        hijPrior = expand("results/hijazi/02_prior/{PKN}.tsv", PKN = config["figures"]["PKN_figure1"]),
-        act =  expand("results/hernandez/final_scores/scaled/{PKN}.rds", PKN = config["figures"]["PKN_figure1"]),
-        hijAct = expand("results/hijazi/04_final_scores/scaled/{PKN}.rds", PKN = config["figures"]["PKN_figure1"])
+        bench = "results/01_processed_data/hernandez/data/benchmark_data.csv",
+        benchMeta = "results/01_processed_data/hernandez/data/benchmark_metadata.csv",
+        hijazi = "results/01_processed_data/hijazi/data/benchmark_data.csv",
+        hijMeta = "results/01_processed_data/hijazi/data/benchmark_metadata.csv",
+        prior_files = expand("results/01_processed_data/hernandez/mapped_priors/{PKN}.tsv", PKN = config["figures"]["PKN_figure1"]),
+        hijPrior = expand("results/01_processed_data/hijazi/mapped_priors/{PKN}.tsv", PKN = config["figures"]["PKN_figure1"]),
+        act =  expand("results/02_activity_scores/merged/final_scores/{PKN}.rds", PKN = config["figures"]["PKN_figure1"])
     output:
         overview = "results/manuscript_figures/figure_2/overview_experiment.pdf",
         corrMeth = "results/manuscript_figures/figure_2/corrplot_methods.pdf",
@@ -34,17 +33,14 @@ rule act_comparison:
     conda:
         "../envs/figures.yml"
     script:
-        "../scripts/figures_manuscript/02_figure_comparison_activity.R"
+        "../scripts/05_figures_manuscript/02_figure_comparison_activity.R"
 
 # ------------------------------------ FIGURE 3 ------------------------------------
 rule benchmark_figure:
     input:
-        bench_files = expand("results/hijazi/06_benchmark_res/{PKN}/merged/bench_{methods}-{PKN}.csv", PKN = config["figures"]["PKN_figure2"], methods = config["hernandez"]["hernandez_methods"]),
-        meta = "results/hernandez/processed_data/benchmark_metadata.csv",
-        rank = "results/hijazi/06_mean_rank/full_rank_merged.csv",
-        hijazi = "results/hijazi/01_processed_data/benchmark_metadataPrior.csv",
-        kin = "results/hijazi/06_mean_rank/performance_per_kin_merged.csv",
-        prior = "results/hernandez/overview_priors/coverage.csv",
+        bench_files = expand("results/03_benchmark/merged/02_benchmark_res/{PKN}/bench_{methods}-{PKN}.csv", PKN = config["figures"]["PKN_figure2"], methods = config["hernandez"]["hernandez_methods"]),
+        meta = "results/01_processed_data/merged/data/benchmark_metadata.csv",
+        rank = expand("results/03_benchmark/merged/02_mean_rank/{PKN}/{methods}-{PKN}.csv", PKN = config["figures"]["PKN_figure2"], methods = config["hernandez"]["hernandez_methods"]),
         cit = "resources/protein_citations.csv"
     output:
         auroc = "results/manuscript_figures/figure_3/auroc_res.pdf",
@@ -57,7 +53,7 @@ rule benchmark_figure:
     conda:
         "../envs/figures.yml"
     script:
-        "../scripts/figures_manuscript/03_figure_benchmark.R"
+        "../scripts/05_figures_manuscript/03_figure_benchmark.R"
 
 rule citation_info:
     input:
