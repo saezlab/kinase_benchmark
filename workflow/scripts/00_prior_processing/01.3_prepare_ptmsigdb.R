@@ -22,7 +22,7 @@ PTMsig_df <- map_dfr(names(PTMsigDB.kinase), function(kin){
 
 PTMsig_df <- PTMsig_df %>%
   mutate(source = str_remove(source, "KINASE-PSP_")) %>%
-  mutate(source = str_remove(source, "KINASE-iKiP_")) %>%
+  #mutate(source = str_remove(source, "KINASE-iKiP_")) %>%
   mutate(target_site = str_remove(target_site, "-p;u")) %>%
   mutate(target = map_chr(str_split(map_chr(str_split(target_site, ";"), 1), "-"), 1)) %>%
   mutate(position = map_chr(str_split(target_site, ";"), 2))

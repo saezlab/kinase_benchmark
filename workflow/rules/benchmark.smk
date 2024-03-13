@@ -87,7 +87,7 @@ rule compare_rank:
 # -------------------------------------- SUBSET ---------------------------------------
 rule generate_subset:
     input:
-        scores = expand("results/03_benchmark/{{dataset}}/01_input_bench/{methods}-{PKNs}.csv", methods = config["perturbation"]["methods"], PKNs = config["perturbation"]["PKNs_subset"])
+        scores = expand("results/03_benchmark/{{dataset}}/01_input_bench/{methods}-{PKNs}.csv", methods = config["perturbation"]["methods"], PKNs = config["perturbation"]["PKNs_subset_two"])
     params:
     	  subset = lambda w: w.subset
     output:
