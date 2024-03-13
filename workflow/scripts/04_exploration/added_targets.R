@@ -49,5 +49,6 @@ added_targets <- added_targets %>%
   ))
 
 ggplot(added_targets, aes(x = net, y = percentage, fill = bench)) +
-  geom_boxplot()
+  geom_boxplot() +
+  ylab("ratio")
 
