@@ -18,6 +18,15 @@ rule all:
         "results/manuscript_figures/figure_2/overview_experiment.pdf",
         "results/manuscript_figures/figure_3/auroc_res.pdf"
 
+rule priors:
+    input:
+        expand("results/00_prior/{prior}.tsv", prior = config["general"]["PKNs"])
+
+rule predicted:
+    input:
+        expand("results/03_benchmark/{dataset}/02_benchmark_res_subset/predicted/{PKN}/bench_{hernandez_methods}-{PKN}.csv", dataset = ["hernandez"], hernandez_methods = config["perturbation"]["methods"], PKN = config["perturbation"]["PKNs_subset"]),
+        expand("results/03_benchmark/{dataset}/02_benchmark_res_subset/johnson/{PKN}/bench_{hernandez_methods}-{PKN}.csv", dataset = ["hernandez"], hernandez_methods = config["perturbation"]["methods"], PKN = config["perturbation"]["PKNs_subset_two"])
+
 # Module for prior processing
 module prior:
     snakefile: "rules/prior.smk"
