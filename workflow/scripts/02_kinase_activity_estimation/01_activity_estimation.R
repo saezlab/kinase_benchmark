@@ -7,15 +7,17 @@ if(exists("snakemake")){
   script_support <- snakemake@input$script_support
   remove_auto <- snakemake@params$rm_auto
   minsize <- snakemake@params$minsize
+  cores <- snakemake@threads[[1]]
 }else{
-  dataset <- "results/hijazi/01_processed_data/benchmark_data.csv"
-  PKN <- "results/hijazi/02_prior/ptmsigdb.tsv"
-  PKN_name <- "ptmsigdb"
+  dataset <- "results/01_processed_data/hernandez/data/benchmark_data.csv"
+  PKN <- "results/01_processed_data/hernandez/mapped_priors/phosphositeplus.tsv"
+  PKN_name <- "phosphositeplus"
   output_file <- "results/hijazi/03_activity_scores/ptmsigdb.rds"
   remove_auto <- T
   scripts <- list.files("workflow/scripts/methods", pattern = "run", full.names = T)
   script_support <- "workflow/scripts/methods/support_functions.R"
   minsize <- 3
+  cores <- 1
 }
 
 minsize <- as.double(minsize)
@@ -24,6 +26,7 @@ minsize <- as.double(minsize)
 library(decoupleR)
 library(tidyselect)
 library(tidyverse)
+library(furrr)
 source(script_support)
 map(scripts, source)
 
@@ -41,8 +44,12 @@ if (!remove_auto){
     dplyr::mutate(target = str_remove(target, "\\|auto"))
 }
 
+#defining parallelisation
+plan(multisession, workers = cores)
+
 ## Kinase activity estimation ---------------------------
-results <- map_dfr(1:ncol(phospho), function(i){
+results <- future_map_dfr(1:ncol(phospho), function(i){
+  print(paste0(i, "/", ncol(phospho)))
   if(str_detect(dataset, "original")){
     mat_i <- phospho[i] %>%
       drop_na()
@@ -142,7 +149,7 @@ results <- map_dfr(1:ncol(phospho), function(i){
 
 # Run methods implemented by Eric Kai from Zhang group
 results_eric <- calculate_Kinase_Activity(mat = phospho, network = prior, min_sites = minsize)
-results_eric_long <- map_dfr(names(results_eric), function(method_i){
+results_eric_long <- future_map_dfr(names(results_eric), function(method_i){
   tidyr::pivot_longer(results_eric[[method_i]] %>%
                         as.data.frame() %>%
                         rownames_to_column("source"),

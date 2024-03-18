@@ -24,6 +24,7 @@ dependencies:
   - r-ggvenndiagram
   - r-pheatmap
   - r-corrplot
+  - r-furrr
   - python
   - pandas
   - pip

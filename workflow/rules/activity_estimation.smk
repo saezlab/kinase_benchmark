@@ -12,6 +12,9 @@ rule cptac_activity_estimation:
     params:
         rm_auto = "T",
         minsize = "5"
+    threads: 6
+    resources:
+        mem = 50000
     conda:
         "../envs/phospho.yml"
     script:
@@ -56,6 +59,9 @@ rule hernandez_activity_estimation:
     params:
         rm_auto = "T",
         minsize = "3"
+    threads: 6
+    resources:
+        mem = 50000
     conda:
         "../envs/phospho.yml"
     script:
@@ -104,6 +110,9 @@ rule hijazi_activity_estimation:
         minsize = "3"
     conda:
         "../envs/phospho.yml"
+    threads: 6
+    resources:
+        mem = 50000
     script:
         "../scripts/02_kinase_activity_estimation/01_activity_estimation.R"
 
