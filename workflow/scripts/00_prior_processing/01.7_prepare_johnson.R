@@ -4,11 +4,12 @@ if(exists("snakemake")){
   par <- snakemake@params$perc
   output_file <- snakemake@output$tsv
 }else{
-  ppsp_file <- "data/johnson_library/pps_fifteenmer_ser_thr_percent.tsv"
-  tyr_file <- "data/johnson_library/pps_fifteenmer_tyr_percent.tsv"
+  ppsp_file <- "data/kinase_libraries/johnson_library/pps_fifteenmer_ser_thr_percent.tsv"
+  tyr_file <- "data/kinase_libraries/johnson_library/pps_fifteenmer_tyr_percent.tsv"
   par <- 15
   output_file <- "results/prior/raw/johnson99.tsv"
 }
+par <- as.numeric(par)
 par_quant <- par >= 100
 if (par_quant){
   par <- as.numeric(par)/100
