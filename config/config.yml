@@ -11,9 +11,11 @@ cptac:
 
 perturbation:
   PKNs: ["omnipath", "phosphositeplus", "ptmsigdb", "GPS", "iKiPdb", "networkin", "shuffled", "johnson15"]
-  PKNs_subset: ["phosphositeplus", "phosphositeplus_networkin", "phosphositeplus_iKiPdb"]
-  PKNs_subset_two: ["phosphositeplus", "phosphositeplus_johnson15", "phosphositeplus_phosformer15"]
+  predicted: ["phosphositeplus", "phosphositeplus_networkin", "phosphositeplus_iKiPdb"]
+  johnson: ["phosphositeplus", "phosphositeplus_johnson15", "phosphositeplus_phosformer15"]
+  all: ["omnipath", "phosphositeplus", "ptmsigdb", "GPS", "iKiPdb", "networkin", "shuffled", "johnson15", "phosformer15", "phosphositeplus_networkin", "phosphositeplus_iKiPdb", "phosphositeplus_johnson15", "phosphositeplus_phosformer15"]
   methods: ["KARP", "KS", "KSEA_z", "PC1", "RoKAI_z", "Wilcox", "fgsea", "mean", "median", "mlm","norm_wmean","number_of_targets","rokai_lm","ulm","viper","wsum", "ptmsea"] # "INKA", "UQ", "norm_fgsea"
+  methods_johnson: ["KARP", "KSEA_z", "PC1", "RoKAI_z", "Wilcox", "fgsea", "mean", "median", "mlm","norm_wmean","number_of_targets","rokai_lm","ulm","viper","wsum"]
 
 figures:
   PKN_figure1: ["omnipath", "phosphositeplus", "ptmsigdb", "GPS", "iKiPdb", "networkin"]

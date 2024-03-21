@@ -85,9 +85,16 @@ rule compare_rank:
 
 
 # -------------------------------------- SUBSET ---------------------------------------
+def get_methods(wildcards):
+    if (wildcards['subset'] == "johnson"):
+        methods = config["perturbation"]["methods_johnson"]
+    else:
+        methods = config["perturbation"]["methods"]
+    return expand("results/03_benchmark/{dataset}/01_input_bench/{methods}-{PKNs}.csv", methods = methods, PKNs = config["perturbation"][wildcards['subset']], dataset = wildcards['dataset'])
+    
 rule generate_subset:
     input:
-        scores = expand("results/03_benchmark/{{dataset}}/01_input_bench/{methods}-{PKNs}.csv", methods = config["perturbation"]["methods"], PKNs = config["perturbation"]["PKNs_subset_two"])
+        scores = get_methods
     params:
     	  subset = lambda w: w.subset
     output:
@@ -112,7 +119,7 @@ rule prepare_subset:
     script:
         "../scripts/03_benchmark/001_input_subset.R"
 
-rule run_benchmark:
+rule run_benchmark_subset:
     input:
         scores = "results/03_benchmark/{dataset}/01_input_bench_subset/{subset}/{hernandez_methods}-{PKN}.csv",
         meta = "results/03_benchmark/{dataset}/01_input_bench_subset/{subset}/obs_{hernandez_methods}-{PKN}.csv"
