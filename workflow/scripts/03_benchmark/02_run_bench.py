@@ -9,9 +9,9 @@ if 'snakemake' in locals():
    meta_data = snakemake.input[1]
    output_file = snakemake.output[0]
 else:
-   input_file = '../../../../results/hernandez/benchmark_files/KSEA_z-ptmsigdb.csv'
-   meta_data = '../../../../results/hernandez/benchmark_files/obs_KSEA_z-ptmsigdb.csv'
-   output_file = '../../../../results/hernandez/benchmark_res/bench_KSEA_z-ptmsigdb.csv'
+   input_file = 'results/03_benchmark/hernandez/01_input_bench_subset/johnson/KSEA_z-phosphositeplus_johnson15.csv'
+   meta_data = 'results/03_benchmark/hernandez/01_input_bench_subset/johnson/obs_KSEA_z-phosphositeplus_johnson15.csv'
+   output_file = 'results/03_benchmark/hernandez/02_benchmark_res_subset/johnson/phosphositeplus_johnson15/bench_KSEA_z-phosphositeplus_johnson15.csv'
 
 
 # In[2]:
@@ -23,6 +23,7 @@ import os
 import re
 
 import decoupler as dc
+
 
 
 # In[3]:
