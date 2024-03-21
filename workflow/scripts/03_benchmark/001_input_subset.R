@@ -8,11 +8,11 @@ if(exists("snakemake")){
   output_file <- snakemake@output$output
   output_meta <- snakemake@output$meta_out
 }else{
-  input_file <- "results/03_benchmark/merged/01_input_bench/fgsea-GPS.csv"
-  subset <- "results/03_benchmark/merged/01_input_bench_subset//tmp/filter_subset.csv"
-  meta_file <- "results/03_benchmark/merged/01_input_bench/obs_fgsea-GPS.csv"
-  output_file <- "results/03_benchmark/merged/01_input_bench/tmp/fgsea-GPS.csv"
-  output_meta <- "results/03_benchmark/merged/01_input_bench/tmp/obs_fgsea-GPS.csv"
+  input_file <- "results/03_benchmark/hernandez/01_input_bench/fgsea-phosphositeplus.csv"
+  subset <- "results/03_benchmark/hernandez/01_input_bench_subset/predicted/filter_subset.csv"
+  meta_file <- "results/03_benchmark/hernandez/01_input_bench/obs_fgsea-phosphositeplus.csv"
+  output_file <- "results/03_benchmark/hernandez/01_input_bench_subset/predicted/fgsea-phosphositeplus.csv"
+  output_meta <- "results/03_benchmark/hernandez/01_input_bench_subset/predicted/obs_fgsea-phosphositeplus.csv"
 }
 
 ## Libraries ---------------------------
@@ -31,6 +31,10 @@ subset_df <- df %>%
   filter(id %in% shared) %>%
   dplyr::select(-id) %>%
   pivot_wider(values_from = "score", names_from = "kinase")
+
+## Filter obs ---------------------------
+meta <- meta %>%
+  dplyr::filter(sample %in% subset_df$experiment)
 
 write_csv(subset_df, output_file)
 write_csv(meta, output_meta)
