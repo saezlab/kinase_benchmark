@@ -7,16 +7,11 @@ configfile: "config/config.yml"
 
 rule all:
     input:
-        expand("results/00_prior/{prior}.tsv", prior = config["general"]["PKNs"]),
         expand("results/03_benchmark/{dataset}/03_benchmark_comp/AUROC.pdf", dataset = ["hernandez", "hijazi", "merged"]),
         expand("results/03_benchmark/{dataset}/03_benchmark_comp/combined_ranks.csv", dataset = ["hernandez", "hijazi", "merged"]),
         expand("results/03_benchmark/{dataset}/02_benchmark_res_subset/predicted/{PKN}/bench_{hernandez_methods}-{PKN}.csv", dataset = ["hernandez"], hernandez_methods = config["perturbation"]["methods"], PKN = config["perturbation"]["predicted"]),
         expand("results/03_benchmark/{dataset}/02_benchmark_res_subset/johnson/{PKN}/bench_{hernandez_methods}-{PKN}.csv", dataset = ["hernandez"], hernandez_methods = config["perturbation"]["methods"], PKN = config["perturbation"]["johnson"]),
         #expand("results/cptac/activity_scores/{PKN}/original/original_{dataset}-{PKN}.rds", dataset = config["cptac"]["datasets"], PKN = config["cptac"]["cptac_PKNs"]),
-        #Figures
-        "results/manuscript_figures/figure_1/coverage_merged.pdf",
-        "results/manuscript_figures/figure_2/overview_experiment.pdf",
-        "results/manuscript_figures/figure_3/auroc_res.pdf"
 
 rule priors:
     input:
@@ -27,6 +22,12 @@ rule predicted:
         expand("results/03_benchmark/{dataset}/02_benchmark_res_subset/predicted/{PKN}/bench_{hernandez_methods}-{PKN}.csv", dataset = ["hernandez", "hijazi", "merged"], hernandez_methods = config["perturbation"]["methods"], PKN = config["perturbation"]["predicted"]),
         expand("results/03_benchmark/{dataset}/02_benchmark_res_subset/johnson/{PKN}/bench_{hernandez_methods}-{PKN}.csv", dataset = ["hernandez", "hijazi", "merged"], hernandez_methods = config["perturbation"]["methods_johnson"], PKN = config["perturbation"]["johnson"]),
         expand("results/03_benchmark/{dataset}/02_benchmark_res/{PKN}/bench_{hernandez_methods}-{PKN}.csv", dataset = ["hernandez", "hijazi", "merged"], hernandez_methods = config["perturbation"]["methods"], PKN = config["perturbation"]["all"])
+
+rule figures:
+    input:
+        "results/manuscript_figures/figure_1/coverage_merged.pdf",
+        "results/manuscript_figures/figure_2/overview_experiment.pdf",
+        "results/manuscript_figures/figure_3/auroc_res.pdf"
 
 
 
