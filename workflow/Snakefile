@@ -28,6 +28,7 @@ rule figures:
         "results/manuscript_figures/figure_1/coverage_merged.pdf",
         "results/manuscript_figures/figure_2/overview_experiment.pdf",
         "results/manuscript_figures/figure_3/auroc_res.pdf"
+        #"results/manuscript_figures/supp_figures/predicted_combined.pdf"
 
 
 
