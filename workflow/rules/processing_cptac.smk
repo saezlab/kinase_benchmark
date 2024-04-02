@@ -2,9 +2,9 @@
 # ------------------------------ DATA FORMATTING ------------------------------
 rule fromat_data:
     input:
-        phospho = "data/datasets/cptac_original/{dataset}_original_medcent_30plus.tsv"
+        phospho = "data/datasets/CPTAC_original/{dataset}_original_medcent_30plus.tsv"
     output:
-        out = "data/datasets/cptac_phospho/final/{dataset}_norm2prot_original_lm_log2_medCentRatio.rds"
+        out = "data/datasets/CPTAC_phospho/final/{dataset}_norm2prot_original_lm_log2_medCentRatio.rds"
     conda:
         "../envs/phospho.yml"
     script:
@@ -14,7 +14,7 @@ rule fromat_data:
 rule map_priors:
     input:
         ppsp = "results/00_prior/{prior}.tsv",
-        file_dataset = expand("data/datasets/cptac_phospho/final/{dataset}_norm2prot_{normalisation}_lm_log2_medCentRatio.rds", dataset = config["cptac"]["datasets"], normalisation = config["cptac"]["normalisation"])
+        file_dataset = expand("data/datasets/CPTAC_phospho/final/{dataset}_norm2prot_{normalisation}_lm_log2_medCentRatio.rds", dataset = config["cptac"]["datasets"], normalisation = config["cptac"]["normalisation"])
     output:
         tsv = "results/01_processed_data/cptac/mapped_priors/{prior}.tsv"
     wildcard_constraints:
@@ -26,8 +26,8 @@ rule map_priors:
 
 rule map_merged_priors:
     input:
-        ppsp = "esults/00_prior/merged/{known}_{predicted}.tsv",
-        file_dataset = expand("data/datasets/cptac_phospho/final/{dataset}_norm2prot_{normalisation}_lm_log2_medCentRatio.rds", dataset = config["cptac"]["datasets"], normalisation = config["cptac"]["normalisation"])
+        ppsp = "results/00_prior/merged/{known}_{predicted}.tsv",
+        file_dataset = expand("data/datasets/CPTAC_phospho/final/{dataset}_norm2prot_{normalisation}_lm_log2_medCentRatio.rds", dataset = config["cptac"]["datasets"], normalisation = config["cptac"]["normalisation"])
     output:
         tsv = "results/01_processed_data/cptac/mapped_priors/{known}_{predicted}.tsv"
     conda:
@@ -48,7 +48,7 @@ rule map_kinase_ids:
 # ------------------------------- PTM-SEA input preparation -------------------------------
 rule ptmsea_datasets:
     input:
-        file_dataset = "data/datasets/cptac_phospho/final/{dataset}_norm2prot_{normalisation}_lm_log2_medCentRatio.rds"
+        file_dataset = "data/datasets/CPTAC_phospho/final/{dataset}_norm2prot_{normalisation}_lm_log2_medCentRatio.rds"
     output:
         gct = "results/01_processed_data/cptac/datasets/{dataset}_{normalisation}.gct"
     conda:
