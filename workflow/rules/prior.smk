@@ -67,7 +67,7 @@ rule prepare_johnson:
         ppsp = "data/kinase_libraries/johnson_library/pps_fifteenmer_ser_thr_percent.tsv",
         tyr = "data/kinase_libraries/johnson_library/pps_fifteenmer_tyr_percent.tsv"
     params:
-    	  perc = lambda w: w.perc
+        perc = lambda w: w.perc
     output:
         tsv = "results/00_prior/raw/johnson{perc}.tsv"
     conda:
@@ -95,21 +95,21 @@ rule shuffle_net:
     script:
         "../scripts/00_prior_processing/01.9_shuffle_network.R"
 
-rule shuffle_iKiP:
+rule shuffle_NetworKIN:
     input:
         tsv = "results/00_prior/merged/phosphositeplus_networkin.tsv"
     output:
-        shuffled = "results/00_prior/merged/shuffledNET.tsv"
+        shuffled = "results/00_prior/shuffledNET.tsv"
     conda:
         "../envs/phospho.yml"
     script:
         "../scripts/00_prior_processing/01.9_shuffle_network.R"
 
-rule shuffle_NetworKIN:
+rule shuffle_iKiP:
     input:
         tsv = "results/00_prior/merged/phosphositeplus_iKiPdb.tsv"
     output:
-        shuffled = "results/00_prior/merged/shuffledKIP.tsv"
+        shuffled = "results/00_prior/shuffledKIP.tsv"
     conda:
         "../envs/phospho.yml"
     script:
