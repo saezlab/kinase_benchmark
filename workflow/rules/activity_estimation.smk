@@ -3,7 +3,7 @@
 # ------------------------------ CPTAC ------------------------------
 rule cptac_activity_estimation:
     input:
-        file_dataset ="data/CPTAC_phospho/final/{dataset}_norm2prot_{normalisation}_lm_log2_medCentRatio.rds",
+        file_dataset ="data/datasets/CPTAC_phospho/final/{dataset}_norm2prot_{normalisation}_lm_log2_medCentRatio.rds",
         file_PKN = "results/01_processed_data/cptac/mapped_priors/{PKN}.tsv",
         scripts = expand("workflow/scripts/methods/run_{method}.R", method = ["INKA", "KARP", "lm_rokai", "zscore", "erics_methods"]),
         script_support = "workflow/scripts/methods/support_functions.R"
@@ -18,7 +18,7 @@ rule cptac_activity_estimation:
     conda:
         "../envs/phospho.yml"
     script:
-        "../scripts/02_kinase_activity_estimation/01_activity_estimation.R"
+        "../scripts/02_kinase_activity_estimation/01_activity_estimation_cptac.R"
 
 rule cptac_activity_estimation_ptmsea:
     input:
