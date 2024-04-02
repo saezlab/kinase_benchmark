@@ -6,8 +6,9 @@ general:
 
 cptac:
   datasets: ["ucec", "luad", "lscc", "hnscc", "gbm", "ccrcc", "brca"]
-  cptac_PKNs: ["phosphositeplus"] #, "phosphositeplus_networkin", "phosphositeplus_iKiPdb", "shuffled"
-  normalisation: ["original"] #, "global", "protein", "site", "subtract", "unnorm"
+  cptac_PKNs: ["omnipath", "phosphositeplus", "ptmsigdb", "GPS", "iKiPdb", "networkin", "shuffled", "phosphositeplus_networkin", "phosphositeplus_iKiPdb", "phosphositeplus_johnson15", "phosphositeplus_phosformer15", "shuffledKIP", "shuffledNET"]
+  normalisation: ["global", "protein", "site", "subtract", "unnorm"] #, "global", "protein", "site", "subtract", "unnorm"
+  normalisation_PKNs: ["phosphositeplus"]
 
 perturbation:
   PKNs: ["omnipath", "phosphositeplus", "ptmsigdb", "GPS", "iKiPdb", "networkin", "shuffled", "johnson15"]
