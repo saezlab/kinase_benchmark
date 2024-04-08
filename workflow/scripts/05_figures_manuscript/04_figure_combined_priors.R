@@ -14,6 +14,9 @@ if(exists("snakemake")){
   bench_files_2 <- list.files("results/03_benchmark/merged/02_benchmark_res_subset/johnson",
                             pattern = "bench", recursive = TRUE, full.names = T)
   output_file_2 <- "results/manuscript_figures/supp_figures/predicted_combined.pdf"
+  bench_files_3 <- list.files("results/03_benchmark/merged/02_benchmark_res",
+                              pattern = "bench", recursive = TRUE, full.names = T)
+  bench_files_3 <- bench_files_3[str_detect(bench_files_3, "phosphositeplus|johnson|phosformer")]
 }
 
 ## Libraries ---------------------------
@@ -75,8 +78,7 @@ bench_list <- map(bench_files_2, function(file){
 })
 
 bench_list <- bench_list[!(map_dbl(bench_list, nrow) == 0)]
-bench_df <- bind_rows(bench_list) %>%
-  filter(!method == "number_of_targets")
+bench_df <- bind_rows(bench_list)
 
 order_m <- bench_df %>%
   filter(metric == "mcauroc") %>%
