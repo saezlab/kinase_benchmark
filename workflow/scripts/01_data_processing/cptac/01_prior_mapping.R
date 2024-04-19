@@ -3,9 +3,9 @@ if(exists("snakemake")){
   file_datasets <- snakemake@input$file_dataset
   output_file <- snakemake@output$tsv
 }else{
-  ppsp_file <- "results/prior/merged/GSknown_networkin.tsv"
-  output_file <- "results/cptac/prior/GSknown_networkin.tsv"
-  file_datasets <- list.files("data/CPTAC_phospho/final", full.names = T)
+  ppsp_file <- "results/00_prior/merged/phosphositeplus_networkin.tsv"
+  output_file <- "results/01_processed_data/cptac/mapped_priors/phosphositeplus_networkin.tsv"
+  file_datasets <- list.files("data/datasets/CPTAC_phospho/final", full.names = T)
 }
 
 ## Libraries ---------------------------
@@ -46,35 +46,42 @@ target_df <- full_join(pps_df, res, by = "ensembl_gene_id")
 
 ## Merge with network ---------------------------
 if(!any(is.na(network$sequence))){
-  sequence_length <- min(map_dbl(network$sequence, nchar))
+  sequence_all <- unique(map_dbl(network$sequence, nchar))
 
-  if (sequence_length < 15){
-    surrounding_seq <- (sequence_length-1) / 2
-    target_df <- target_df %>%
-      mutate(surrounding = substr(surrounding, 8-surrounding_seq, 8+surrounding_seq))
-  }
+  prior_df <- map_dfr(sequence_all, function(sequence_length){
 
-  target_df <- target_df %>%
-    mutate(target_site = paste0(external_gene_name, "_", surrounding))
+    if (sequence_length < 15){
+      surrounding_seq <- (sequence_length-1) / 2
+      target_df_new <- target_df %>%
+        mutate(surrounding = substr(surrounding, 8-surrounding_seq, 8+surrounding_seq))
+    } else {
+      target_df_new <- target_df
+    }
 
-  network <- network %>%
-    mutate(target_site = paste0(target_protein, "_", sequence))
+    target_df_new <- target_df_new %>%
+      mutate(target_site = paste0(external_gene_name, "_", surrounding))
 
-  mapped_prior <- left_join(network %>%
-                            dplyr::select(source, target_site),
-                          target_df, by = "target_site", relationship = "many-to-many")
+    network <- network %>%
+      mutate(target_site = paste0(target_protein, "_", sequence))
 
-  prior_df <- mapped_prior %>%
-    mutate(target = case_when(
-      !is.na(site) ~ site,
-      is.na(site) ~ target_site
-    )) %>%
-    mutate(target = case_when(
-      str_detect(pattern = source, string = target_site) ~ paste0(target, "|auto"), #mark autophosphorylation
-      !str_detect(pattern = source, string = target_site) ~ target
-    )) %>%
-    dplyr::mutate(mor = 1) %>%
-    dplyr::select(source, target, mor) %>%
+    mapped_prior <- left_join(network %>%
+                                dplyr::select(source, target_site),
+                              target_df_new, by = "target_site", relationship = "many-to-many")
+
+    mapped_prior %>%
+      mutate(target = case_when(
+        !is.na(site) ~ site,
+        is.na(site) ~ target_site
+      )) %>%
+      mutate(target = case_when(
+        str_detect(pattern = source, string = target_site) ~ paste0(target, "|auto"), #mark autophosphorylation
+        !str_detect(pattern = source, string = target_site) ~ target
+      )) %>%
+      dplyr::mutate(mor = 1) %>%
+      dplyr::select(source, target, mor) %>%
+      distinct()
+
+  }) %>%
     distinct()
 } else {
   target_df <- target_df %>%
