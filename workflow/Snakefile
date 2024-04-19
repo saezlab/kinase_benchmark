@@ -23,7 +23,7 @@ rule normalisation:
 
 rule predicted:
     input:
-        expand("results/03_benchmark/{dataset}/02_benchmark_res_subset/predicted/{PKN}/bench_{hernandez_methods}-{PKN}.csv", dataset = ["hernandez", "hijazi", "merged"], hernandez_methods = config["perturbation"]["methods"], PKN = config["perturbation"]["predicted"]),
+        expand("results/03_benchmark/{dataset}/02_benchmark_res_subset/predicted/{PKN}/bench_{hernandez_methods}-{PKN}.csv", dataset = ["hernandez", "hijazi", "merged"], hernandez_methods = config["perturbation"]["methods_subset"], PKN = config["perturbation"]["predicted"]),
         expand("results/03_benchmark/{dataset}/02_benchmark_res_subset/johnson/{PKN}/bench_{hernandez_methods}-{PKN}.csv", dataset = ["hernandez", "hijazi", "merged"], hernandez_methods = config["perturbation"]["methods_johnson"], PKN = config["perturbation"]["johnson"])
 
 rule figures:

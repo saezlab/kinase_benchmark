@@ -89,9 +89,9 @@ def get_methods(wildcards):
     if (wildcards['subset'] == "johnson"):
         methods = config["perturbation"]["methods_johnson"]
     else:
-        methods = config["perturbation"]["methods"]
+        methods = config["perturbation"]["methods_subset"]
     return expand("results/03_benchmark/{dataset}/01_input_bench/{methods}-{PKNs}.csv", methods = methods, PKNs = config["perturbation"][wildcards['subset']], dataset = wildcards['dataset'])
-    
+
 rule generate_subset:
     input:
         scores = get_methods
