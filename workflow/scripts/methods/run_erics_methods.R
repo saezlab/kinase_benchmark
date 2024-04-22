@@ -33,8 +33,16 @@ calculate_Kinase_Activity <- function(mat, network, col="source", col2="target",
         target_num <- sum(!is.na(mat[targets, j]))
         num_targets[kins[i], j] <- target_num
         if(target_num >= min_sites){
-          ks_scores[kins[i], j] <- -log10(ks.test(as.numeric(mat[targets, j]), as.numeric(mat[nontargets, j]))$p.value)
-          wilcox_scores[kins[i], j] <- -log10(wilcox.test(as.numeric(mat[targets, j]), as.numeric(mat[nontargets, j]))$p.value)
+          KS_p.val <- ks.test(as.numeric(mat[targets, j]), as.numeric(mat[nontargets, j]))$p.value
+          if(KS_p.val == 0){
+            KS_p.val <- 2.2e-16
+          }
+          ks_scores[kins[i], j] <- -log10(KS_p.val)
+          wilcox_p.val <- wilcox.test(as.numeric(mat[targets, j]), as.numeric(mat[nontargets, j]))$p.value
+          if(wilcox_p.val == 0){
+            wilcox_p.val <- 2.2e-16
+          }
+          wilcox_scores[kins[i], j] <- -log10(wilcox_p.val)
           if(median(as.numeric(mat[targets, j]), na.rm = T) < median(as.numeric(mat[nontargets, j]), na.rm = T)){
             ks_scores[kins[i], j] <- -ks_scores[kins[i], j]
             wilcox_scores[kins[i], j] <- -wilcox_scores[kins[i], j]
