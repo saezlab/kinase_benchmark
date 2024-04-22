@@ -19,8 +19,17 @@ if(exists("snakemake")){
 ## Libraries ---------------------------
 library(ssGSEA2)
 library(tidyselect)
+library(tidyverse)
 
 ## Run ssGSEA/PTM-SEA ---------------------------
+net <- read.csv(PKN, header = F) 
+
+map_dfr(1:nrow(net), function(row_ids){
+  targets <- net[row_ids,] %>% str_split("\t") %>% unlist()
+  data.frame(kin = targets[2], length = length(targets) - 2)
+}) %>% dplyr::filter(length >= 2000)
+
+
 res <- run_ssGSEA2(dataset,
                   output.prefix = paste0(normalisation, "_", dataset_name, "-", PKN_name),
                   gene.set.databases = PKN,
