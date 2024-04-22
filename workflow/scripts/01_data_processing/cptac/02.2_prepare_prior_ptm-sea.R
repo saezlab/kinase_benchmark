@@ -15,6 +15,7 @@ library(tidyverse)
 ## Prepare prior files for PTM-SEA ---------------------------
 prior <- read_tsv(PKN, col_types = cols()) %>%
   dplyr::select(source, target) %>%
+  dplyr::filter(str_detect(target, "\\|")) %>%
   as.data.frame()
 
 ## Save gmt ---------------------------
