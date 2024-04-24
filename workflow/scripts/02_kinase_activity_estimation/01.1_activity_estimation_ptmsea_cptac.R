@@ -13,7 +13,7 @@ if(exists("snakemake")){
   PKN_name <- "GPS"
   output_folder <- "results/activity_scores_ptmsea"
   log <- "results/activity_scores_ptmsea/log/gbm_GPS.log"
-  if(!require("ssGSEA2")) remotes::install_github('nicolerg/ssGSEA2', upgrade='never')
+  if(!require("ssGSEA2")) remotes::install_github('smuellerd/ssGSEA2', upgrade='never')
 }
 
 ## Libraries ---------------------------
@@ -22,12 +22,12 @@ library(tidyselect)
 library(tidyverse)
 
 ## Run ssGSEA/PTM-SEA ---------------------------
-net <- read.csv(PKN, header = F) 
+net <- read.csv(PKN, header = F)
 
 map_dfr(1:nrow(net), function(row_ids){
   targets <- net[row_ids,] %>% str_split("\t") %>% unlist()
   data.frame(kin = targets[2], length = length(targets) - 2)
-}) %>% dplyr::filter(length >= 2000)
+}) %>% dplyr::filter(length >= 100000)
 
 
 res <- run_ssGSEA2(dataset,
@@ -41,6 +41,7 @@ res <- run_ssGSEA2(dataset,
                   output.score.type = "NES",
                   nperm = 100,
                   min.overlap = 5,
+                  max.overlap = 100000,
                   extended.output = TRUE,
                   global.fdr = FALSE,
                   log.file = log)

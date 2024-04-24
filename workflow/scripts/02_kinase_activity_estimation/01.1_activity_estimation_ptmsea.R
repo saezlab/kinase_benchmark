@@ -7,11 +7,11 @@ if(exists("snakemake")){
   minsize <- snakemake@params$minsize
 }else{
   dataset <- "results/01_processed_data/hernandez/datasets/benchmark.gct"
-  PKN <- "results/01_processed_data/hernandez/mapped_priors/ptm-sea/phosphositeplus.gmt"
-  PKN_name <- "phosphositeplus"
+  PKN <- "results/01_processed_data/hernandez/mapped_priors/ptm-sea/phosphositeplus_phosformer15.gmt"
+  PKN_name <- "phosphositeplus_phosformer15"
   output_folder <- "results/02_activity_scores/hernandez/ptmsea"
-  log <- "results/02_activity_scores/hernandez/ptmsea/log/phosphositeplus.log"
-  if(!require("ssGSEA2")) remotes::install_github('nicolerg/ssGSEA2', upgrade='never')
+  log <- "results/02_activity_scores/hernandez/ptmsea/log/phosphositeplus_phosformer15.log"
+  if(!require("ssGSEA2")) remotes::install_github('smuellerd/ssGSEA2', upgrade='never')
   minsize <- 1
 }
 minsize <- as.double(minsize)
@@ -22,12 +22,12 @@ library(tidyselect)
 library(tidyverse)
 
 ## Run ssGSEA/PTM-SEA ---------------------------
-net <- read.csv(PKN, header = F) 
+net <- read.csv(PKN, header = F)
 
 map_dfr(1:nrow(net), function(row_ids){
   targets <- net[row_ids,] %>% str_split("\t") %>% unlist()
   data.frame(kin = targets[2], length = length(targets) - 2)
-}) %>% dplyr::filter(length >= 2000)
+}) %>% dplyr::filter(length >= 100000)
 
 res <- run_ssGSEA2(dataset,
                   output.prefix = PKN_name,
@@ -40,6 +40,7 @@ res <- run_ssGSEA2(dataset,
                   output.score.type = "NES",
                   nperm = 100,
                   min.overlap = minsize,
+                  max.overlap = 100000,
                   extended.output = TRUE,
                   global.fdr = FALSE,
                   log.file = log)
