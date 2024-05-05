@@ -80,8 +80,7 @@ bench_list <- map(bench_files, function(file){
 })
 
 bench_list <- bench_list[!(map_dbl(bench_list, nrow) == 0)]
-bench_df <- bind_rows(bench_list) %>%
-  filter(!method == "number_of_targets")
+bench_df <- bind_rows(bench_list)
 
 order_m <- bench_df %>%
   filter(metric == "mcauroc") %>%
@@ -121,7 +120,6 @@ dev.off()
 
 ## AUROC Median heatmap
 med_mat <- bench_df %>%
-  filter(!method == "number_of_targets") %>%
   group_by(net, method) %>%
   summarise(score = mean(score)) %>%
   ungroup() %>%
@@ -141,7 +139,6 @@ priors <- map_chr(str_split(bench_files, "/"), 5) %>% unique()
 rank_df <- map_dfr(rank_files, function(x) read_csv(x, col_types = cols()))
 rank_df <- rank_df %>%
   filter(prior %in% priors) %>%
-  filter(!method == "number_of_targets")
 rank_df$prior <- factor(rank_df$prior, levels = order_m)
 rank_df$method <- factor(rank_df$method, levels = order_method)
 
@@ -165,7 +162,6 @@ dev.off()
 ## scaled Median rank heatmap
 medRank_mat <- rank_df %>%
   filter(!is.na(scaled_rank)) %>%
-  filter(!method == "number_of_targets") %>%
   group_by(prior, method) %>%
   summarise(scaled_rank = mean(scaled_rank)) %>%
   ungroup() %>%
@@ -183,6 +179,7 @@ dev.off()
 ## Mean rank per kinase ---------------------------
 kin_gsknown <- rank_df %>%
   filter(prior == "phosphositeplus") %>%
+  filter(!method == "number_of_targets") %>%
   group_by(targets) %>%
   summarise(mean_rank = mean(rank, na.rm = T)) %>%
   filter(!is.na(mean_rank)) %>%
