@@ -128,8 +128,8 @@ med_mat <- bench_df %>%
 
 col_fun = colorRamp2(c(min(med_mat), max(med_mat)), c("white", "deeppink4"))
 
-pdf(heat_plot, width = 6, height = 3.5)
-Heatmap(med_mat, row_split = 4, column_split = 4,border = TRUE, rect_gp = gpar(col = "white", lwd = 1), col = col_fun,
+pdf(heat_plot, width = 6.2, height = 3.5)
+Heatmap(med_mat, row_split = 4, column_split = 5,border = TRUE, rect_gp = gpar(col = "white", lwd = 1), col = col_fun,
         cell_fun = function(j, i, x, y, width, height, fill) {
           grid.text(sprintf("%.2f", med_mat[i, j]), x, y, gp = gpar(fontsize = 6))})
 dev.off()
@@ -138,7 +138,7 @@ dev.off()
 priors <- map_chr(str_split(bench_files, "/"), 5) %>% unique()
 rank_df <- map_dfr(rank_files, function(x) read_csv(x, col_types = cols()))
 rank_df <- rank_df %>%
-  filter(prior %in% priors) %>%
+  filter(prior %in% priors)
 rank_df$prior <- factor(rank_df$prior, levels = order_m)
 rank_df$method <- factor(rank_df$method, levels = order_method)
 
@@ -170,8 +170,8 @@ medRank_mat <- rank_df %>%
 
 col_fun = colorRamp2(c(min(medRank_mat), max(medRank_mat)), c("deepskyblue4", "white"))
 
-pdf(medRank_plot, width = 6, height = 3.5)
-Heatmap(medRank_mat, row_split = 4, column_split = 4,border = TRUE, rect_gp = gpar(col = "white", lwd = 1), col = col_fun,
+pdf(medRank_plot, width = 6.2, height = 3.5)
+Heatmap(medRank_mat, row_split = 4, column_split = 5,border = TRUE, rect_gp = gpar(col = "white", lwd = 1), col = col_fun,
         cell_fun = function(j, i, x, y, width, height, fill) {
           grid.text(sprintf("%.2f", medRank_mat[i, j]), x, y, gp = gpar(fontsize = 6))})
 dev.off()
