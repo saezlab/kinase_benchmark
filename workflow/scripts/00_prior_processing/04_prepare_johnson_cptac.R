@@ -127,4 +127,4 @@ merged <- rbind(known, johnson_df) %>%
   distinct(source, target, .keep_all = T)
 
 ## Save processed phosphositeplus
-write_tsv(johnson_df, output_file)
+write_tsv(merged, output_file)
