@@ -44,6 +44,20 @@ rule map_kinase_ids:
         "../envs/phospho.yml"
     script:
         "../scripts/01_data_processing/cptac/02_convert_kinase_ids.R"
+        
+rule prepare_cptacjohnson:
+    input:
+        ppsp = "data/kinase_libraries/johnson_library/kinase_benchmarking_pancancer_site_table_st_percentiles.tsv",
+        tyr = "data/kinase_libraries/johnson_library/kinase_benchmarking_pancancer_site_table_tyr_percentiles.tsv",
+        known = "results/01_processed_data/cptac/mapped_priors/phosphositeplus.tsv"
+    params:
+        perc = lambda w: w.perc
+    output:
+        tsv = "results/01_processed_data/cptac/mapped_priors/phosphositeplus_cptacjohnson{perc}.tsv"
+    conda:
+        "../envs/phospho.yml"
+    script:
+        "../scripts/00_prior_processing/04_prepare_johnson_cptac.R"
 
 # ------------------------------- PTM-SEA input preparation -------------------------------
 rule ptmsea_datasets:
