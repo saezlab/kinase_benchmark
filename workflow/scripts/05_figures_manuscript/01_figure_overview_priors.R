@@ -158,8 +158,8 @@ kin_list <- map(prior, function(df){
 })
 kin_comb <- make_comb_mat(kin_list)
 
-pdf(upset_kin)
-UpSet(kin_comb)
+pdf(upset_kin, width = 6, height = 3)
+UpSet(kin_comb, pt_size = unit(2, "mm"), lwd = 1)
 dev.off()
 
 edge_list <- map(prior, function(df){
@@ -167,8 +167,8 @@ edge_list <- map(prior, function(df){
 })
 edge_comb <- make_comb_mat(edge_list)
 
-pdf(upset_edge)
-UpSet(edge_comb)
+pdf(upset_edge, width = 6, height = 3)
+UpSet(edge_comb, pt_size = unit(2, "mm"), lwd = 1)
 dev.off()
 
 ## Jaccard index ------------------
@@ -273,7 +273,7 @@ kintype_p <- ggplot(kin_type, aes(x = resource, y = n, fill = kinase)) +
         text = element_text(size = 10),
         legend.key.size = unit(0.2, 'cm'))
 
-pdf(kintype_pdf, height = 4, width = 4.5)
+pdf(kintype_pdf, height = 3, width = 4.5)
 kintype_p
 dev.off()
 
@@ -293,7 +293,7 @@ regulonsize_p <- ggplot(set_size, aes(x = prior, y = n_targets)) +
         text = element_text(size = 10),
         legend.key.size = unit(0.2, 'cm'))
 
-pdf(regulonsize_pdf, height = 4, width = 3)
+pdf(regulonsize_pdf, height = 3, width = 3)
 regulonsize_p
 dev.off()
 
