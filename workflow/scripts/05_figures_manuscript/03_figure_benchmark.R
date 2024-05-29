@@ -126,10 +126,12 @@ med_mat <- bench_df %>%
   pivot_wider(names_from = "method", values_from = "score") %>%
   column_to_rownames("net")
 
-col_fun = colorRamp2(c(min(med_mat), max(med_mat)), c("white", "deeppink4"))
+col_fun = colorRamp2(c(min(med_mat, na.rm = T), max(med_mat, na.rm = T)), c("white", "deeppink4"))
+column_ha = HeatmapAnnotation(mean_method = colMeans(med_mat, na.rm = T), col = list(mean_method = col_fun))
+row_ha = rowAnnotation(mean_prior = rowMeans(med_mat, na.rm = T), col = list(mean_prior = col_fun))
 
-pdf(heat_plot, width = 6.2, height = 3.5)
-Heatmap(med_mat, row_split = 4, column_split = 5,border = TRUE, rect_gp = gpar(col = "white", lwd = 1), col = col_fun,
+pdf(heat_plot, width = 8, height = 4)
+Heatmap(med_mat, row_split = 4, column_split = 5,border = TRUE, rect_gp = gpar(col = "white", lwd = 1), top_annotation = column_ha, left_annotation = row_ha, col = col_fun,
         cell_fun = function(j, i, x, y, width, height, fill) {
           grid.text(sprintf("%.2f", med_mat[i, j]), x, y, gp = gpar(fontsize = 6))})
 dev.off()
@@ -169,9 +171,11 @@ medRank_mat <- rank_df %>%
   column_to_rownames("prior")
 
 col_fun = colorRamp2(c(min(medRank_mat), max(medRank_mat)), c("deepskyblue4", "white"))
+column_ha = HeatmapAnnotation(mean_method = colMeans(medRank_mat, na.rm = T), col = list(mean_method = col_fun))
+row_ha = rowAnnotation(mean_prior = rowMeans(medRank_mat, na.rm = T), col = list(mean_prior = col_fun))
 
-pdf(medRank_plot, width = 6.2, height = 3.5)
-Heatmap(medRank_mat, row_split = 4, column_split = 5,border = TRUE, rect_gp = gpar(col = "white", lwd = 1), col = col_fun,
+pdf(medRank_plot, width = 8, height = 4)
+Heatmap(medRank_mat, row_split = 4, column_split = 5,border = TRUE, rect_gp = gpar(col = "white", lwd = 1), top_annotation = column_ha, left_annotation = row_ha, col = col_fun,
         cell_fun = function(j, i, x, y, width, height, fill) {
           grid.text(sprintf("%.2f", medRank_mat[i, j]), x, y, gp = gpar(fontsize = 6))})
 dev.off()

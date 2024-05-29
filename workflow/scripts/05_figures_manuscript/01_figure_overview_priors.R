@@ -3,6 +3,8 @@ if(exists("snakemake")){
   coverage_pdf <- snakemake@output$kin
   kinase_pdf <- snakemake@output$kin_heat
   edge_pdf <- snakemake@output$edges
+  upset_kin <- snakemake@output$upset
+  upset_edge <- snakemake@output$upsetEdge
   jaccard_pdf <- snakemake@output$pps
   kintype_pdf <- snakemake@output$kin_type
   regulonsize_pdf <- snakemake@output$reg
@@ -21,6 +23,7 @@ library(tidyverse)
 library(pheatmap)
 library(corrplot)
 library(ggpubr)
+library(ComplexHeatmap)
 
 ## Compare coverage ------------------
 prior <- map(prior_files, function(file){read_tsv(file, col_types = cols()) %>%
@@ -149,6 +152,24 @@ pdf(edge_pdf, height = 1.5, width = 7)
 print(coverage_edge_df)
 dev.off()
 
+## UpSetPlots ------------------
+kin_list <- map(prior, function(df){
+  df %>% pull(source) %>% unique()
+})
+kin_comb <- make_comb_mat(kin_list)
+
+pdf(upset_kin)
+UpSet(kin_comb)
+dev.off()
+
+edge_list <- map(prior, function(df){
+  df %>% mutate(edge = paste0(source, ":", target)) %>% pull(edge) %>% unique()
+})
+edge_comb <- make_comb_mat(edge_list)
+
+pdf(upset_edge)
+UpSet(edge_comb)
+dev.off()
 
 ## Jaccard index ------------------
 kinases <- map(prior, 1) %>%

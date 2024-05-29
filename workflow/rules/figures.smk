@@ -8,7 +8,9 @@ rule overview_prior:
         pps =  "results/manuscript_figures/figure_1/jaccard.pdf",
         kin_heat = "results/manuscript_figures/figure_1/kinase_overview.pdf",
         kin_type = "results/manuscript_figures/figure_1/kinase_type.pdf",
-        reg = "results/manuscript_figures/figure_1/regulon_size.pdf"
+        reg = "results/manuscript_figures/figure_1/regulon_size.pdf",
+        upset = "results/manuscript_figures/figure_1/upset_kin.pdf",
+        upsetEdge = "results/manuscript_figures/figure_1/upset_edge.pdf"
     conda:
         "../envs/figures.yml"
     script:
