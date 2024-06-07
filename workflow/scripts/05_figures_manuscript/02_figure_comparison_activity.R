@@ -96,6 +96,7 @@ sd_measured_covered <- sd(coverage_df %>% filter(pps_covered == "known") %>% pul
 
 coverage_df$pps_covered <- factor(coverage_df$pps_covered, levels = c("unknown", "known"))
 
+length(unique(coverage_df$experiment))
 coverage_df %>% filter(is.na(pps_covered)) %>% pull(n_pps) %>% mean()
 coverage_df %>%
   mutate(pps_covered = case_when(
@@ -170,6 +171,15 @@ corrplot(mean_correlation,
          tl.col = 'black', order = 'hclust', cl.pos = 'r')
 dev.off()
 
+tmp <- mean_correlation %>%
+  as.numeric()
+tmp[!tmp == 1] %>%
+  quantile(probs = 0.8)
+
+tmp2 <- mean_correlation[colnames(mean_correlation) == "KARP"]
+tmp2[!tmp2 == 1] %>%
+  range()
+
 ## Prior comparison ---------------------------
 prior_comparison <- map(names(act_list[[1]]), function(method_idx){
   scores <- map(act_list, function(x) x[[method_idx]])
@@ -204,3 +214,5 @@ pdf(cor_priors_p, height = 3, width = 3.5)
 corrplot(mean_correlation, col.lim=c(0, 1), is.corr = FALSE, type = 'lower', tl.col = 'black', order = 'hclust',  cl.pos = 'r', col = COL1('Blues'))
 dev.off()
 
+mean_correlation[rownames(mean_correlation) %in% c("GPS", "phosphositeplus", "ptmsigdb"), colnames(mean_correlation) %in% c("GPS", "phosphositeplus", "ptmsigdb")]
+mean_correlation

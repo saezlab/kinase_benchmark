@@ -49,6 +49,12 @@ coverage <- map_dfr(names(prior), function(PKN_idx){
 })
 
 coverage <- coverage %>% arrange(desc(value))
+coverage %>%
+  filter(type == "all kinases" & class == "kinase")
+
+coverage %>%
+  filter(class == "edges")
+
 PKN_order <- coverage %>%
   dplyr::filter(class == "kinase") %>%
   dplyr::select(PKN, type, value) %>%
@@ -206,7 +212,6 @@ jaccard_m <- jaccard_df %>%
   pivot_wider(names_from = prior_2, values_from = mean_jaccard) %>%
   column_to_rownames("prior_1")
 
-
 pdf(jaccard_pdf, height = 3, width = 3)
 corrplot(as.matrix(jaccard_m), is.corr = F, method = 'color', col = COL1('Purples', 100)[20:100],
          addgrid.col = 'white',
@@ -216,6 +221,7 @@ corrplot(as.matrix(jaccard_m), is.corr = F, method = 'color', col = COL1('Purple
 )
 dev.off()
 
+jaccard_m
 ## Tyrosine versus Serin/Thr
 kinase_type_df <- map_dfr(names(prior), function(x){
   df <- prior[[x]]
@@ -284,6 +290,10 @@ set_size <- map_dfr(names(prior), function(prior_idx){
     summarise(n_targets = n()) %>%
     add_column(prior = prior_idx)
 })
+
+set_size %>%
+  group_by(prior) %>%
+  summarise(mean_n = median(n_targets))
 
 regulonsize_p <- ggplot(set_size, aes(x = prior, y = n_targets)) +
   geom_boxplot() +
