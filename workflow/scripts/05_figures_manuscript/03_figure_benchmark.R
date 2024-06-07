@@ -13,6 +13,10 @@ if(exists("snakemake")){
   medRank_plot <- snakemake@output$medRank
   gene_citations <- snakemake@input$cit
   cor_plot <- snakemake@output$cor
+  ppsp_file <- snakemake@input$ppsp
+  cor_target_plot <- snakemake@output$target
+  prior_csv <- snakemake@output$statPrior
+  method_csv <- snakemake@output$statMethod
 }else{
   bench_files <- list.files("results/03_benchmark/merged/02_benchmark_res",
                             pattern = "bench", recursive = TRUE, full.names = T)
@@ -27,6 +31,10 @@ if(exists("snakemake")){
   heat_plot <- "results/manuscript_figures/figure_3/median_auroc.pdf"
   medRank_plot <- "results/manuscript_figures/figure_3/median_rank.pdf"
   cor_plot <- "results/manuscript_figures/figure_3/study_bias.pdf"
+  ppsp_file <- "results/01_processed_data/cptac/mapped_priors/phosphositeplus.tsv"
+  cor_target_plot <- "results/manuscript_figures/figure_3/target_bias.pdf"
+  prior_csv <- "results/manuscript_figures/supp_files/prior_comparison.csv"
+  method_csv <- "results/manuscript_figures/supp_files/method_comparison.csv"
 }
 
 ## Libraries ---------------------------
@@ -65,6 +73,9 @@ kin_p <- ggplot(kin_df, aes(x = kinase, y = Freq, fill = perturbation)) +
         legend.title = element_text(size = 11),
         legend.position = "bottom",
         text = element_text(size = 10))
+
+length(unique(kin_df$kinase))
+kin_df %>% group_by(perturbation) %>% summarise(total = sum(Freq))
 
 pdf(overview_meta, width = 2.7, height = 7)
 kin_p
@@ -125,6 +136,7 @@ med_mat <- bench_df %>%
   ungroup() %>%
   pivot_wider(names_from = "method", values_from = "score") %>%
   column_to_rownames("net")
+med_mat
 
 col_fun = colorRamp2(c(min(med_mat, na.rm = T), max(med_mat, na.rm = T)), c("white", "deeppink4"))
 column_ha = HeatmapAnnotation(mean_method = colMeans(med_mat, na.rm = T), col = list(mean_method = col_fun))
@@ -169,6 +181,7 @@ medRank_mat <- rank_df %>%
   ungroup() %>%
   pivot_wider(names_from = "method", values_from = "scaled_rank") %>%
   column_to_rownames("prior")
+medRank_mat
 
 col_fun = colorRamp2(c(min(medRank_mat), max(medRank_mat)), c("deepskyblue4", "white"))
 column_ha = HeatmapAnnotation(mean_method = colMeans(medRank_mat, na.rm = T), col = list(mean_method = col_fun))
@@ -212,8 +225,136 @@ cor_p <- ggplot(kin_citations, aes(x = mean_rank, y = log(citations))) +
 
 cor.test(kin_citations$mean_rank, log(kin_citations$citations))
 
-pdf(cor_plot, width = 4, height = 2.7)
+pdf(cor_plot, width = 3, height = 2.7)
 cor_p
 dev.off()
+
+## Compare to number of targets
+overview_targets <- read_tsv(ppsp_file, col_types = cols())
+overview_targets <- overview_targets %>%
+  group_by(source) %>%
+  summarise(n = n())
+
+kin_targets <- kin_gsknown %>%
+  left_join(overview_targets %>% rename("targets" = source), by = "targets")
+
+cor_targets_p <- ggplot(kin_targets, aes(x = mean_rank, y = log(n))) +
+  geom_point(size = 0.8) +
+  geom_smooth(method = "lm", se = FALSE, lwd = 0.6, fullrange = TRUE, color = "steelblue3") +
+  theme_bw() +
+  theme(text = element_text(size = 11),
+        legend.key.size = unit(0.4, 'cm'))  +
+  geom_text(aes(label = targets), check_overlap = TRUE, size = 2.2, nudge_x = 0.1, nudge_y = 0.1)+
+  ylab("log (# targets)") +
+  xlab("mean rank") +
+  ggtitle(paste0("Pearson correlation: ", round(cor(kin_targets$mean_rank, log(kin_targets$n)), digits = 2)))
+
+cor.test(kin_targets$mean_rank, log(kin_targets$n))
+
+pdf(cor_target_plot, width = 3, height = 2.7)
+cor_targets_p
+dev.off()
+
+## Statistics -----------
+### change format into matrix for AUROC and AUPRC
+prior_mat <- bench_df %>%
+  filter(method != "number_of_targets") %>%
+  group_by(net, method) %>%
+  summarise(score = mean(score)) %>%
+  ungroup() %>%
+  add_column(counter = rep(c(1:(length(unique(bench_df$method))-1)), times = length(unique(bench_df$net)))) %>%
+  select(score, net, counter) %>%
+  pivot_wider(names_from = net, values_from = score) %>%
+  column_to_rownames("counter")
+
+method_mat <- bench_df %>%
+  filter(net != "shuffled") %>%
+  group_by(net, method) %>%
+  summarise(score = mean(score)) %>%
+  ungroup() %>%
+  add_column(counter = rep(c(1:(length(unique(bench_df$net))-1)), each = length(unique(bench_df$method)))) %>%
+  select(score, method, counter) %>%
+  pivot_wider(names_from = method, values_from = score) %>%
+  column_to_rownames("counter")
+
+multi.wilcox <- function(mat, pVal = T, alternative = "two.sided") {
+  mat <- as.matrix(mat)
+  n <- ncol(mat)
+  p.mat<- matrix(NA, n, n)
+  diag(p.mat) <- 1
+  for (i in 1:(n - 1)) {
+    for (j in (i + 1):n) {
+      test <- wilcox.test(mat[, i], mat[, j], alternative = "two.sided")
+      if(pVal){
+        p.mat[i, j] <- p.mat[j, i] <- test$p.value
+      } else {
+        p.mat[i, j] <- p.mat[j, i] <- test$statistic
+      }
+
+    }
+  }
+  colnames(p.mat) <- rownames(p.mat) <- colnames(mat)
+  p.mat
+}
+
+### Perform t-test
+perform.multi.wilcox <- function(mat){
+
+  # extract p_values
+  wilcox.p <- multi.wilcox(mat) %>%
+    as.data.frame() %>%
+    rownames_to_column("comp1") %>%
+    pivot_longer(!comp1, names_to = "comp2", values_to = "p.value")
+
+  # extract t_values
+  wilcox.t <- multi.wilcox(mat, pVal = F) %>%
+    as.data.frame() %>%
+    rownames_to_column("comp1") %>%
+    pivot_longer(!comp1, names_to = "comp2", values_to = "t.value")
+
+  # Adjust t-values direction
+  # Identify positions were direction needs to be adjusted
+  idx <- c()
+  for (i in 1:(length(unique(wilcox.p$comp1))-1)){
+    new_idx <- length(unique(wilcox.t$comp1))*i + rep(1:i)
+    idx <- append(idx, new_idx)
+  }
+  wilcox.t$t.value[idx] <- wilcox.t$t.value[idx]*-1
+
+  wilcox <- wilcox.p %>%
+    add_column(p.adj = p.adjust(wilcox.p$p.value, method = "BH")) %>%
+    left_join(wilcox.t, by = c("comp1", "comp2")) %>%
+    filter(!comp1 == comp2)
+
+  # remove duplicated comparisons
+  idx_rm <- c()
+  for (i in 1:(length(unique(wilcox.t$comp1))-1)){
+    new_idx <- (length(unique(wilcox.t$comp1))-1)*i + rep(1:i)
+    idx_rm <- append(idx_rm, new_idx)
+  }
+
+  wilcox <- wilcox %>%
+    slice(-idx_rm)
+
+  return(wilcox)
+}
+
+# AUROC
+prior.wilcox <- perform.multi.wilcox(prior_mat) %>%
+  mutate(wilcoxon = round(t.value, digits = 1)) %>%
+  select(-t.value)
+
+prior.wilcox$p.adj[prior.wilcox$p.adj == 0] <- 2.2e-16
+
+write_csv(prior.wilcox, prior_csv)
+
+# method
+method.wilcox <- perform.multi.wilcox(method_mat) %>%
+  mutate(wilcoxon = round(t.value, digits = 1)) %>%
+  select(-t.value)
+
+method.wilcox$p.adj[method.wilcox$p.adj == 0] <- 2.2e-16
+
+write_csv(method.wilcox, method_csv)
 
 

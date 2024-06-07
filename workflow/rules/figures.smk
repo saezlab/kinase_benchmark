@@ -43,7 +43,8 @@ rule benchmark_figure:
         bench_files = expand("results/03_benchmark/merged/02_benchmark_res/{PKN}/bench_{methods}-{PKN}.csv", PKN = config["figures"]["PKN_figure2"], methods = config["perturbation"]["methods"]),
         meta = "results/01_processed_data/merged/data/benchmark_metadata.csv",
         rank = expand("results/03_benchmark/merged/02_mean_rank/{PKN}/{methods}-{PKN}.csv", PKN = config["figures"]["PKN_figure2"], methods = config["perturbation"]["methods"]),
-        cit = "resources/protein_citations.csv"
+        cit = "resources/protein_citations.csv",
+        ppsp = "results/01_processed_data/cptac/mapped_priors/phosphositeplus.tsv"
     output:
         auroc = "results/manuscript_figures/figure_3/auroc_res.pdf",
         meta_over = "results/manuscript_figures/figure_3/overview_kin.pdf",
@@ -51,7 +52,10 @@ rule benchmark_figure:
         rankKin = "results/manuscript_figures/figure_3/kinase_GSknown.csv",
         heat = "results/manuscript_figures/figure_3/median_auroc.pdf",
         medRank = "results/manuscript_figures/figure_3/median_rank.pdf",
-        cor = "results/manuscript_figures/figure_3/study_bias.pdf"
+        cor = "results/manuscript_figures/figure_3/study_bias.pdf",
+        target = "results/manuscript_figures/figure_3/target_bias.pdf",
+        statPrior = "results/manuscript_figures/supp_files/prior_comparison.csv",
+        statMethod = "results/manuscript_figures/supp_files/method_comparison.csv"
     conda:
         "../envs/figures.yml"
     script:
