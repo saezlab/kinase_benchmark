@@ -8,6 +8,9 @@ In this study, we present a flexible framework to assess different combinations 
 for the inference of kinase activities. For the benchmark, we use a set of kinase perturbation experiments to evaluate which combination
 is able to recapitulate the perturbed kinases from the phosphoproteomics data.
 
+If you want to test your own method try out our package [benchmarKIN](https://github.com/saezlab/benchmarKIN) and check out the 
+[documentation](https://benchmarkin.readthedocs.io/). 
+
 ## Kinase substrate libraries
 We have included the following kinase-substrate libraries:
 - PhosphoSitePlus
