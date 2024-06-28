@@ -138,7 +138,12 @@ med_mat <- bench_df %>%
   column_to_rownames("net")
 med_mat
 
-col_fun = colorRamp2(c(min(med_mat, na.rm = T), max(med_mat, na.rm = T)), c("white", "deeppink4"))
+col_fun = colorRamp2(
+  c(min(med_mat, na.rm = TRUE), mean(unlist(as.vector(med_mat)), na.rm = TRUE), max(med_mat, na.rm = TRUE)),
+  c("white", "#edcac6", "#7F0863")
+)
+
+#col_fun = colorRamp2(c(min(med_mat, na.rm = T), max(med_mat, na.rm = T)), c("white", "deeppink4"))
 column_ha = HeatmapAnnotation(mean_method = colMeans(med_mat, na.rm = T), col = list(mean_method = col_fun))
 row_ha = rowAnnotation(mean_prior = rowMeans(med_mat, na.rm = T), col = list(mean_prior = col_fun))
 
@@ -183,7 +188,12 @@ medRank_mat <- rank_df %>%
   column_to_rownames("prior")
 medRank_mat
 
-col_fun = colorRamp2(c(min(medRank_mat), max(medRank_mat)), c("deepskyblue4", "white"))
+col_fun = colorRamp2(
+  c(min(medRank_mat, na.rm = TRUE), mean(unlist(as.vector(medRank_mat)), na.rm = TRUE), max(medRank_mat, na.rm = TRUE)),
+  c("#4770b2", "#d6e2f2", "white")
+)
+
+#col_fun = colorRamp2(c(min(medRank_mat), max(medRank_mat)), c("deepskyblue4", "white"))
 column_ha = HeatmapAnnotation(mean_method = colMeans(medRank_mat, na.rm = T), col = list(mean_method = col_fun))
 row_ha = rowAnnotation(mean_prior = rowMeans(medRank_mat, na.rm = T), col = list(mean_prior = col_fun))
 
