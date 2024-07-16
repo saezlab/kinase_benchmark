@@ -39,3 +39,6 @@ We have included the following methods for the comparison:
 - viper
 - Wilcox
 - z-score (KSEA, RoKAI)
+
+## Citation
+> Mueller-Dott, Sophia, Eric J. Jaehnig, Khoi Pham Munchic, Wen Jiang, Tomer M. Yaron-Barir, Sara R. Savage, Martin Garrido-Rodriguez, et al. 2024. “Comprehensive Evaluation of Phosphoproteomic-Based Kinase Activity Inference.” bioRxiv. [https://doi.org/10.1101/2024.06.27.601117](https://doi.org/10.1101/2024.06.27.601117).
