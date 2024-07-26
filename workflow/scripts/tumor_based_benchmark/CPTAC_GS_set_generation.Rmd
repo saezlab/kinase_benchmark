@@ -825,50 +825,133 @@ ucec_gsboth_kins_2pt5perc <- intersect(names(ucec_actsite_outliers_2pt5perc$GS_p
 ucec_gsboth_kins_10perc <- intersect(names(ucec_actsite_outliers_10perc$GS_pos_pairs)[lengths(ucec_actsite_outliers_10perc$GS_pos_pairs) > 0], names(ucec_actsite_outliers_10perc$GS_neg_pairs)[lengths(ucec_actsite_outliers_10perc$GS_neg_pairs) > 0])
 ```
 
+filter to these kinases
 ```{r}
-combinedGS_5per_act <- list(brca_gsboth_kins_5perc, ccrcc_gsboth_kins_5perc, gbm_gsboth_kins_5perc, hnscc_gsboth_kins_5perc, lscc_gsboth_kins_5perc, luad_gsboth_kins_5perc, ucec_gsboth_kins_5perc)
+brca_actsite_outliers_5perc$GS_pos_pairs <- brca_actsite_outliers_5perc$GS_pos_pairs[brca_gsboth_kins_5perc]
+brca_actsite_outliers_5perc$GS_neg_pairs <- brca_actsite_outliers_5perc$GS_neg_pairs[brca_gsboth_kins_5perc]
+brca_actsite_outliers_2pt5perc$GS_pos_pairs <- brca_actsite_outliers_2pt5perc$GS_pos_pairs[brca_gsboth_kins_2pt5perc]
+brca_actsite_outliers_2pt5perc$GS_neg_pairs <- brca_actsite_outliers_2pt5perc$GS_neg_pairs[brca_gsboth_kins_2pt5perc]
+brca_actsite_outliers_10perc$GS_pos_pairs <- brca_actsite_outliers_10perc$GS_pos_pairs[brca_gsboth_kins_10perc]
+brca_actsite_outliers_10perc$GS_neg_pairs <- brca_actsite_outliers_10perc$GS_neg_pairs[brca_gsboth_kins_10perc]
+brca_actsite_outliers_15perc$GS_pos_pairs <- brca_actsite_outliers_15perc$GS_pos_pairs[brca_gsboth_kins_15perc]
+brca_actsite_outliers_15perc$GS_neg_pairs <- brca_actsite_outliers_15perc$GS_neg_pairs[brca_gsboth_kins_15perc]
+
+ccrcc_actsite_outliers_5perc$GS_pos_pairs <- ccrcc_actsite_outliers_5perc$GS_pos_pairs[ccrcc_gsboth_kins_5perc]
+ccrcc_actsite_outliers_5perc$GS_neg_pairs <- ccrcc_actsite_outliers_5perc$GS_neg_pairs[ccrcc_gsboth_kins_5perc]
+ccrcc_actsite_outliers_2pt5perc$GS_pos_pairs <- ccrcc_actsite_outliers_2pt5perc$GS_pos_pairs[ccrcc_gsboth_kins_2pt5perc]
+ccrcc_actsite_outliers_2pt5perc$GS_neg_pairs <- ccrcc_actsite_outliers_2pt5perc$GS_neg_pairs[ccrcc_gsboth_kins_2pt5perc]
+ccrcc_actsite_outliers_10perc$GS_pos_pairs <- ccrcc_actsite_outliers_10perc$GS_pos_pairs[ccrcc_gsboth_kins_10perc]
+ccrcc_actsite_outliers_10perc$GS_neg_pairs <- ccrcc_actsite_outliers_10perc$GS_neg_pairs[ccrcc_gsboth_kins_10perc]
+ccrcc_actsite_outliers_15perc$GS_pos_pairs <- ccrcc_actsite_outliers_15perc$GS_pos_pairs[ccrcc_gsboth_kins_15perc]
+ccrcc_actsite_outliers_15perc$GS_neg_pairs <- ccrcc_actsite_outliers_15perc$GS_neg_pairs[ccrcc_gsboth_kins_15perc]
+
+gbm_actsite_outliers_5perc$GS_pos_pairs <- gbm_actsite_outliers_5perc$GS_pos_pairs[gbm_gsboth_kins_5perc]
+gbm_actsite_outliers_5perc$GS_neg_pairs <- gbm_actsite_outliers_5perc$GS_neg_pairs[gbm_gsboth_kins_5perc]
+gbm_actsite_outliers_2pt5perc$GS_pos_pairs <- gbm_actsite_outliers_2pt5perc$GS_pos_pairs[gbm_gsboth_kins_2pt5perc]
+gbm_actsite_outliers_2pt5perc$GS_neg_pairs <- gbm_actsite_outliers_2pt5perc$GS_neg_pairs[gbm_gsboth_kins_2pt5perc]
+gbm_actsite_outliers_10perc$GS_pos_pairs <- gbm_actsite_outliers_10perc$GS_pos_pairs[gbm_gsboth_kins_10perc]
+gbm_actsite_outliers_10perc$GS_neg_pairs <- gbm_actsite_outliers_10perc$GS_neg_pairs[gbm_gsboth_kins_10perc]
+gbm_actsite_outliers_15perc$GS_pos_pairs <- gbm_actsite_outliers_15perc$GS_pos_pairs[gbm_gsboth_kins_15perc]
+gbm_actsite_outliers_15perc$GS_neg_pairs <- gbm_actsite_outliers_15perc$GS_neg_pairs[gbm_gsboth_kins_15perc]
+
+hnscc_actsite_outliers_5perc$GS_pos_pairs <- hnscc_actsite_outliers_5perc$GS_pos_pairs[hnscc_gsboth_kins_5perc]
+hnscc_actsite_outliers_5perc$GS_neg_pairs <- hnscc_actsite_outliers_5perc$GS_neg_pairs[hnscc_gsboth_kins_5perc]
+hnscc_actsite_outliers_2pt5perc$GS_pos_pairs <- hnscc_actsite_outliers_2pt5perc$GS_pos_pairs[hnscc_gsboth_kins_2pt5perc]
+hnscc_actsite_outliers_2pt5perc$GS_neg_pairs <- hnscc_actsite_outliers_2pt5perc$GS_neg_pairs[hnscc_gsboth_kins_2pt5perc]
+hnscc_actsite_outliers_10perc$GS_pos_pairs <- hnscc_actsite_outliers_10perc$GS_pos_pairs[hnscc_gsboth_kins_10perc]
+hnscc_actsite_outliers_10perc$GS_neg_pairs <- hnscc_actsite_outliers_10perc$GS_neg_pairs[hnscc_gsboth_kins_10perc]
+hnscc_actsite_outliers_15perc$GS_pos_pairs <- hnscc_actsite_outliers_15perc$GS_pos_pairs[hnscc_gsboth_kins_15perc]
+hnscc_actsite_outliers_15perc$GS_neg_pairs <- hnscc_actsite_outliers_15perc$GS_neg_pairs[hnscc_gsboth_kins_15perc]
+
+lscc_actsite_outliers_5perc$GS_pos_pairs <- lscc_actsite_outliers_5perc$GS_pos_pairs[lscc_gsboth_kins_5perc]
+lscc_actsite_outliers_5perc$GS_neg_pairs <- lscc_actsite_outliers_5perc$GS_neg_pairs[lscc_gsboth_kins_5perc]
+lscc_actsite_outliers_2pt5perc$GS_pos_pairs <- lscc_actsite_outliers_2pt5perc$GS_pos_pairs[lscc_gsboth_kins_2pt5perc]
+lscc_actsite_outliers_2pt5perc$GS_neg_pairs <- lscc_actsite_outliers_2pt5perc$GS_neg_pairs[lscc_gsboth_kins_2pt5perc]
+lscc_actsite_outliers_10perc$GS_pos_pairs <- lscc_actsite_outliers_10perc$GS_pos_pairs[lscc_gsboth_kins_10perc]
+lscc_actsite_outliers_10perc$GS_neg_pairs <- lscc_actsite_outliers_10perc$GS_neg_pairs[lscc_gsboth_kins_10perc]
+lscc_actsite_outliers_15perc$GS_pos_pairs <- lscc_actsite_outliers_15perc$GS_pos_pairs[lscc_gsboth_kins_15perc]
+lscc_actsite_outliers_15perc$GS_neg_pairs <- lscc_actsite_outliers_15perc$GS_neg_pairs[lscc_gsboth_kins_15perc]
+
+luad_actsite_outliers_5perc$GS_pos_pairs <- luad_actsite_outliers_5perc$GS_pos_pairs[luad_gsboth_kins_5perc]
+luad_actsite_outliers_5perc$GS_neg_pairs <- luad_actsite_outliers_5perc$GS_neg_pairs[luad_gsboth_kins_5perc]
+luad_actsite_outliers_2pt5perc$GS_pos_pairs <- luad_actsite_outliers_2pt5perc$GS_pos_pairs[luad_gsboth_kins_2pt5perc]
+luad_actsite_outliers_2pt5perc$GS_neg_pairs <- luad_actsite_outliers_2pt5perc$GS_neg_pairs[luad_gsboth_kins_2pt5perc]
+luad_actsite_outliers_10perc$GS_pos_pairs <- luad_actsite_outliers_10perc$GS_pos_pairs[luad_gsboth_kins_10perc]
+luad_actsite_outliers_10perc$GS_neg_pairs <- luad_actsite_outliers_10perc$GS_neg_pairs[luad_gsboth_kins_10perc]
+luad_actsite_outliers_15perc$GS_pos_pairs <- luad_actsite_outliers_15perc$GS_pos_pairs[luad_gsboth_kins_15perc]
+luad_actsite_outliers_15perc$GS_neg_pairs <- luad_actsite_outliers_15perc$GS_neg_pairs[luad_gsboth_kins_15perc]
+
+ucec_actsite_outliers_5perc$GS_pos_pairs <- ucec_actsite_outliers_5perc$GS_pos_pairs[ucec_gsboth_kins_5perc]
+ucec_actsite_outliers_5perc$GS_neg_pairs <- ucec_actsite_outliers_5perc$GS_neg_pairs[ucec_gsboth_kins_5perc]
+ucec_actsite_outliers_2pt5perc$GS_pos_pairs <- ucec_actsite_outliers_2pt5perc$GS_pos_pairs[ucec_gsboth_kins_2pt5perc]
+ucec_actsite_outliers_2pt5perc$GS_neg_pairs <- ucec_actsite_outliers_2pt5perc$GS_neg_pairs[ucec_gsboth_kins_2pt5perc]
+ucec_actsite_outliers_10perc$GS_pos_pairs <- ucec_actsite_outliers_10perc$GS_pos_pairs[ucec_gsboth_kins_10perc]
+ucec_actsite_outliers_10perc$GS_neg_pairs <- ucec_actsite_outliers_10perc$GS_neg_pairs[ucec_gsboth_kins_10perc]
+ucec_actsite_outliers_15perc$GS_pos_pairs <- ucec_actsite_outliers_15perc$GS_pos_pairs[ucec_gsboth_kins_15perc]
+ucec_actsite_outliers_15perc$GS_neg_pairs <- ucec_actsite_outliers_15perc$GS_neg_pairs[ucec_gsboth_kins_15perc]
+```
+
+
+```{r}
+combinedGS_5per_act <- list(brca_actsite_outliers_5perc, ccrcc_actsite_outliers_5perc, gbm_actsite_outliers_5perc, hnscc_actsite_outliers_5perc, lscc_actsite_outliers_5perc, luad_actsite_outliers_5perc, ucec_actsite_outliers_5perc)
 names(combinedGS_5per_act) <- c("BRCA", "CCRCC", "GBM", "HNSCC", "LSCC", "LUAD", "UCEC")
-saveRDS(combinedGS_5per_act, "GSsets/protein_5percent.Rds")
+saveRDS(combinedGS_5per_act, "GSsets/actsite_5percent.Rds")
 
-combinedGS_2pt5per_act <- list(brca_gsboth_kins_2pt5perc, ccrcc_gsboth_kins_2pt5perc, gbm_gsboth_kins_2pt5perc, hnscc_gsboth_kins_2pt5perc, lscc_gsboth_kins_2pt5perc, luad_gsboth_kins_2pt5perc, ucec_gsboth_kins_2pt5perc)
+combinedGS_2pt5per_act <- list(brca_actsite_outliers_2pt5perc, ccrcc_actsite_outliers_2pt5perc, gbm_actsite_outliers_2pt5perc, hnscc_actsite_outliers_2pt5perc, lscc_actsite_outliers_2pt5perc, luad_actsite_outliers_2pt5perc, ucec_actsite_outliers_2pt5perc)
 names(combinedGS_2pt5per_act) <- c("BRCA", "CCRCC", "GBM", "HNSCC", "LSCC", "LUAD", "UCEC")
-saveRDS(combinedGS_2pt5per_act, "GSsets/protein_2pt5percent.Rds")
+saveRDS(combinedGS_2pt5per_act, "GSsets/actsite_2pt5percent.Rds")
 
-combinedGS_10per_act <- list(brca_gsboth_kins_10perc, ccrcc_gsboth_kins_10perc, gbm_gsboth_kins_10perc, hnscc_gsboth_kins_10perc, lscc_gsboth_kins_10perc, luad_gsboth_kins_10perc, ucec_gsboth_kins_10perc)
+combinedGS_10per_act <- list(brca_actsite_outliers_10perc, ccrcc_actsite_outliers_10perc, gbm_actsite_outliers_10perc, hnscc_actsite_outliers_10perc, lscc_actsite_outliers_10perc, luad_actsite_outliers_10perc, ucec_actsite_outliers_10perc)
 names(combinedGS_10per_act) <- c("BRCA", "CCRCC", "GBM", "HNSCC", "LSCC", "LUAD", "UCEC")
-saveRDS(combinedGS_10per_act, "GSsets/protein_10percent.Rds")
+saveRDS(combinedGS_10per_act, "GSsets/actsite_10percent.Rds")
 
-combinedGS_15per_act <- list(brca_gsboth_kins_15perc, ccrcc_gsboth_kins_15perc, gbm_gsboth_kins_15perc, hnscc_gsboth_kins_15perc, lscc_gsboth_kins_15perc, luad_gsboth_kins_15perc, ucec_gsboth_kins_15perc)
+combinedGS_15per_act <- list(brca_actsite_outliers_15perc, ccrcc_actsite_outliers_15perc, gbm_actsite_outliers_15perc, hnscc_actsite_outliers_15perc, lscc_actsite_outliers_15perc, luad_actsite_outliers_15perc, ucec_actsite_outliers_15perc)
 names(combinedGS_15per_act) <- c("BRCA", "CCRCC", "GBM", "HNSCC", "LSCC", "LUAD", "UCEC")
-saveRDS(combinedGS_15per_act, "GSsets/protein_15percent.Rds")
+saveRDS(combinedGS_15per_act, "GSsets/actsite_15percent.Rds")
 ```
 
+
+Make tables showing total numbers of potential kinases included in the GS sets (note: these may not actually be used in the benchmarking as only kinases with sufficient numbers of targets to infer activity scores ultimately get used)
+
+2.5%, 5%, 10%, 15% thresholds
 ```{r}
-save.image("KIA_benchmarking_defGSset_v7_latest_ckpt1.rda")
-```
-```{r}
-load("KIA_benchmarking_defGSset_v7_latest_ckpt1.rda")
-```
+fig_1_tab <- matrix(NA, nrow = 7, ncol = 13, dimnames = list(c("BRCA","CCRCC","GBM","HNSCC","LSCC","LUAD","UCEC"), c("No. Tumors", "Kinases (2.5% threshold)", "GS+ Kinase-Tumor Pairs (2.5% threshold)", "GS- Kinase-Tumor Pairs (2.5% threshold)", "Kinases (5% threshold)", "GS+ Kinase-Tumor Pairs (5% threshold)", "GS- Kinase-Tumor Pairs (5% threshold)", "Kinases (10% threshold)", "GS+ Kinase-Tumor Pairs (10% threshold)", "GS- Kinase-Tumor Pairs (10% threshold)", "Kinases (15% threshold)", "GS+ Kinase-Tumor Pairs (15% threshold)", "GS- Kinase-Tumor Pairs (15% threshold)")))
 
-For the rest: extract code to generate the summary tables and delete rest (TBD)
-
-RESUME HERE:
-
-make figure 1 table: numbers of tumors, kinases, GS pairs for each cancer type
-
-1%, 5%, 15% thresholds
-```{r}
-fig_1_tab <- matrix(NA, nrow = 10, ncol = 10, dimnames = list(c("BRCA","CCRCC","COAD","GBM","HNSCC","LSCC","LUAD","OV","PDAC","UCEC"), c("No. Tumors", "Kinases (1% threshold)", "GS+ Kinase-Tumor Pairs (1% threshold)", "GS- Kinase-Tumor Pairs (1% threshold)", "Kinases (5% threshold)", "GS+ Kinase-Tumor Pairs (5% threshold)", "GS- Kinase-Tumor Pairs (5% threshold)", "Kinases (15% threshold)", "GS+ Kinase-Tumor Pairs (15% threshold)", "GS- Kinase-Tumor Pairs (15% threshold)")))
 fig_1_tab[1, 1] <- ncol(brca_phos_kins1)
 fig_1_tab[2, 1] <- ncol(ccrcc_phos_kins1)
-fig_1_tab[3, 1] <- ncol(coad_phos_kins1)
-fig_1_tab[4, 1] <- ncol(gbm_phos_kins1)
-fig_1_tab[5, 1] <- ncol(hnscc_phos_kins1)
-fig_1_tab[6, 1] <- ncol(lscc_phos_kins1)
-fig_1_tab[7, 1] <- ncol(luad_phos_kins1)
-fig_1_tab[8, 1] <- ncol(ov_phos_kins1)
-fig_1_tab[9, 1] <- ncol(pdac_phos_kins1)
-fig_1_tab[10, 1] <- ncol(ucec_phos_kins1)
+fig_1_tab[3, 1] <- ncol(gbm_phos_kins1)
+fig_1_tab[4, 1] <- ncol(hnscc_phos_kins1)
+fig_1_tab[5, 1] <- ncol(lscc_phos_kins1)
+fig_1_tab[6, 1] <- ncol(luad_phos_kins1)
+fig_1_tab[7, 1] <- ncol(ucec_phos_kins1)
+
+fig_1_tab[1, 2] <- length(brca_gsboth_kins_2pt5perc)
+fig_1_tab[2, 2] <- length(ccrcc_gsboth_kins_2pt5perc)
+fig_1_tab[3, 2] <- length(gbm_gsboth_kins_2pt5perc)
+fig_1_tab[4, 2] <- length(hnscc_gsboth_kins_2pt5perc)
+fig_1_tab[5, 2] <- length(lscc_gsboth_kins_2pt5perc)
+fig_1_tab[6, 2] <- length(luad_gsboth_kins_2pt5perc)
+fig_1_tab[7,2] <- length(ucec_gsboth_kins_2pt5perc)
+
+fig_1_tab[1, 3] <- sum(lengths(brca_prot_gs_2pt5perc$GS_pos_pairs))
+fig_1_tab[2, 3] <- sum(lengths(ccrcc_prot_gp_2pt5perc$GS_pos_pairs))
+fig_1_tab[3, 3] <- sum(lengths(gbm_prot_gs_2pt5perc$GS_pos_pairs))
+fig_1_tab[4, 3] <- sum(lengths(hnscc_prot_gs_2pt5perc$GS_pos_pairs))
+fig_1_tab[5, 3] <- sum(lengths(lscc_prot_gs_2pt5perc$GS_pos_pairs))
+fig_1_tab[6, 3] <- sum(lengths(luad_prot_gs_2pt5perc$GS_pos_pairs))
+fig_1_tab[7,3] <- sum(lengths(ucec_prot_gs_2pt5perc$GS_pos_pairs))
+
+fig_1_tab[1, 4] <- sum(lengths(brca_GS_neg))
+fig_1_tab[2, 4] <- sum(lengths(ccrcc_GS_neg))
+#fig_1_tab[3, 4] <- sum(lengths(coad_GS_neg))
+fig_1_tab[3, 4] <- sum(lengths(gbm_GS_neg))
+fig_1_tab[4, 4] <- sum(lengths(hnscc_GS_neg))
+fig_1_tab[5, 4] <- sum(lengths(lscc_GS_neg))
+fig_1_tab[6, 4] <- sum(lengths(luad_GS_neg))
+#fig_1_tab[8, 4] <- sum(lengths(ov_GS_neg))
+#fig_1_tab[9, 4] <- sum(lengths(pdac_GS_neg))
+fig_1_tab[7,4] <- sum(lengths(ucec_GS_neg))
+
 
 fig_1_tab[1, 2] <- length(brca_gsboth_kins_1per)
 fig_1_tab[2, 2] <- length(ccrcc_gsboth_kins_1per)
