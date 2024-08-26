@@ -25,7 +25,7 @@ rule map_priors:
         ppsp = "results/00_prior/{prior}.tsv",
         file_dataset = "results/01_processed_data/hijazi/data/benchmark_data.csv"
     output:
-        tsv = "results/01_processed_data/hijazi/mapped_priors/{prior}.tsv"
+        tsv = temp("results/01_processed_data/hijazi/mapped_priors/{prior}.tsv")
     wildcard_constraints:
         prior = '[a-zA-Z0-9]+'
     conda:
@@ -38,7 +38,7 @@ rule map_merged_priors:
         ppsp = "results/00_prior/merged/{known}_{predicted}.tsv",
         file_dataset = "results/01_processed_data/hijazi/data/benchmark_data.csv"
     output:
-        tsv = "results/01_processed_data/hijazi/mapped_priors/{known}_{predicted}.tsv"
+        tsv = temp("results/01_processed_data/hijazi/mapped_priors/{known}_{predicted}.tsv")
     conda:
         "../envs/phospho.yml"
     script:

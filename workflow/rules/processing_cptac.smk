@@ -64,7 +64,7 @@ rule ptmsea_datasets:
     input:
         file_dataset = "data/datasets/CPTAC_phospho/final/{dataset}_norm2prot_{normalisation}_lm_log2_medCentRatio.rds"
     output:
-        gct = "results/01_processed_data/cptac/datasets/{dataset}_{normalisation}.gct"
+        gct = temp("results/01_processed_data/cptac/datasets/{dataset}_{normalisation}.gct")
     conda:
         "../envs/phospho.yml"
     script:
@@ -74,7 +74,7 @@ rule ptmsea_prior:
     input:
         file_PKN = "results/01_processed_data/cptac/mapped_priors/{PKN}.tsv"
     output:
-        gmt = "results/01_processed_data/cptac/mapped_priors/ptm-sea/{PKN}.gmt"
+        gmt = temp("results/01_processed_data/cptac/mapped_priors/ptm-sea/{PKN}.gmt")
     conda:
         "../envs/phospho.yml"
     script:

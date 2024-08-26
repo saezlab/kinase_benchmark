@@ -46,7 +46,7 @@ rule ptmsea_datasets:
     input:
         file_dataset = "results/01_processed_data/hernandez/data/benchmark_data.csv"
     output:
-        gct = "results/01_processed_data/hernandez/datasets/benchmark.gct"
+        gct = temp("results/01_processed_data/hernandez/datasets/benchmark.gct")
     conda:
         "../envs/phospho.yml"
     script:
@@ -56,7 +56,7 @@ rule ptmsea_prior:
     input:
         file_PKN = "results/01_processed_data/hernandez/mapped_priors/{PKN}.tsv"
     output:
-        gmt = "results/01_processed_data/hernandez/mapped_priors/ptm-sea/{PKN}.gmt"
+        gmt = temp("results/01_processed_data/hernandez/mapped_priors/ptm-sea/{PKN}.gmt")
     conda:
         "../envs/phospho.yml"
     script:
