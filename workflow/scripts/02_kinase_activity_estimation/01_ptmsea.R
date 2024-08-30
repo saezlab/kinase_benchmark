@@ -2,7 +2,8 @@ if(exists("snakemake")){
   dataset <- snakemake@input$file_dataset
   PKN <- snakemake@input$file_PKN
   PKN_name <- snakemake@wildcards$PKN
-  log <- snakemake@output$rds
+  csv <- snakemake@output$rds
+  log <- snakemake@output$log
   output_folder <- snakemake@params$output_folder
   minsize <- snakemake@params$minsize
 }else{
@@ -44,3 +45,19 @@ res <- run_ssGSEA2(dataset,
                   extended.output = TRUE,
                   global.fdr = FALSE,
                   log.file = log)
+
+ptmsea <- read.delim(file=paste0(output_folder, "/", PKN_name, "-scores.gct"), skip=2)
+ptmsea <- ptmsea %>%
+  dplyr::select(colnames(ptmsea)[!str_detect(colnames(ptmsea), "Signature")]) %>%
+  dplyr::select(-No.columns.scored)
+colnames(ptmsea) <- str_remove(colnames(ptmsea), "^X")
+
+ptmsea <- ptmsea %>%
+  pivot_longer(!id, names_to = "condition", values_to = "score") %>%
+  dplyr::filter(!is.na(score)) %>%
+  dplyr::rename(source = id) %>%
+  add_column(method = "ptmsea") 
+
+write_csv(ptmsea, csv)
+
+

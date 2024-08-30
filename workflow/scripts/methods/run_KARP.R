@@ -31,16 +31,16 @@
 #' run_KARP(mat, net, minsize=0)
 run_KARP <- function(mat,
                       network,
-                      .source = .data$source,
-                      .target = .data$target,
-                      .mor = .data$mor,
+                      .source = "source",
+                      .target = "target",
+                      .mor = "mor",
                       minsize = 5
 ) {
   # Check for NAs/Infs in mat
   check_nas_infs(mat)
 
   network <- network %>%
-    rename_net({{ .source }}, {{ .target }}, {{ .mor }})
+    rename_net(!!sym(.source), !!sym(.target), !!sym(.mor))
 
   network_filtered <- network %>%
     dplyr::filter(target %in% rownames(mat)) %>%

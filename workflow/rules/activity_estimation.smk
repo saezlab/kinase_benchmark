@@ -1,145 +1,215 @@
-# This rule is to run the activity estimation
+# Define common parameters
+rm_auto = True
+minsize = 5
+threads = 3
 
-# ------------------------------ CPTAC ------------------------------
-rule cptac_activity_estimation:
+rule run_fgsea:
     input:
-        file_dataset ="data/datasets/CPTAC_phospho/final/{dataset}_norm2prot_{normalisation}_lm_log2_medCentRatio.rds",
-        file_PKN = "results/01_processed_data/cptac/mapped_priors/{PKN}.tsv",
-        scripts = expand("workflow/scripts/methods/run_{method}.R", method = ["INKA", "KARP", "lm_rokai", "zscore", "erics_methods"]),
-        script_support = "workflow/scripts/methods/support_functions.R"
+        file_dataset="results/01_processed_data/{dataset}/data/benchmark_data.csv",
+        file_PKN="results/01_processed_data/{dataset}/mapped_priors/{PKN}.tsv"
     output:
-        rds = "results/02_activity_scores/cptac/scores/{normalisation}/{normalisation}_{dataset}-{PKN}.rds"
+        rds=temp("results/02_activity_scores/{dataset}/fgsea/{PKN}.csv")
     params:
-        rm_auto = "T",
-        minsize = "5"
-    threads: 6
-    resources:
-        mem = 50000
+        rm_auto=rm_auto,
+        minsize=minsize
+    threads:
+        threads
     conda:
         "../envs/phospho.yml"
     script:
-        "../scripts/02_kinase_activity_estimation/01_activity_estimation_cptac.R"
+        "../scripts/02_kinase_activity_estimation/01_fgsea.R"
 
-rule cptac_activity_estimation_ptmsea:
+rule run_INKA:
     input:
-        file_dataset = "results/01_processed_data/cptac/datasets/{dataset}_{normalisation}.gct",
-        file_PKN = "results/01_processed_data/cptac/mapped_priors/ptm-sea/{PKN}.gmt"
+        file_dataset="results/01_processed_data/{dataset}/data/benchmark_data.csv",
+        file_PKN="results/01_processed_data/{dataset}/mapped_priors/{PKN}.tsv",
+        scripts="workflow/scripts/methods/run_INKA.R",
+        script_support="workflow/scripts/methods/support_functions.R"
     output:
-        rds = "results/02_activity_scores/cptac/ptmsea/log/{normalisation}_{dataset}-{PKN}.log",
-        gct = "results/02_activity_scores/cptac/ptmsea/{normalisation}_{dataset}-{PKN}-scores.gct"
+        rds=temp("results/02_activity_scores/{dataset}/INKA/{PKN}.csv")
     params:
-        output_folder = "results/02_activity_scores/cptac/ptmsea"
+        rm_auto=rm_auto,
+        minsize=minsize
+    threads:
+        threads
     conda:
         "../envs/phospho.yml"
     script:
-        "../scripts/02_kinase_activity_estimation/01.1_activity_estimation_ptmsea_cptac.R"
+        "../scripts/02_kinase_activity_estimation/01_INKA.R"
 
-rule cptac_combine_scores:
+rule run_KARP:
     input:
-        file_ptmsea = "results/02_activity_scores/cptac/ptmsea/{normalisation}_{dataset}-{PKN}-scores.gct",
-        file_scores = "results/02_activity_scores/cptac/scores/{normalisation}/{normalisation}_{dataset}-{PKN}.rds"
+        file_dataset="results/01_processed_data/{dataset}/data/benchmark_data.csv",
+        file_PKN="results/01_processed_data/{dataset}/mapped_priors/{PKN}.tsv",
+        scripts="workflow/scripts/methods/run_KARP.R",
+        script_support="workflow/scripts/methods/support_functions.R"
     output:
-        rds = "results/02_activity_scores/cptac/final_scores/{normalisation}/{normalisation}_{dataset}-{PKN}.rds"
+        rds=temp("results/02_activity_scores/{dataset}/KARP/{PKN}.csv")
     params:
-        rm_methods = ["corr_wmean", "corr_wsum", "norm_wsum", "wmean", "INKA_kinase_centric", "INKA_substrate_centric", "INKA"]
+        rm_auto=rm_auto,
+        minsize=minsize
+    threads:
+        threads
+    conda:
+        "../envs/phospho.yml"
+    script:
+        "../scripts/02_kinase_activity_estimation/01_KARP.R"
+
+rule run_KSEA:
+    input:
+        file_dataset="results/01_processed_data/{dataset}/data/benchmark_data.csv",
+        file_PKN="results/01_processed_data/{dataset}/mapped_priors/{PKN}.tsv",
+        scripts="workflow/scripts/methods/run_zscore.R",
+        script_support="workflow/scripts/methods/support_functions.R"
+    output:
+        rds=temp("results/02_activity_scores/{dataset}/KSEA/{PKN}.csv")
+    params:
+        rm_auto=rm_auto,
+        minsize=minsize
+    threads:
+        threads
+    conda:
+        "../envs/phospho.yml"
+    script:
+        "../scripts/02_kinase_activity_estimation/01_KSEA.R"
+
+rule run_lmRoKAI:
+    input:
+        file_dataset="results/01_processed_data/{dataset}/data/benchmark_data.csv",
+        file_PKN="results/01_processed_data/{dataset}/mapped_priors/{PKN}.tsv",
+        scripts="workflow/scripts/methods/run_lm_rokai.R",
+        script_support="workflow/scripts/methods/support_functions.R"
+    output:
+        rds=temp("results/02_activity_scores/{dataset}/lmRoKAI/{PKN}.csv")
+    params:
+        rm_auto=rm_auto,
+        minsize=minsize
+    threads:
+        threads
+    conda:
+        "../envs/phospho.yml"
+    script:
+        "../scripts/02_kinase_activity_estimation/01_lmRoKAI.R"
+
+rule run_mean:
+    input:
+        file_dataset="results/01_processed_data/{dataset}/data/benchmark_data.csv",
+        file_PKN="results/01_processed_data/{dataset}/mapped_priors/{PKN}.tsv"
+    output:
+        rds=temp("results/02_activity_scores/{dataset}/mean/{PKN}.csv")
+    params:
+        rm_auto=rm_auto,
+        minsize=minsize
+    threads:
+        threads
+    conda:
+        "../envs/phospho.yml"
+    script:
+        "../scripts/02_kinase_activity_estimation/01_mean.R"
+
+rule run_misc:
+    input:
+        file_dataset="results/01_processed_data/{dataset}/data/benchmark_data.csv",
+        file_PKN="results/01_processed_data/{dataset}/mapped_priors/{PKN}.tsv",
+        scripts="workflow/scripts/methods/run_erics_methods.R"
+    output:
+        rds=temp("results/02_activity_scores/{dataset}/misc/{PKN}.csv")
+    params:
+        rm_auto=rm_auto,
+        minsize=minsize
+    conda:
+        "../envs/phospho.yml"
+    script:
+        "../scripts/02_kinase_activity_estimation/01_misc.R"
+
+rule run_mlm:
+    input:
+        file_dataset="results/01_processed_data/{dataset}/data/benchmark_data.csv",
+        file_PKN="results/01_processed_data/{dataset}/mapped_priors/{PKN}.tsv"
+    output:
+        rds=temp("results/02_activity_scores/{dataset}/mlm/{PKN}.csv")
+    params:
+        rm_auto=rm_auto,
+        minsize=minsize
+    threads:
+        threads
+    conda:
+        "../envs/phospho.yml"
+    script:
+        "../scripts/02_kinase_activity_estimation/01_mlm.R"
+
+rule run_ptmsea:
+    input:
+        file_dataset="results/01_processed_data/{dataset}/datasets/benchmark.gct",
+        file_PKN="results/01_processed_data/{dataset}/mapped_priors/ptm-sea/{PKN}.gmt"
+    output:
+        log=temp("results/02_activity_scores/{dataset}/ptmsea/res/log/{PKN}.log"),
+        rds=temp("results/02_activity_scores/{dataset}/ptmsea/{PKN}.csv")
+    params:
+        output_folder=temp("results/02_activity_scores/{dataset}/ptmsea/res"),
+        minsize=minsize
+    conda:
+        "../envs/phospho.yml"
+    script:
+        "../scripts/02_kinase_activity_estimation/01_ptmsea.R"
+
+rule run_ulm:
+    input:
+        file_dataset="results/01_processed_data/{dataset}/data/benchmark_data.csv",
+        file_PKN="results/01_processed_data/{dataset}/mapped_priors/{PKN}.tsv"
+    output:
+        rds=temp("results/02_activity_scores/{dataset}/ulm/{PKN}.csv")
+    params:
+        rm_auto=rm_auto,
+        minsize=minsize
+    threads:
+        threads
+    conda:
+        "../envs/phospho.yml"
+    script:
+        "../scripts/02_kinase_activity_estimation/01_ulm.R"
+
+rule run_viper:
+    input:
+        file_dataset="results/01_processed_data/{dataset}/data/benchmark_data.csv",
+        file_PKN="results/01_processed_data/{dataset}/mapped_priors/{PKN}.tsv"
+    output:
+        rds=temp("results/02_activity_scores/{dataset}/viper/{PKN}.csv")
+    params:
+        rm_auto=rm_auto,
+        minsize=minsize
+    threads:
+        threads
+    conda:
+        "../envs/phospho.yml"
+    script:
+        "../scripts/02_kinase_activity_estimation/01_viper.R"
+
+rule run_zscore:
+    input:
+        file_dataset="results/01_processed_data/{dataset}/data/benchmark_data.csv",
+        file_PKN="results/01_processed_data/{dataset}/mapped_priors/{PKN}.tsv",
+        scripts="workflow/scripts/methods/run_zscore.R",
+        script_support="workflow/scripts/methods/support_functions.R"
+    output:
+        rds=temp("results/02_activity_scores/{dataset}/zscore/{PKN}.csv")
+    params:
+        rm_auto=rm_auto,
+        minsize=minsize
+    threads:
+        threads
+    conda:
+        "../envs/phospho.yml"
+    script:
+        "../scripts/02_kinase_activity_estimation/01_zscore.R"
+
+rule combine_scores:
+    input:
+        file_scores=expand("results/02_activity_scores/{{dataset}}/{method}/{{PKN}}.csv", method = config["perturbation"]["methods"]),
+    output:
+        rds="results/02_activity_scores/{dataset}/scores/{PKN}.rds"
     conda:
         "../envs/phospho.yml"
     script:
         "../scripts/02_kinase_activity_estimation/02_combine_scores.R"
 
-# ---------------------------------- hernandez ----------------------------------
-rule hernandez_activity_estimation:
-    input:
-        file_dataset = "results/01_processed_data/hernandez/data/benchmark_data.csv",
-        file_PKN = "results/01_processed_data/hernandez/mapped_priors/{PKN}.tsv",
-        scripts = expand("workflow/scripts/methods/run_{method}.R", method = ["INKA", "KARP", "lm_rokai", "zscore", "erics_methods"]),
-        script_support = "workflow/scripts/methods/support_functions.R"
-    output:
-        rds = "results/02_activity_scores/hernandez/scores/{PKN}.rds"
-    params:
-        rm_auto = "T",
-        minsize = "3"
-    threads: 6
-    resources:
-        mem = 50000
-    conda:
-        "../envs/phospho.yml"
-    script:
-        "../scripts/02_kinase_activity_estimation/01_activity_estimation.R"
-
-rule hernandez_activity_estimation_ptmsea:
-    input:
-        file_dataset = "results/01_processed_data/hernandez/datasets/benchmark.gct",
-        file_PKN = "results/01_processed_data/hernandez/mapped_priors/ptm-sea/{PKN}.gmt"
-    output:
-        rds = "results/02_activity_scores/hernandez/ptmsea/log/{PKN}.log",
-        gct = "results/02_activity_scores/hernandez/ptmsea/{PKN}-scores.gct"
-    params:
-        output_folder = "results/02_activity_scores/hernandez/ptmsea",
-        minsize = "3"
-    conda:
-        "../envs/phospho.yml"
-    script:
-        "../scripts/02_kinase_activity_estimation/01.1_activity_estimation_ptmsea.R"
-
-rule hernandez_combine_scores:
-    input:
-        file_ptmsea = "results/02_activity_scores/hernandez/ptmsea/{PKN}-scores.gct",
-        file_scores = "results/02_activity_scores/hernandez/scores/{PKN}.rds"
-    output:
-        rds = "results/02_activity_scores/hernandez/final_scores/{PKN}.rds"
-    params:
-        rm_methods = ["corr_wmean", "corr_wsum", "norm_wsum", "wmean", "INKA_kinase_centric", "INKA_substrate_centric", "INKA"]
-    conda:
-        "../envs/phospho.yml"
-    script:
-        "../scripts/02_kinase_activity_estimation/02_combine_scores.R"
-
-
-# ---------------------------------- hijazi ----------------------------------
-rule hijazi_activity_estimation:
-    input:
-        file_dataset = "results/01_processed_data/hijazi/data/benchmark_data.csv",
-        file_PKN = "results/01_processed_data/hijazi/mapped_priors/{PKN}.tsv",
-        scripts = expand("workflow/scripts/methods/run_{method}.R", method = ["INKA", "KARP", "lm_rokai", "zscore", "erics_methods"]),
-        script_support = "workflow/scripts/methods/support_functions.R"
-    output:
-        rds = "results/02_activity_scores/hijazi/scores/{PKN}.rds"
-    params:
-        rm_auto = "T",
-        minsize = "3"
-    conda:
-        "../envs/phospho.yml"
-    threads: 6
-    resources:
-        mem = 50000
-    script:
-        "../scripts/02_kinase_activity_estimation/01_activity_estimation.R"
-
-rule hijazi_activity_estimation_ptmsea:
-    input:
-        file_dataset = "results/01_processed_data/hijazi/datasets/benchmark.gct",
-        file_PKN = "results/01_processed_data/hijazi/mapped_priors/ptm-sea/{PKN}.gmt"
-    output:
-        rds = "results/02_activity_scores/hijazi/ptmsea/log/{PKN}.log",
-        gct = "results/02_activity_scores/hijazi/ptmsea/{PKN}-scores.gct"
-    params:
-        output_folder = "results/02_activity_scores/hijazi/ptmsea",
-        minsize = "3"
-    conda:
-        "../envs/phospho.yml"
-    script:
-        "../scripts/02_kinase_activity_estimation/01.1_activity_estimation_ptmsea.R"
-
-rule hijazi_combine_scores:
-    input:
-        file_ptmsea = "results/02_activity_scores/hijazi/ptmsea/{PKN}-scores.gct",
-        file_scores = "results/02_activity_scores/hijazi/scores/{PKN}.rds"
-    output:
-        rds = "results/02_activity_scores/hijazi/final_scores/{PKN}.rds"
-    params:
-        rm_methods = ["corr_wmean", "corr_wsum", "norm_wsum", "wmean", "INKA_kinase_centric", "INKA_substrate_centric", "INKA"]
-    conda:
-        "../envs/phospho.yml"
-    script:
-        "../scripts/02_kinase_activity_estimation/02_combine_scores.R"

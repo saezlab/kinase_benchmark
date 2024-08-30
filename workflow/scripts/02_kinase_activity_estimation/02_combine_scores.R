@@ -1,33 +1,36 @@
 if(exists("snakemake")){
-  scores_ptmsea_file <- snakemake@input$file_ptmsea
-  scores_file <- snakemake@input$file_scores
-  methods_to_remove <- snakemake@params$rm_methods
+  score_files <- snakemake@input$file_scores
   output <- snakemake@output$rds
 }else{
-  scores_ptmsea_file <- "results/hernandez/activity_scores_ptmsea/GPS-scores.gct"
-  scores_file <- "results/hernandez/activity_scores/GPS.rds"
-  output <- "results/hernandez/final_scores/GPS.rds"
-  methods_to_remove <- c("corr_wmean", "corr_wsum", "norm_wsum", "wmean")
+  score_files <- list.files("results/02_activity_scores/hernandez", recursive = T, full.names = T, pattern = "phosphositeplus.csv")
+  output <- "results/hernandez/scores/GPS.rds"
 }
-
 
 ## Libraries ---------------------------
 library(tidyverse)
 
 ## load scores ---------------------------
-ptmsea <- read.delim(file=scores_ptmsea_file, skip=2)
-ptmsea <- ptmsea %>%
-  dplyr::select(colnames(ptmsea)[!str_detect(colnames(ptmsea), "Signature")]) %>%
-  dplyr::select(-No.columns.scored) %>%
-  column_to_rownames("id")
-colnames(ptmsea) <- str_remove(colnames(ptmsea), "^X")
+results <- map_dfr(score_files, ~ read_csv(.x, col_types = cols())) %>%
+  dplyr::select(source, condition, score, method)
 
 ## combine scores ---------------------------
-scores <- readRDS(scores_file)
-scores$ptmsea <- ptmsea
+results <- results %>%
+  drop_na() %>%
+  arrange(source) %>%
+  distinct() %>%
+  group_by(method)
 
-scores <- scores[!names(scores) %in% methods_to_remove]
+results_list <- results %>%
+  group_split()
+names(results_list) <- group_keys(results)$method
+
+res_wide <- map(results_list, function(result_method){
+  result_method %>%
+    dplyr::select(source, condition, score) %>%
+    pivot_wider(names_from = condition, values_from = score) %>%
+    column_to_rownames("source")
+})
 
 ## save final scores ---------------------------
-saveRDS(scores, file = output)
+saveRDS(res_wide, output)
 
