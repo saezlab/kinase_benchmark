@@ -56,7 +56,7 @@ ptmsea <- ptmsea %>%
   pivot_longer(!id, names_to = "condition", values_to = "score") %>%
   dplyr::filter(!is.na(score)) %>%
   dplyr::rename(source = id) %>%
-  add_column(method = "ptmsea") 
+  add_column(method = "ptmsea")
 
 write_csv(ptmsea, csv)
 
