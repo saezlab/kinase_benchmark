@@ -54,7 +54,7 @@ rule ptmsea_datasets:
     conda:
         "../envs/phospho.yml"
     script:
-        "../scripts/01_data_processing/hijazi/02.1_prepare_datasets_ptm-sea.R"
+        "../scripts/01_data_processing/02.1_prepare_datasets_ptm-sea.R"
 
 rule ptmsea_prior:
     input:
@@ -64,4 +64,4 @@ rule ptmsea_prior:
     conda:
         "../envs/phospho.yml"
     script:
-        "../scripts/01_data_processing/hijazi/02.2_prepare_prior_ptm-sea.R"
+        "../scripts/01_data_processing/02.2_prepare_prior_ptm-sea.R"

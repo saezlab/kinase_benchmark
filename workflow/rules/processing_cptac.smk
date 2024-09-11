@@ -2,23 +2,24 @@
 # ------------------------------ DATA FORMATTING ------------------------------
 rule fromat_data:
     input:
-        phospho = "data/datasets/CPTAC_original/{dataset}_original_medcent_30plus.tsv"
+        phospho = "data/datasets/cptac/{dataset}_norm2prot_{normalisation}_lm_log2_medCentRatio.rds"
     output:
-        out = "data/datasets/CPTAC_phospho/final/{dataset}_norm2prot_original_lm_log2_medCentRatio.rds"
+        out = "results/01_processed_data/cptac/data/{normalisation}/{dataset}.csv"
     conda:
         "../envs/phospho.yml"
     script:
-        "../scripts/01_data_processing/cptac/00_format_unnormalized_data.R"
+        "../scripts/01_data_processing/cptac/00_format_data.R"
+
 
 # ------------------------------ INPUT PREPARATION ------------------------------
 rule map_priors:
     input:
         ppsp = "results/00_prior/{prior}.tsv",
-        file_dataset = expand("data/datasets/CPTAC_phospho/final/{dataset}_norm2prot_{normalisation}_lm_log2_medCentRatio.rds", dataset = config["cptac"]["datasets"], normalisation = config["cptac"]["normalisation"])
+        file_dataset = expand("results/01_processed_data/cptac/data/{normalisation}/{dataset}.csv", dataset = config["cptac"]["datasets"], normalisation = config["cptac"]["normalisation"])
     output:
         tsv = "results/01_processed_data/cptac/mapped_priors/{prior}.tsv"
     wildcard_constraints:
-        prior = '[a-zA-Z0-9]+'
+        prior = '(?!shuffled)[a-zA-Z0-9]+'
     conda:
         "../envs/phospho.yml"
     script:
@@ -27,7 +28,7 @@ rule map_priors:
 rule map_merged_priors:
     input:
         ppsp = "results/00_prior/merged/{known}_{predicted}.tsv",
-        file_dataset = expand("data/datasets/CPTAC_phospho/final/{dataset}_norm2prot_{normalisation}_lm_log2_medCentRatio.rds", dataset = config["cptac"]["datasets"], normalisation = config["cptac"]["normalisation"])
+        file_dataset = expand("results/01_processed_data/cptac/data/{normalisation}/{dataset}.csv", dataset = config["cptac"]["datasets"], normalisation = config["cptac"]["normalisation"])
     output:
         tsv = "results/01_processed_data/cptac/mapped_priors/{known}_{predicted}.tsv"
     conda:
@@ -62,13 +63,13 @@ rule prepare_cptacjohnson:
 # ------------------------------- PTM-SEA input preparation -------------------------------
 rule ptmsea_datasets:
     input:
-        file_dataset = "data/datasets/CPTAC_phospho/final/{dataset}_norm2prot_{normalisation}_lm_log2_medCentRatio.rds"
+        file_dataset = "results/01_processed_data/cptac/data/{normalisation}/{dataset}.csv"
     output:
         gct = temp("results/01_processed_data/cptac/datasets/{dataset}_{normalisation}.gct")
     conda:
         "../envs/phospho.yml"
     script:
-        "../scripts/01_data_processing/cptac/02.1_prepare_datasets_ptm-sea.R"
+        "../scripts/01_data_processing/02.1_prepare_datasets_ptm-sea.R"
 
 rule ptmsea_prior:
     input:
@@ -78,4 +79,4 @@ rule ptmsea_prior:
     conda:
         "../envs/phospho.yml"
     script:
-        "../scripts/01_data_processing/cptac/02.2_prepare_prior_ptm-sea.R"
+        "../scripts/01_data_processing/02.2_prepare_prior_ptm-sea.R"

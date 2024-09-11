@@ -19,20 +19,19 @@ network <- read_tsv(ppsp_file, col_types = cols())
 ## Prepare CPTAC ---------------------------
 # Map targets to pps in data
 pps <- map_dfr(file_datasets, function(file){
-  df <- readRDS(file)
-  data.frame(site = rownames(df))
+  df <- read_csv(file, col_types = cols())
 })
 
 pps <- pps %>%
   distinct(.keep_all = TRUE)
 
-identifiers <- map_chr(str_split(pps$site,  "\\|"), 1)
+identifiers <- map_chr(str_split(pps$ID,  "\\|"), 1)
 identifiers <- map_chr(str_split(identifiers,  "\\."), 1)
 
-pps_df <- data.frame(site = pps,
+pps_df <- data.frame(ID = pps$ID,
                      ensembl_gene_id = identifiers,
-                     position = map_chr(str_split(pps$site,  "\\|"), 3),
-                     surrounding = map_chr(str_split(pps$site,  "\\|"), 4))
+                     position = map_chr(str_split(pps$ID,  "\\|"), 3),
+                     surrounding = map_chr(str_split(pps$ID,  "\\|"), 4))
 
 ## Convert Ensemble gene IDs to Gene names
 mart <- useMart(biomart = "ensembl", dataset = "hsapiens_gene_ensembl")
@@ -70,8 +69,8 @@ if(!any(is.na(network$sequence))){
 
     mapped_prior %>%
       mutate(target = case_when(
-        !is.na(site) ~ site,
-        is.na(site) ~ target_site
+        !is.na(ID) ~ ID,
+        is.na(ID) ~ target_site
       )) %>%
       mutate(target = case_when(
         str_detect(pattern = source, string = target_site) ~ paste0(target, "|auto"), #mark autophosphorylation
@@ -96,8 +95,8 @@ if(!any(is.na(network$sequence))){
 
   prior_df <- mapped_prior %>%
     mutate(target = case_when(
-      !is.na(site) ~ site,
-      is.na(site) ~ target_site
+      !is.na(ID) ~ ID,
+      is.na(ID) ~ target_site
     )) %>%
     mutate(target = case_when(
       str_detect(pattern = source, string = target_site) ~ paste0(target, "|auto"), #mark autophosphorylation
@@ -108,6 +107,9 @@ if(!any(is.na(network$sequence))){
     distinct()
 }
 
+# Filter for mapped targets
+prior_df <- prior_df %>%
+  dplyr::filter(str_detect(target, "\\|.*\\|"))
 
 ## Save processed phosphositeplus
 write_tsv(prior_df, output_file)

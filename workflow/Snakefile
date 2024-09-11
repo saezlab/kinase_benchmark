@@ -13,18 +13,24 @@ rule priors:
     input:
         expand("results/00_prior/{prior}.tsv", prior = config["general"]["PKNs"])
 
+rule activity:
+    input:
+        expand("results/02_activity_scores/hernandez/scores/{prior}.rds", prior = config["perturbation"]["PKNs"]),
+        expand("results/02_activity_scores/hijazi/scores/{prior}.rds", prior = config["perturbation"]["PKNs"]),
+        expand("results/02_activity_scores/cptac/scores/original/{dataset}-{prior}.rds", dataset = config["cptac"]["datasets"], prior = config["perturbation"]["PKNs"])
+
 rule cptac:
     input:
-        expand("results/02_activity_scores/cptac/final_scores/original/original_{dataset}-{PKN}.rds", dataset = config["cptac"]["datasets"], PKN = config["cptac"]["cptac_PKNs"])
+        expand("results/02_activity_scores/cptac/scores/original/{dataset}-phosphositeplus.rds", dataset = config["cptac"]["datasets"])
 
 rule normalisation:
     input:
-        expand("results/02_activity_scores/cptac/final_scores/{normalisation}/{normalisation}_{dataset}-{PKN}.rds", dataset = config["cptac"]["datasets"], PKN = config["cptac"]["normalisation_PKNs"], normalisation = config["cptac"]["normalisation"])
+        expand("results/02_activity_scores/cptac/scores/{normalisation}/{dataset}-{prior}.rds", dataset = config["cptac"]["datasets"], prior = config["cptac"]["normalisation_PKNs"], normalisation = config["cptac"]["normalisation"])
 
 rule predicted:
     input:
         expand("results/03_benchmark/{dataset}/02_benchmark_res_subset/predicted/{PKN}/bench_{hernandez_methods}-{PKN}.csv", dataset = ["hernandez", "hijazi", "merged"], hernandez_methods = config["perturbation"]["methods_subset"], PKN = config["perturbation"]["predicted"]),
-        expand("results/03_benchmark/{dataset}/02_benchmark_res_subset/johnson/{PKN}/bench_{hernandez_methods}-{PKN}.csv", dataset = ["hernandez", "hijazi", "merged"], hernandez_methods = config["perturbation"]["methods_johnson"], PKN = config["perturbation"]["johnson"])
+        #expand("results/03_benchmark/{dataset}/02_benchmark_res_subset/johnson/{PKN}/bench_{hernandez_methods}-{PKN}.csv", dataset = ["hernandez", "hijazi", "merged"], hernandez_methods = config["perturbation"]["methods_johnson"], PKN = config["perturbation"]["johnson"])
 
 rule figures:
     input:
@@ -54,16 +60,23 @@ module processing_hernandez:
 use rule * from processing_hernandez as processing_hernandez_*
 
 # Module for hijazi processing
+module processing_hijazi:
+    snakefile: "rules/processing_hijazi.smk"
+    config: config
+use rule * from processing_hijazi as processing_hijazi_*
+
+# Module for activity estimation
 module activity_estimation:
     snakefile: "rules/activity_estimation.smk"
     config: config
 use rule * from activity_estimation as activity_estimation_*
 
-# Module for activity estimation
-module processing_hijazi:
-    snakefile: "rules/processing_hijazi.smk"
+# Module for activity estimation cptac
+module activity_estimation_cptac:
+    snakefile: "rules/activity_estimation_cptac.smk"
     config: config
-use rule * from processing_hijazi as processing_hijazi_*
+use rule * from activity_estimation_cptac as activity_estimation_cptac_*
+
 
 # Module for benchmark
 module benchmark:
