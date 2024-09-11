@@ -51,7 +51,8 @@ results <- future_map_dfr(1:ncol(phospho), function(i){
   run_fgsea(mat = as.matrix(mat_i), network = prior, minsize = minsize) %>%
     dplyr::select(c(source, condition, score, statistic)) %>%
     dplyr::rename("method" = "statistic")
-})
+}) %>%
+  dplyr::filter(method == "fgsea")
 
 ## Save results ---------------------------
 write_csv(results, output_file)
