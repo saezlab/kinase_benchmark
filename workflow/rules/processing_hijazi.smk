@@ -27,7 +27,7 @@ rule map_priors:
     output:
         tsv = temp("results/01_processed_data/hijazi/mapped_priors/{prior}.tsv")
     wildcard_constraints:
-        prior = '[a-zA-Z0-9]+'
+        prior = '(?!shuffled)[a-zA-Z0-9]+'
     conda:
         "../envs/phospho.yml"
     script:

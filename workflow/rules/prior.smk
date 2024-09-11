@@ -128,6 +128,19 @@ rule merge_GPS_PPSP:
     script:
         "../scripts/00_prior_processing/02.1_merge_GPS_PPSP.R"
 
+rule merge_GPS_PPSP_omni:
+    input:
+        gps = "results/00_prior/raw/GPS.tsv",
+        ppsp = "results/00_prior/raw/phosphositeplus.tsv",
+        ptmsig = "results/00_prior/raw/ptmsigdb.tsv",
+        omnipath = "results/00_prior/raw/omnipath.tsv"
+    output:
+        merged = temp("results/00_prior/raw/combined.tsv")
+    conda:
+        "../envs/phospho.yml"
+    script:
+        "../scripts/00_prior_processing/02.1_merge_GPS_PPSP_omni.R"
+
 rule merge_known_predicted:
     input:
         known_file = "results/00_prior/{known_targets}.tsv",

@@ -11,7 +11,7 @@ cptac:
   normalisation_PKNs: ["phosphositeplus"]
 
 perturbation:
-  PKNs: ["omnipath", "phosphositeplus", "ptmsigdb", "GPS", "iKiPdb", "networkin", "shuffled", "johnson15"]
+  PKNs: ["omnipath", "phosphositeplus", "ptmsigdb", "GPS", "iKiPdb", "networkin", "shuffled", "GSknown", "combined"]
   predicted: ["phosphositeplus", "phosphositeplus_networkin", "phosphositeplus_iKiPdb"]
   johnson: ["phosphositeplus", "phosphositeplus_johnson15", "phosphositeplus_phosformer15"]
   all: ["omnipath", "phosphositeplus", "ptmsigdb", "GPS", "iKiPdb", "networkin", "shuffled", "johnson15", "phosformer15", "phosphositeplus_networkin", "phosphositeplus_iKiPdb", "phosphositeplus_johnson15", "phosphositeplus_phosformer15"]
