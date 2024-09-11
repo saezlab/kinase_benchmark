@@ -4,7 +4,7 @@
 # ------------------------------ PRIOR PREPARATION ------------------------------
 rule prepare_omnipath:
     output:
-        tsv = "results/00_prior/raw/omnipath.tsv"
+        tsv = temp("results/00_prior/raw/omnipath.tsv")
     conda:
         "../envs/phospho.yml"
     script:
@@ -14,7 +14,7 @@ rule prepare_phosphositeplus:
     input:
         ppsp = "data/kinase_libraries/prior/phosphositeplus"
     output:
-        tsv = "results/00_prior/raw/phosphositeplus.tsv"
+        tsv = temp("results/00_prior/raw/phosphositeplus.tsv")
     conda:
         "../envs/phospho.yml"
     script:
@@ -24,7 +24,7 @@ rule prepare_ptmsigdb:
     input:
         ptmsig = "data/kinase_libraries/prior/ptm.sig.db.all.uniprot.human.v2.0.0.gmt"
     output:
-        tsv = "results/00_prior/raw/ptmsigdb.tsv"
+        tsv = temp("results/00_prior/raw/ptmsigdb.tsv")
     conda:
         "../envs/phospho.yml"
     script:
@@ -34,7 +34,7 @@ rule prepare_ikipdb:
     input:
         ikip = "data/kinase_libraries/prior/iKiP-DB-Table.tsv"
     output:
-        tsv = "results/00_prior/raw/iKiPdb.tsv"
+        tsv = temp("results/00_prior/raw/iKiPdb.tsv")
     conda:
         "../envs/phospho.yml"
     script:
@@ -44,7 +44,7 @@ rule prepare_GPS:
     input:
         GPS_file = "data/kinase_libraries/prior/mmc4.xlsx"
     output:
-        tsv = "results/00_prior/raw/GPS.tsv"
+        tsv = temp("results/00_prior/raw/GPS.tsv")
     conda:
         "../envs/phospho.yml"
     script:
@@ -54,7 +54,7 @@ rule prepare_NetworKIN:
     input:
         networkin_file = "data/kinase_libraries/prior/networkin_human_predictions_3.1.tsv"
     output:
-        tsv = "results/00_prior/raw/networkin.tsv"
+        tsv = temp("results/00_prior/raw/networkin.tsv")
     params:
     	score = 5
     conda:
@@ -69,7 +69,7 @@ rule prepare_johnson:
     params:
         perc = lambda w: w.perc
     output:
-        tsv = "results/00_prior/raw/johnson{perc}.tsv"
+        tsv = temp("results/00_prior/raw/johnson{perc}.tsv")
     conda:
         "../envs/phospho.yml"
     script:
@@ -79,7 +79,7 @@ rule prepare_phosformer:
     input:
         ppsp = "data/kinase_libraries/phosformer/phosformer_results_{nkin}.csv"
     output:
-        tsv = "results/00_prior/raw/phosformer{nkin}.tsv"
+        tsv = temp("results/00_prior/raw/phosformer{nkin}.tsv")
     conda:
         "../envs/phospho.yml"
     script:
@@ -87,9 +87,9 @@ rule prepare_phosformer:
 
 rule shuffle_net:
     input:
-        tsv = "results/00_prior/raw/phosphositeplus.tsv"
+        tsv = "results/01_processed_data/{dataset}/mapped_priors/phosphositeplus.tsv"
     output:
-        shuffled = "results/00_prior/raw/shuffled.tsv"
+        shuffled = "results/01_processed_data/{dataset}/mapped_priors/shuffled.tsv"
     conda:
         "../envs/phospho.yml"
     script:
@@ -122,7 +122,7 @@ rule merge_GPS_PPSP:
         ppsp = "results/00_prior/raw/phosphositeplus.tsv",
         ptmsig = "results/00_prior/raw/ptmsigdb.tsv"
     output:
-        merged = "results/00_prior/raw/GSknown.tsv"
+        merged = temp("results/00_prior/raw/GSknown.tsv")
     conda:
         "../envs/phospho.yml"
     script:
@@ -159,7 +159,7 @@ rule filter_prior:
     output:
         filter = "results/00_prior/{prior}.tsv"
     wildcard_constraints:
-        prior = '[a-zA-Z0-9]+'
+        prior = '(?!shuffled)[a-zA-Z0-9]+'
     conda:
         "../envs/phospho.yml"
     script:
