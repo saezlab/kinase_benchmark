@@ -3,9 +3,9 @@ if(exists("snakemake")){
   dataset <- snakemake@input$file_dataset
   output_file <- snakemake@output$tsv
 }else{
-  ppsp_file <- "results/prior/phosphositeplus.tsv"
-  output_file <- "results/hijazi/02_prior/phosphositeplus.tsv"
-  dataset <- "results/hijazi/01_processed_data/benchmark_data.csv"
+  ppsp_file <- "results/00_prior/phosphositeplus.tsv"
+  output_file <- "results/01_processed_data/hijazi/mapped_priors/phosphositeplus.tsv"
+  dataset <- "results/01_processed_data/hijazi/data/benchmark_data.csv"
 }
 
 ## Libraries ---------------------------
@@ -45,6 +45,10 @@ prior_df <- mapped_prior %>%
   dplyr::mutate(mor = 1) %>%
   dplyr::select(source, target, mor) %>%
   distinct()
+
+# Filter for mapped targets
+prior_df <- prior_df %>%
+  dplyr::filter(str_detect(target, "\\|.*\\|"))
 
 ## Save processed phosphositeplus
 write_tsv(prior_df, output_file)
