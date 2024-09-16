@@ -3,12 +3,31 @@ rm_auto = True
 minsize = 5
 threads = 3
 
+rule run_chisq:
+    input:
+        file_dataset="results/01_processed_data/{dataset}/data/benchmark_data.csv",
+        file_PKN="results/01_processed_data/{dataset}/mapped_priors/{PKN}.tsv",
+        scripts="workflow/scripts/methods/run_chisq.R",
+        script_support="workflow/scripts/methods/support_functions.R"
+    output:
+        rds="results/02_activity_scores/{dataset}/chisq/{PKN}.csv"
+    params:
+        rm_auto=rm_auto,
+        minsize=minsize,
+        background=20000
+    threads:
+        threads
+    conda:
+        "../envs/phospho.yml"
+    script:
+        "../scripts/02_kinase_activity_estimation/01_chisq.R"
+        
 rule run_fgsea:
     input:
         file_dataset="results/01_processed_data/{dataset}/data/benchmark_data.csv",
         file_PKN="results/01_processed_data/{dataset}/mapped_priors/{PKN}.tsv"
     output:
-        rds=temp("results/02_activity_scores/{dataset}/fgsea/{PKN}.csv")
+        rds="results/02_activity_scores/{dataset}/fgsea/{PKN}.csv"
     params:
         rm_auto=rm_auto,
         minsize=minsize
@@ -19,6 +38,23 @@ rule run_fgsea:
     script:
         "../scripts/02_kinase_activity_estimation/01_fgsea.R"
 
+rule run_fisher:
+    input:
+        file_dataset="results/01_processed_data/{dataset}/data/benchmark_data.csv",
+        file_PKN="results/01_processed_data/{dataset}/mapped_priors/{PKN}.tsv
+    output:
+        rds="results/02_activity_scores/{dataset}/fisher/{PKN}.csv"
+    params:
+        rm_auto=rm_auto,
+        minsize=minsize,
+        background=20000
+    threads:
+        threads
+    conda:
+        "../envs/phospho.yml"
+    script:
+        "../scripts/02_kinase_activity_estimation/01_fisher.R"
+
 rule run_INKA:
     input:
         file_dataset="results/01_processed_data/{dataset}/data/benchmark_data.csv",
@@ -26,7 +62,7 @@ rule run_INKA:
         scripts="workflow/scripts/methods/run_INKA.R",
         script_support="workflow/scripts/methods/support_functions.R"
     output:
-        rds=temp("results/02_activity_scores/{dataset}/INKA/{PKN}.csv")
+        rds="results/02_activity_scores/{dataset}/INKA/{PKN}.csv"
     params:
         rm_auto=rm_auto,
         minsize=minsize
@@ -44,7 +80,7 @@ rule run_KARP:
         scripts="workflow/scripts/methods/run_KARP.R",
         script_support="workflow/scripts/methods/support_functions.R"
     output:
-        rds=temp("results/02_activity_scores/{dataset}/KARP/{PKN}.csv")
+        rds="results/02_activity_scores/{dataset}/KARP/{PKN}.csv"
     params:
         rm_auto=rm_auto,
         minsize=minsize
@@ -62,7 +98,7 @@ rule run_KSEA:
         scripts="workflow/scripts/methods/run_zscore.R",
         script_support="workflow/scripts/methods/support_functions.R"
     output:
-        rds=temp("results/02_activity_scores/{dataset}/KSEA/{PKN}.csv")
+        rds="results/02_activity_scores/{dataset}/KSEA/{PKN}.csv"
     params:
         rm_auto=rm_auto,
         minsize=minsize
@@ -80,7 +116,7 @@ rule run_lmRoKAI:
         scripts="workflow/scripts/methods/run_lm_rokai.R",
         script_support="workflow/scripts/methods/support_functions.R"
     output:
-        rds=temp("results/02_activity_scores/{dataset}/lmRoKAI/{PKN}.csv")
+        rds="results/02_activity_scores/{dataset}/lmRoKAI/{PKN}.csv"
     params:
         rm_auto=rm_auto,
         minsize=minsize
@@ -96,7 +132,7 @@ rule run_mean:
         file_dataset="results/01_processed_data/{dataset}/data/benchmark_data.csv",
         file_PKN="results/01_processed_data/{dataset}/mapped_priors/{PKN}.tsv"
     output:
-        rds=temp("results/02_activity_scores/{dataset}/mean/{PKN}.csv")
+        rds="results/02_activity_scores/{dataset}/mean/{PKN}.csv"
     params:
         rm_auto=rm_auto,
         minsize=minsize
@@ -113,7 +149,7 @@ rule run_misc:
         file_PKN="results/01_processed_data/{dataset}/mapped_priors/{PKN}.tsv",
         scripts="workflow/scripts/methods/run_erics_methods.R"
     output:
-        rds=temp("results/02_activity_scores/{dataset}/misc/{PKN}.csv")
+        rds="results/02_activity_scores/{dataset}/misc/{PKN}.csv"
     params:
         rm_auto=rm_auto,
         minsize=minsize
@@ -127,7 +163,7 @@ rule run_mlm:
         file_dataset="results/01_processed_data/{dataset}/data/benchmark_data.csv",
         file_PKN="results/01_processed_data/{dataset}/mapped_priors/{PKN}.tsv"
     output:
-        rds=temp("results/02_activity_scores/{dataset}/mlm/{PKN}.csv")
+        rds="results/02_activity_scores/{dataset}/mlm/{PKN}.csv"
     params:
         rm_auto=rm_auto,
         minsize=minsize
@@ -144,7 +180,7 @@ rule run_ptmsea:
         file_PKN="results/01_processed_data/{dataset}/mapped_priors/ptm-sea/{PKN}.gmt"
     output:
         log=temp("results/02_activity_scores/{dataset}/ptmsea/res/log/{PKN}.log"),
-        rds=temp("results/02_activity_scores/{dataset}/ptmsea/{PKN}.csv")
+        rds="results/02_activity_scores/{dataset}/ptmsea/{PKN}.csv"
     params:
         output_folder=temp("results/02_activity_scores/{dataset}/ptmsea/res"),
         minsize=minsize
@@ -158,7 +194,7 @@ rule run_ulm:
         file_dataset="results/01_processed_data/{dataset}/data/benchmark_data.csv",
         file_PKN="results/01_processed_data/{dataset}/mapped_priors/{PKN}.tsv"
     output:
-        rds=temp("results/02_activity_scores/{dataset}/ulm/{PKN}.csv")
+        rds="results/02_activity_scores/{dataset}/ulm/{PKN}.csv"
     params:
         rm_auto=rm_auto,
         minsize=minsize
@@ -174,7 +210,7 @@ rule run_viper:
         file_dataset="results/01_processed_data/{dataset}/data/benchmark_data.csv",
         file_PKN="results/01_processed_data/{dataset}/mapped_priors/{PKN}.tsv"
     output:
-        rds=temp("results/02_activity_scores/{dataset}/viper/{PKN}.csv")
+        rds="results/02_activity_scores/{dataset}/viper/{PKN}.csv"
     params:
         rm_auto=rm_auto,
         minsize=minsize
@@ -192,7 +228,7 @@ rule run_zscore:
         scripts="workflow/scripts/methods/run_zscore.R",
         script_support="workflow/scripts/methods/support_functions.R"
     output:
-        rds=temp("results/02_activity_scores/{dataset}/zscore/{PKN}.csv")
+        rds="results/02_activity_scores/{dataset}/zscore/{PKN}.csv"
     params:
         rm_auto=rm_auto,
         minsize=minsize
