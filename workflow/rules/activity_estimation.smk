@@ -41,7 +41,7 @@ rule run_fgsea:
 rule run_fisher:
     input:
         file_dataset="results/01_processed_data/{dataset}/data/benchmark_data.csv",
-        file_PKN="results/01_processed_data/{dataset}/mapped_priors/{PKN}.tsv
+        file_PKN="results/01_processed_data/{dataset}/mapped_priors/{PKN}.tsv"
     output:
         rds="results/02_activity_scores/{dataset}/fisher/{PKN}.csv"
     params:

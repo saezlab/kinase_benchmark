@@ -98,7 +98,7 @@ rule run_KSEA:
         scripts="workflow/scripts/methods/run_zscore.R",
         script_support="workflow/scripts/methods/support_functions.R"
     output:
-        rds="results/02_activity_scores/cptac/KSEA/{normalisation}/{dataset}-{PKN}.csv")
+        rds="results/02_activity_scores/cptac/KSEA/{normalisation}/{dataset}-{PKN}.csv"
     params:
         rm_auto=rm_auto,
         minsize=minsize
