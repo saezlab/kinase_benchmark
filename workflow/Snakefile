@@ -16,12 +16,11 @@ rule priors:
 rule activity:
     input:
         expand("results/02_activity_scores/hernandez/scores/{prior}.rds", prior = config["perturbation"]["PKNs"]),
-        expand("results/02_activity_scores/hijazi/scores/{prior}.rds", prior = config["perturbation"]["PKNs"]),
-        expand("results/02_activity_scores/cptac/scores/original/{dataset}-{prior}.rds", dataset = config["cptac"]["datasets"], prior = config["perturbation"]["PKNs"])
+        expand("results/02_activity_scores/hijazi/scores/{prior}.rds", prior = config["perturbation"]["PKNs"])
 
 rule cptac:
     input:
-        expand("results/02_activity_scores/cptac/scores/original/{dataset}-phosphositeplus.rds", dataset = config["cptac"]["datasets"])
+        expand("results/02_activity_scores/cptac/scores/original/{dataset}-{prior}.rds", dataset = config["cptac"]["datasets"], prior = config["perturbation"]["PKNs"])
 
 rule normalisation:
     input:
@@ -33,8 +32,13 @@ rule predicted:
         #expand("results/03_benchmark/{dataset}/02_benchmark_res_subset/johnson/{PKN}/bench_{hernandez_methods}-{PKN}.csv", dataset = ["hernandez", "hijazi", "merged"], hernandez_methods = config["perturbation"]["methods_johnson"], PKN = config["perturbation"]["johnson"])
 
 rule rank:
-    inpit:
-       expand("results/03_benchmark/{dataset}/02_mean_rank/{PKN}/{hernandez_methods}-{PKN}.csv", hernandez_methods = config["perturbation"]["methods_subset"], PKN = config["perturbation"]["PKNs"])
+    input:
+       expand("results/03_benchmark/{dataset}/02_mean_rank/{PKN}/{hernandez_methods}-{PKN}.csv", dataset = ["hernandez", "hijazi", "merged"], hernandez_methods = config["perturbation"]["methods_subset"], PKN = config["perturbation"]["PKNs"])
+
+rule tmp:
+    input:
+       expand("results/03_benchmark/{dataset}/02_mean_rank/plots/{method}-{PKN}_targets.pdf", dataset = ["hernandez", "hijazi", "merged"], hernandez_methods = config["perturbation"]["methods_subset"], PKN = config["perturbation"]["PKNs"])
+
 
 rule figures:
     input:
@@ -81,12 +85,17 @@ module activity_estimation_cptac:
     config: config
 use rule * from activity_estimation_cptac as activity_estimation_cptac_*
 
-
 # Module for benchmark
 module benchmark:
     snakefile: "rules/benchmark.smk"
     config: config
 use rule * from benchmark as benchmark_*
+
+# Module for exploration
+module exploration:
+    snakefile: "rules/exploration.smk"
+    config: config
+use rule * from exploration as exploration_*
 
 # Module for figures
 module figures:
