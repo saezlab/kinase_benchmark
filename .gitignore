@@ -55,6 +55,7 @@ data/*
 logs/
 plots/
 results/
+resources/
 
 # Snakemake stuff
 .snakemake/

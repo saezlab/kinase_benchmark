@@ -177,5 +177,15 @@ rule filter_prior:
         "../envs/phospho.yml"
     script:
         "../scripts/00_prior_processing/03_filter_priors.R"
+        
+rule kinase_class:
+    input:
+        prior = expand("results/00_prior/{PKN}.tsv", PKN = config["perturbation"]["PKNs"])
+    output:
+        out = "resources/kinase_class.csv"
+    conda:
+        "../envs/phospho.yml"
+    script:
+        "../scripts/00_prior_processing/03_generate_kinaseClass.R"
 
 
