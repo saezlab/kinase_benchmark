@@ -3,10 +3,14 @@
 ## Snakemake ---------------------------
 if(exists("snakemake")){
   input_files <- snakemake@input$scores
+  target_files <- snakemake@input$target
+  kinase_file <- snakemake@input$kinclass
   meta_input <- snakemake@input$meta
   rank_out <- snakemake@output$output
 }else{
   input_files <- "results/03_benchmark/hernandez/01_input_bench/fgsea-GPS.csv"
+  target_files <- "results/02_activity_scores/hernandez/misc/GPS.csv"
+  kinase_file <- "resources/kinase_class.csv"
   meta_input <- "results/03_benchmark/hernandez/01_input_bench/obs_fgsea-GPS.csv"
   rank_out <- "results/03_benchmark/hernandez/02_mean_rank/GPS/fgsea-GPS.csv"
 }
@@ -17,12 +21,20 @@ library(tidyverse)
 ## Load scores and meta ---------------------------
 method_act <- read_csv(input_files, col_types = cols()) %>%
   column_to_rownames("experiment")
+targets <- read_csv(target_files, col_types = cols()) %>%
+  dplyr::filter(method == "number_of_targets") %>%
+  dplyr::rename("targets" = source, "sample" = condition, "measured_targets" = score) %>%
+  dplyr::select(!method)
 
 obs <- read_csv(meta_input, col_types = cols())
 
 net <- str_split(str_remove(str_split(input_files, "/")[[1]][5], ".csv"), "-")[[1]][2]
 meth <- str_split(str_remove(str_split(input_files, "/")[[1]][5], ".csv"), "-")[[1]][1]
 
+kinase_class <- read_csv(kinase_file, col_types = cols()) %>%
+  dplyr::filter(resource == net) %>%
+  dplyr::select(Var1, kinase) %>%
+  dplyr::rename("targets" = Var1, "class" = kinase)
 
 ## Get rank ---------------------------
 method_act_long <- method_act %>%
@@ -63,6 +75,15 @@ rank_df <- map_dfr(unique(method_act_long$sample), function(exp){
   }
 })
 
+rank_targets_df <- left_join(rank_df, targets, by = c("sample", "targets")) %>%
+  filter(!is.na(rank)) %>%
+  mutate(target_size = case_when(
+    measured_targets < 10 ~ "small",
+    measured_targets >= 10 & measured_targets < 20 ~ "medium",
+    measured_targets >= 20 ~ "large"
+  ))
+
+rank_targets_df <- left_join(rank_targets_df, kinase_class, by = c("targets"))
 
 ## Get rank ---------------------------
-write_csv(rank_df, rank_out)
+write_csv(rank_targets_df, rank_out)

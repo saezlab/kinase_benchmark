@@ -2,10 +2,10 @@
 # -------------------------------------- BENCHMARK ---------------------------------------
 rule merge_scores:
     input:
-        rds =  "results/02_activity_scores/hijazi/final_scores/{PKN}.rds",
-        hernandez = "results/02_activity_scores/hernandez/final_scores/{PKN}.rds"
+        rds =  "results/02_activity_scores/hijazi/scores/{PKN}.rds",
+        hernandez = "results/02_activity_scores/hernandez/scores/{PKN}.rds"
     output:
-        output = "results/02_activity_scores/merged/final_scores/{PKN}.rds"
+        output = "results/02_activity_scores/merged/scores/{PKN}.rds"
     conda:
         "../envs/phospho.yml"
     script:
@@ -24,11 +24,11 @@ rule merge_meta:
 
 rule prepare_benchmark:
     input:
-        rds = "results/02_activity_scores/{dataset}/final_scores/{PKN}.rds",
+        rds = "results/02_activity_scores/{dataset}/scores/{PKN}.rds",
         meta = "results/01_processed_data/{dataset}/data/benchmark_metadata.csv"
     output:
-        output = "results/03_benchmark/{dataset}/01_input_bench/{hernandez_methods}-{PKN}.csv",
-        meta_out = "results/03_benchmark/{dataset}/01_input_bench/obs_{hernandez_methods}-{PKN}.csv"
+        output = temp("results/03_benchmark/{dataset}/01_input_bench/{hernandez_methods}-{PKN}.csv"),
+        meta_out = temp("results/03_benchmark/{dataset}/01_input_bench/obs_{hernandez_methods}-{PKN}.csv")
     params:
         rm_exp = "F",
         scale = "T"
@@ -51,7 +51,9 @@ rule run_benchmark:
 rule mean_rank:
     input:
         scores = "results/03_benchmark/{dataset}/01_input_bench/{hernandez_methods}-{PKN}.csv",
-        meta = "results/03_benchmark/{dataset}/01_input_bench/obs_{hernandez_methods}-{PKN}.csv"
+        meta = "results/03_benchmark/{dataset}/01_input_bench/obs_{hernandez_methods}-{PKN}.csv",
+        target = "results/02_activity_scores/hernandez/misc/{PKN}.csv",
+        kinclass = "resources/kinase_class.csv"
     output:
         output = "results/03_benchmark/{dataset}/02_mean_rank/{PKN}/{hernandez_methods}-{PKN}.csv"
     conda:
@@ -98,7 +100,7 @@ rule generate_subset:
     params:
     	  subset = lambda w: w.subset
     output:
-        output = "results/03_benchmark/{dataset}/01_input_bench_subset/{subset}/filter_subset.csv"
+        output = temp("results/03_benchmark/{dataset}/01_input_bench_subset/{subset}/filter_subset.csv")
     conda:
         "../envs/phospho.yml"
     script:
@@ -112,8 +114,8 @@ rule prepare_subset:
     params:
     	  subset = lambda w: w.subset
     output:
-        output = "results/03_benchmark/{dataset}/01_input_bench_subset/{subset}/{methods}-{PKNs}.csv",
-        meta_out = "results/03_benchmark/{dataset}/01_input_bench_subset/{subset}/obs_{methods}-{PKNs}.csv"
+        output = temp("results/03_benchmark/{dataset}/01_input_bench_subset/{subset}/{methods}-{PKNs}.csv"),
+        meta_out = temp("results/03_benchmark/{dataset}/01_input_bench_subset/{subset}/obs_{methods}-{PKNs}.csv")
     conda:
         "../envs/phospho.yml"
     script:
