@@ -3,6 +3,8 @@ if(exists("snakemake")){
   PKN <- snakemake@input$file_PKN
   PKN_name <- snakemake@wildcards$PKN
   output_file <- snakemake@output$rds
+  scripts_method <- snakemake@input$scripts
+  script_support <- snakemake@input$script_support
   remove_auto <- snakemake@params$rm_auto
   minsize <- snakemake@params$minsize
   background <- snakemake@params$background
