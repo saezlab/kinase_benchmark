@@ -95,6 +95,16 @@ rule shuffle_net:
     script:
         "../scripts/00_prior_processing/01.9_shuffle_network.R"
 
+rule shuffle_net2:
+    input:
+        tsv = "results/01_processed_data/{dataset}/mapped_priors/phosphositeplus.tsv"
+    output:
+        shuffled = "results/01_processed_data/{dataset}/mapped_priors/shuffled2.tsv"
+    conda:
+        "../envs/phospho.yml"
+    script:
+        "../scripts/00_prior_processing/01.9_shuffle_network_2.R"
+
 rule shuffle_NetworKIN:
     input:
         tsv = "results/00_prior/merged/phosphositeplus_networkin.tsv"
