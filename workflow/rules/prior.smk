@@ -188,9 +188,21 @@ rule filter_prior:
     script:
         "../scripts/00_prior_processing/03_filter_priors.R"
         
+rule download_kinase_class:
+    output:
+        out = "data/misc/reference_human_kinases.csv"
+    params:
+        file = "https://raw.githubusercontent.com/esbgkannan/phosformer/main/data/reference_human_kinases.csv"
+    shell:
+        """
+        echo "Downloading kinase class"
+        wget '{params.file}' -O '{output.out}'
+        """
+
 rule kinase_class:
     input:
-        prior = expand("results/00_prior/{PKN}.tsv", PKN = config["perturbation"]["PKNs"])
+        prior = expand("results/00_prior/{PKN}.tsv", PKN = config["perturbation"]["PKNs"]),
+        lit = "data/misc/reference_human_kinases.csv"
     output:
         out = "resources/kinase_class.csv"
     conda:
