@@ -52,7 +52,7 @@ rule mean_rank:
     input:
         scores = "results/03_benchmark/{dataset}/01_input_bench/{hernandez_methods}-{PKN}.csv",
         meta = "results/03_benchmark/{dataset}/01_input_bench/obs_{hernandez_methods}-{PKN}.csv",
-        target = "results/02_activity_scores/hernandez/misc/{PKN}.csv",
+        target = "results/02_activity_scores/{dataset}/misc/{PKN}.csv",
         kinclass = "resources/kinase_class.csv"
     output:
         output = "results/03_benchmark/{dataset}/02_mean_rank/{PKN}/{hernandez_methods}-{PKN}.csv"
