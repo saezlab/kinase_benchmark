@@ -33,12 +33,7 @@ rule predicted:
 
 rule rank:
     input:
-       expand("results/03_benchmark/{dataset}/02_mean_rank/{PKN}/{hernandez_methods}-{PKN}.csv", dataset = ["hernandez", "hijazi", "merged"], hernandez_methods = config["perturbation"]["methods_subset"], PKN = config["perturbation"]["PKNs"])
-
-rule tmp:
-    input:
-       expand("results/03_benchmark/{dataset}/02_mean_rank/plots/{method}-{PKN}_targets.pdf", dataset = ["hernandez", "hijazi", "merged"], method = config["perturbation"]["methods_subset"], PKN = config["perturbation"]["PKNs"])
-
+       expand("results/03_benchmark/{dataset}/02_mean_rank/{PKN}/{hernandez_methods}-{PKN}.csv", dataset = ["hernandez", "hijazi", "merged"], hernandez_methods = config["perturbation"]["methods"], PKN = config["perturbation"]["PKNs"])
 
 rule figures:
     input:
