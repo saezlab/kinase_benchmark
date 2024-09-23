@@ -57,14 +57,14 @@ results <- future_map_dfr(1:ncol(phospho), function(i){
     dplyr::select(c(source, condition, score, statistic)) %>%
     dplyr::rename("method" = "statistic") %>%
     dplyr::mutate(method = recode(method,
-                                 "ora" = "fisher.test"))
+                                 "ora" = "fisher"))
 
   down <- run_ora(mat = as.matrix(mat_i), network = prior, minsize = minsize, n_background = background, n_bottom = n_bottom, n_up = 0) %>%
     dplyr::select(c(source, condition, score, statistic)) %>%
     dplyr::rename("method" = "statistic") %>%
     dplyr::mutate(score = -score) %>%
     dplyr::mutate(method = recode(method,
-                                 "ora" = "fisher.test"))
+                                 "ora" = "fisher"))
 
   df <- rbind(up, down) %>%
     group_by(source, condition) %>%

@@ -3,17 +3,17 @@ if(exists("snakemake")){
   PKN <- snakemake@input$file_PKN
   PKN_name <- snakemake@wildcards$PKN
   output_file <- snakemake@output$rds
-  scripts_method <- snakemake@input$scripts
   remove_auto <- snakemake@params$rm_auto
   minsize <- snakemake@params$minsize
+  cores <- snakemake@threads[[1]]
 }else{
   dataset <- "results/01_processed_data/hernandez/data/benchmark_data.csv"
   PKN <- "results/01_processed_data/hernandez/mapped_priors/phosphositeplus.tsv"
   PKN_name <- "phosphositeplus"
-  output_file <- "results/02_activity_scores/hernandez/KARP/ptmsigdb.csv"
+  output_file <- "results/02_activity_scores/hernandez/mean/ptmsigdb.csv"
   remove_auto <- T
-  scripts_method <- "workflow/scripts/methods/run_erics_methods.R"
   minsize <- 3
+  cores <- 1
 }
 
 minsize <- as.double(minsize)
@@ -22,7 +22,7 @@ minsize <- as.double(minsize)
 library(decoupleR)
 library(tidyverse)
 library(tidyselect)
-source(scripts_method)
+library(furrr)
 
 ## Load data ---------------------------
 ### phosphoproteomics
@@ -39,17 +39,21 @@ if (!remove_auto){
     dplyr::mutate(target = str_remove(target, "\\|auto"))
 }
 
+#defining parallelisation
+plan(multisession, workers = cores)
+
 ## Kinase activity estimation ---------------------------
-results_wide <- calculate_Kinase_Activity(mat = phospho, network = prior, min_sites = minsize)
-results_long <- map_dfr(names(results_wide), function(method_i){
-  tidyr::pivot_longer(results_wide[[method_i]] %>%
-                        as.data.frame() %>%
-                        rownames_to_column("source"),
-                      !source,  names_to = "condition", values_to = "score") %>%
-    add_column(method = method_i)
+results <- future_map_dfr(1:ncol(phospho), function(i){
+  mat_i <- phospho[, i, drop = FALSE] %>%
+    drop_na()
+
+  # run activity estimation methods
+  run_wmean(mat = as.matrix(mat_i), network = prior, minsize = minsize) %>%
+    dplyr::select(c(source, condition, score, statistic)) %>%
+    dplyr::rename("method" = "statistic")
 }) %>%
-  dplyr::filter(method == "mean") %>%
-  dplyr::filter(!is.na(score))
+  dplyr::filter(method == "norm_wmean") %>%
+  dplyr::mutate(method = recocde(method, norm_wmean = "norm_mean"))
 
 ## Save results ---------------------------
-write_csv(results_long, output_file)
+write_csv(results, output_file)

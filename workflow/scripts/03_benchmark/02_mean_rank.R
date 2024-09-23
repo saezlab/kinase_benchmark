@@ -8,11 +8,11 @@ if(exists("snakemake")){
   meta_input <- snakemake@input$meta
   rank_out <- snakemake@output$output
 }else{
-  input_files <- "results/03_benchmark/hernandez/01_input_bench/fgsea-GPS.csv"
+  input_files <- "results/03_benchmark/hernandez/01_input_bench/KS-GPS.csv"
   target_files <- "results/02_activity_scores/hernandez/misc/GPS.csv"
   kinase_file <- "resources/kinase_class.csv"
-  meta_input <- "results/03_benchmark/hernandez/01_input_bench/obs_fgsea-GPS.csv"
-  rank_out <- "results/03_benchmark/hernandez/02_mean_rank/GPS/fgsea-GPS.csv"
+  meta_input <- "results/03_benchmark/hernandez/01_input_bench/obs_KS-GPS.csv"
+  rank_out <- "results/03_benchmark/hernandez/02_mean_rank/GPS/KS-GPS.csv"
 }
 
 ## Libraries ---------------------------
@@ -33,9 +33,9 @@ meth <- str_split(str_remove(str_split(input_files, "/")[[1]][5], ".csv"), "-")[
 
 kinase_class <- read_csv(kinase_file, col_types = cols()) %>%
   dplyr::filter(resource == net) %>%
-  dplyr::select(Var1, kinase) %>%
-  dplyr::rename("targets" = Var1, "class" = kinase)
-
+  dplyr::select(source, class, kinase, n_targets) %>%
+  dplyr::rename("targets" = source, "resource_class" = kinase)
+  
 ## Get rank ---------------------------
 method_act_long <- method_act %>%
   rownames_to_column("sample") %>%

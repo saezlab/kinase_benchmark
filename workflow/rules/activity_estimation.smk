@@ -91,6 +91,21 @@ rule run_KARP:
     script:
         "../scripts/02_kinase_activity_estimation/01_KARP.R"
 
+rule run_KS:
+    input:
+        file_dataset="results/01_processed_data/{dataset}/data/benchmark_data.csv",
+        file_PKN="results/01_processed_data/{dataset}/mapped_priors/{PKN}.tsv",
+        scripts="workflow/scripts/methods/run_erics_methods.R"
+    output:
+        rds="results/02_activity_scores/{dataset}/KS/{PKN}.csv"
+    params:
+        rm_auto=rm_auto,
+        minsize=minsize
+    conda:
+        "../envs/phospho.yml"
+    script:
+        "../scripts/02_kinase_activity_estimation/01_KS.R"
+
 rule run_KSEA:
     input:
         file_dataset="results/01_processed_data/{dataset}/data/benchmark_data.csv",
@@ -130,33 +145,32 @@ rule run_lmRoKAI:
 rule run_mean:
     input:
         file_dataset="results/01_processed_data/{dataset}/data/benchmark_data.csv",
-        file_PKN="results/01_processed_data/{dataset}/mapped_priors/{PKN}.tsv"
+        file_PKN="results/01_processed_data/{dataset}/mapped_priors/{PKN}.tsv",
+        scripts="workflow/scripts/methods/run_erics_methods.R"
     output:
         rds="results/02_activity_scores/{dataset}/mean/{PKN}.csv"
     params:
         rm_auto=rm_auto,
         minsize=minsize
-    threads:
-        threads
     conda:
         "../envs/phospho.yml"
     script:
         "../scripts/02_kinase_activity_estimation/01_mean.R"
 
-rule run_misc:
+rule run_median:
     input:
         file_dataset="results/01_processed_data/{dataset}/data/benchmark_data.csv",
         file_PKN="results/01_processed_data/{dataset}/mapped_priors/{PKN}.tsv",
         scripts="workflow/scripts/methods/run_erics_methods.R"
     output:
-        rds="results/02_activity_scores/{dataset}/misc/{PKN}.csv"
+        rds="results/02_activity_scores/{dataset}/median/{PKN}.csv"
     params:
         rm_auto=rm_auto,
         minsize=minsize
     conda:
         "../envs/phospho.yml"
     script:
-        "../scripts/02_kinase_activity_estimation/01_misc.R"
+        "../scripts/02_kinase_activity_estimation/01_median.R"
 
 rule run_mlm:
     input:
@@ -173,6 +187,52 @@ rule run_mlm:
         "../envs/phospho.yml"
     script:
         "../scripts/02_kinase_activity_estimation/01_mlm.R"
+
+rule run_norm:
+    input:
+        file_dataset="results/01_processed_data/{dataset}/data/benchmark_data.csv",
+        file_PKN="results/01_processed_data/{dataset}/mapped_priors/{PKN}.tsv"
+    output:
+        rds="results/02_activity_scores/{dataset}/norm_mean/{PKN}.csv"
+    params:
+        rm_auto=rm_auto,
+        minsize=minsize
+    threads:
+        threads
+    conda:
+        "../envs/phospho.yml"
+    script:
+        "../scripts/02_kinase_activity_estimation/01_norm.R"
+
+rule run_number:
+    input:
+        file_dataset="results/01_processed_data/{dataset}/data/benchmark_data.csv",
+        file_PKN="results/01_processed_data/{dataset}/mapped_priors/{PKN}.tsv",
+        scripts="workflow/scripts/methods/run_erics_methods.R"
+    output:
+        rds="results/02_activity_scores/{dataset}/number_of_targets/{PKN}.csv"
+    params:
+        rm_auto=rm_auto,
+        minsize=minsize
+    conda:
+        "../envs/phospho.yml"
+    script:
+        "../scripts/02_kinase_activity_estimation/01_number.R"
+
+rule run_PCA:
+    input:
+        file_dataset="results/01_processed_data/{dataset}/data/benchmark_data.csv",
+        file_PKN="results/01_processed_data/{dataset}/mapped_priors/{PKN}.tsv",
+        scripts="workflow/scripts/methods/run_erics_methods.R"
+    output:
+        rds="results/02_activity_scores/{dataset}/PCA/{PKN}.csv"
+    params:
+        rm_auto=rm_auto,
+        minsize=minsize
+    conda:
+        "../envs/phospho.yml"
+    script:
+        "../scripts/02_kinase_activity_estimation/01_PCA.R"
 
 rule run_ptmsea:
     input:
@@ -205,6 +265,21 @@ rule run_ulm:
     script:
         "../scripts/02_kinase_activity_estimation/01_ulm.R"
 
+rule run_UQ:
+    input:
+        file_dataset="results/01_processed_data/{dataset}/data/benchmark_data.csv",
+        file_PKN="results/01_processed_data/{dataset}/mapped_priors/{PKN}.tsv",
+        scripts="workflow/scripts/methods/run_erics_methods.R"
+    output:
+        rds="results/02_activity_scores/{dataset}/UQ/{PKN}.csv"
+    params:
+        rm_auto=rm_auto,
+        minsize=minsize
+    conda:
+        "../envs/phospho.yml"
+    script:
+        "../scripts/02_kinase_activity_estimation/01_UQ.R"
+
 rule run_viper:
     input:
         file_dataset="results/01_processed_data/{dataset}/data/benchmark_data.csv",
@@ -220,6 +295,21 @@ rule run_viper:
         "../envs/phospho.yml"
     script:
         "../scripts/02_kinase_activity_estimation/01_viper.R"
+
+rule run_wilcox:
+    input:
+        file_dataset="results/01_processed_data/{dataset}/data/benchmark_data.csv",
+        file_PKN="results/01_processed_data/{dataset}/mapped_priors/{PKN}.tsv",
+        scripts="workflow/scripts/methods/run_erics_methods.R"
+    output:
+        rds="results/02_activity_scores/{dataset}/wilcox/{PKN}.csv"
+    params:
+        rm_auto=rm_auto,
+        minsize=minsize
+    conda:
+        "../envs/phospho.yml"
+    script:
+        "../scripts/02_kinase_activity_estimation/01_wilcox.R"
 
 rule run_zscore:
     input:

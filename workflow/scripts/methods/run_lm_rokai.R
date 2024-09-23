@@ -82,7 +82,7 @@ run_lm_rokai <- function(mat,
 
     act <- linear_kinase_activity_inference(V = V, substrates = network_wide, k = k)
 
-    data.frame(source = rownames(network_wide), condition = colnames(mat)[exp], score = act, method ="rokai_lm")
+    data.frame(source = rownames(network_wide), condition = colnames(mat)[exp], score = act, method ="lmRoKAI")
   })
 
   rownames(scores) <- NULL

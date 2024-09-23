@@ -81,6 +81,6 @@ calculate_Kinase_Activity <- function(mat, network, col="source", col2="target",
 
   num_targets[is.na(num_targets)] <- 0
   all_scores <- list(mean_scores, med_scores, uq_scores, pc1_scores, ks_scores, wilcox_scores, num_targets)
-  names(all_scores) <- c("mean","median","UQ","PC1","KS","Wilcox","number_of_targets")
+  names(all_scores) <- c("mean","median","UQ","PCA","KS","wilcox","number_of_targets")
   return(all_scores)
 }

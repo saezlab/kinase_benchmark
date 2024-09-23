@@ -10,7 +10,7 @@ if(exists("snakemake")){
   dataset <- "results/01_processed_data/hernandez/data/benchmark_data.csv"
   PKN <- "results/01_processed_data/hernandez/mapped_priors/phosphositeplus.tsv"
   PKN_name <- "phosphositeplus"
-  output_file <- "results/02_activity_scores/hernandez/KARP/ptmsigdb.csv"
+  output_file <- "results/02_activity_scores/hernandez/wilcox/ptmsigdb.csv"
   remove_auto <- T
   scripts_method <- "workflow/scripts/methods/run_erics_methods.R"
   minsize <- 3
@@ -48,8 +48,10 @@ results_long <- map_dfr(names(results_wide), function(method_i){
                       !source,  names_to = "condition", values_to = "score") %>%
     add_column(method = method_i)
 }) %>%
-  dplyr::filter(method == "mean") %>%
+  dplyr::filter(method == "wilcox") %>%
   dplyr::filter(!is.na(score))
+
+ c("mean","median","UQ","PC1","KS","Wilcox","number_of_targets")
 
 ## Save results ---------------------------
 write_csv(results_long, output_file)

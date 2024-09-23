@@ -69,7 +69,7 @@ run_zscore_RoKAI <- function(mat,
     kinaseScores <- (as.matrix(kin_sub_f) %*% V_f) / (S * sqrt(abs(as.matrix(kin_sub_f)) %*% rep(1, length(V_f))))
     kinaseScores <- kinaseScores[!is.na(kinaseScores),]
 
-    data.frame(source = names(kinaseScores), condition = colnames(V), score = as.numeric(as.vector(kinaseScores)), method ="RoKAI_z")
+    data.frame(source = names(kinaseScores), condition = colnames(V), score = as.numeric(as.vector(kinaseScores)), method ="zscore")
   })
 
   rownames(scores) <- NULL
@@ -158,7 +158,7 @@ run_zscore_KSEA <- function(mat,
     Mean.FC$FDR <- p.adjust(Mean.FC$p.value, method = "fdr")
     Mean.FC <- Mean.FC[order(Mean.FC$source), -2]
 
-    data.frame(source = Mean.FC$source, condition = colnames(mat_c)[2], score = Mean.FC$z.score, method ="KSEA_z")
+    data.frame(source = Mean.FC$source, condition = colnames(mat_c)[2], score = Mean.FC$z.score, method ="KSEA")
 
   })
   rownames(scores) <- NULL
