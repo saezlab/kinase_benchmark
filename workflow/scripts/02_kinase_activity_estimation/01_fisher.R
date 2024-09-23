@@ -48,14 +48,31 @@ plan(multisession, workers = cores)
 results <- future_map_dfr(1:ncol(phospho), function(i){
   mat_i <- phospho[, i, drop = FALSE] %>%
     drop_na()
-  mat_i <- abs(mat_i)
 
-  # run activity estimation methods
-  run_ora(mat = as.matrix(mat_i), network = prior, minsize = minsize, n_background = background) %>%
+  n_up <- sum(mat_i[ , 1] >= 1)
+  n_bottom <- sum(mat_i[ , 1] <= -1)
+
+    # run activity estimation methods
+  up <- run_ora(mat = as.matrix(mat_i), network = prior, minsize = minsize, n_background = background, n_up = n_up, n_bottom = 0) %>%
     dplyr::select(c(source, condition, score, statistic)) %>%
     dplyr::rename("method" = "statistic") %>%
     dplyr::mutate(method = recode(method,
                                  "ora" = "fisher.test"))
+
+  down <- run_ora(mat = as.matrix(mat_i), network = prior, minsize = minsize, n_background = background, n_bottom = n_bottom, n_up = 0) %>%
+    dplyr::select(c(source, condition, score, statistic)) %>%
+    dplyr::rename("method" = "statistic") %>%
+    dplyr::mutate(score = -score) %>%
+    dplyr::mutate(method = recode(method,
+                                 "ora" = "fisher.test"))
+
+  df <- rbind(up, down) %>%
+    group_by(source, condition) %>%
+    dplyr::filter(abs(score) == max(abs(score))) %>%# choose activity score with higher value
+    ungroup() %>%
+    distinct()
+  
+  #df[!duplicated(df[, c("source", "condition")]),]
 })
 
 ## Save results ---------------------------
