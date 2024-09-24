@@ -9,7 +9,7 @@ if(exists("snakemake")){
   rank_out <- snakemake@output$output
 }else{
   input_files <- "results/03_benchmark/hernandez/01_input_bench/KS-GPS.csv"
-  target_files <- "results/02_activity_scores/hernandez/misc/GPS.csv"
+  target_files <- "results/02_activity_scores/hernandez/scores/GPS.rds"
   kinase_file <- "resources/kinase_class.csv"
   meta_input <- "results/03_benchmark/hernandez/01_input_bench/obs_KS-GPS.csv"
   rank_out <- "results/03_benchmark/hernandez/02_mean_rank/GPS/KS-GPS.csv"
@@ -21,10 +21,10 @@ library(tidyverse)
 ## Load scores and meta ---------------------------
 method_act <- read_csv(input_files, col_types = cols()) %>%
   column_to_rownames("experiment")
-targets <- read_csv(target_files, col_types = cols()) %>%
-  dplyr::filter(method == "number_of_targets") %>%
-  dplyr::rename("targets" = source, "sample" = condition, "measured_targets" = score) %>%
-  dplyr::select(!method)
+targets <- readRDS(target_files)$number_of_targets %>%
+  rownames_to_column("source") %>%
+  pivot_longer(-source, names_to = "condition", values_to = "score") %>%
+  dplyr::rename("targets" = source, "sample" = condition, "measured_targets" = score)
 
 obs <- read_csv(meta_input, col_types = cols())
 
