@@ -53,7 +53,7 @@ results <- future_map_dfr(1:ncol(phospho), function(i){
     dplyr::rename("method" = "statistic")
 }) %>%
   dplyr::filter(method == "norm_wmean") %>%
-  dplyr::mutate(method = recocde(method, norm_wmean = "norm_mean"))
+  dplyr::mutate(method = recode(method, norm_wmean = "norm_mean"))
 
 ## Save results ---------------------------
 write_csv(results, output_file)
