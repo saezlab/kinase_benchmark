@@ -35,6 +35,12 @@ rule rank:
     input:
        expand("results/03_benchmark/{dataset}/02_mean_rank/{PKN}/{hernandez_methods}-{PKN}.csv", dataset = ["hernandez", "hijazi", "merged"], hernandez_methods = config["perturbation"]["methods"], PKN = config["perturbation"]["PKNs"])
 
+rule exploration:
+    input:
+       expand("results/04_exploration/{dataset}/mean_rank/plots/{hernandez_methods}-{PKN}.pdf", dataset = ["hernandez", "hijazi", "merged"], hernandez_methods = config["perturbation"]["methods"], PKN = config["perturbation"]["PKNs"]),
+       expand("results/04_exploration/{dataset}/correlation/plots/correlation_methods_{corr_type}.pdf", dataset = ["hernandez", "hijazi", "merged"], corr_type = ["pearson", "correlation"]),
+       expand("results/04_exploration/{dataset}/jaccard/plots/jaccard_methods_{jacc_type}_{jaccard_i}.pdf", dataset = ["hernandez", "hijazi", "merged"], jacc_type = ["up", "down", "abs"], jaccard_i = ["10"])
+
 rule figures:
     input:
         "results/manuscript_figures/figure_1/coverage_merged.pdf",
