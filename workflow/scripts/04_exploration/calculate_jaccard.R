@@ -4,8 +4,8 @@ if(exists("snakemake")){
   jacc_type <-  snakemake@params$jacc_type
   jaccard_methods <- snakemake@output$jaccMethods
   jaccard_priors <-  snakemake@output$jaccPriors
-  jaccard_methods <- snakemake@output$plotMethods
-  jaccard_priors <-  snakemake@output$plotPriors
+  plot_methods <- snakemake@output$plotMethods
+  plot_priors <-  snakemake@output$plotPriors
 }else{
   act_files <- list.files("results/02_activity_scores/merged/scores", pattern = "rds", recursive = T, full.names = T)
   jaccard_i <- 10
