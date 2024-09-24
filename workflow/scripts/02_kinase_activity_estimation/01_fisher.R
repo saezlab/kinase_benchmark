@@ -72,7 +72,7 @@ results <- future_map_dfr(1:ncol(phospho), function(i){
     ungroup() %>%
     distinct()
   
-  #df[!duplicated(df[, c("source", "condition")]),]
+  df[!duplicated(df[, c("source", "condition")]),]
 })
 
 ## Save results ---------------------------
