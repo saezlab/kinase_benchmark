@@ -61,17 +61,6 @@ rule mean_rank:
     script:
         "../scripts/03_benchmark/02_mean_rank.R"
 
-rule compare_performance:
-    input:
-        bench = expand("results/03_benchmark/{{dataset}}/02_benchmark_res/{PKN}/bench_{hernandez_methods}-{PKN}.csv", hernandez_methods = config["perturbation"]["methods"], PKN = config["perturbation"]["PKNs"])
-    output:
-        auroc = "results/03_benchmark/{dataset}/03_benchmark_comp/AUROC.pdf",
-        auprc = "results/03_benchmark/{dataset}/03_benchmark_comp/AUPRC.pdf"
-    conda:
-        "../envs/phospho.yml"
-    script:
-        "../scripts/03_benchmark/03_compare_performance.R"
-
 rule compare_rank:
     input:
         bench = expand("results/03_benchmark/{{dataset}}/02_mean_rank/{PKN}/{hernandez_methods}-{PKN}.csv", hernandez_methods = config["perturbation"]["methods"], PKN = config["perturbation"]["PKNs"])

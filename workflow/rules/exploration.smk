@@ -1,3 +1,16 @@
+rule compare_performance:
+    input:
+        bench = expand("results/03_benchmark/{{dataset}}/02_benchmark_res/{PKN}/bench_{hernandez_methods}-{PKN}.csv", hernandez_methods = config["perturbation"]["methods"], PKN = config["perturbation"]["PKNs"]),
+        rank = expand("results/03_benchmark/{{dataset}}/02_mean_rank/{PKN}/{hernandez_methods}-{PKN}.csv", hernandez_methods = config["perturbation"]["methods"], PKN = config["perturbation"]["PKNs"])
+    params:
+        k_phit = 10
+    output:
+        plot = "results/04_exploration/{dataset}/benchmark/plots/performance.pdf"
+    conda:
+        "../envs/figures.yml"
+    script:
+        "../scripts/04_exploration/compare_performance.R"
+
 rule test_performance:
     input:
         scores = "results/03_benchmark/{dataset}/02_mean_rank/{PKN}/{method}-{PKN}.csv"
@@ -6,7 +19,7 @@ rule test_performance:
     conda:
         "../envs/phospho.yml"
     script:
-        "../scripts/04_exploration/compare_performance.R"
+        "../scripts/04_exploration/compare_class_regulon.R"
 
 rule calculate_correlation:
     input:

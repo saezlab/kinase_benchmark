@@ -1,47 +1,129 @@
-#' Get mean/median rank for each method
+#'
 
 ## Snakemake ---------------------------
 if(exists("snakemake")){
-  input_files <- snakemake@input$scores
-  out_plot <- snakemake@output$out
+  bench_files <- snakemake@input$bench
+  rank_files <- snakemake@input$rank
+  k_phit <- snakemake@params$k_phit
+  performance_plot <- snakemake@output$plot
 }else{
-  input_files <- "results/03_benchmark/hernandez/02_mean_rank/GPS/mean-GPS.csv"
-  out_plot <- "results/03_benchmark/hernandez/02_mean_rank/plots/mean-GPS_targets.pdf"
+  bench_files <- list.files("results/03_benchmark/hernandez/02_benchmark_res",
+                           pattern = "bench", recursive = TRUE, full.names = T)
+  rank_files <-  list.files("results/03_benchmark/hernandez/02_mean_rank", 
+                            pattern = "csv", recursive = TRUE, full.names = T)                        
+  performance_plot <- "results/04_exploration/hernandez/benchmark/plots/performance.pdf"
+  k_phit <- 10
 }
 
 ## Libraries ---------------------------
 library(tidyverse)
+library(ComplexHeatmap)
+library(circlize)
 
-## Load scores and meta ---------------------------
-rank_df <- read_csv(input_files, col_types = cols())
+## Load AUROC ---------------------------
+bench_list <- map(bench_files, function(file){
+  read.csv(file, col.names = c("rows", "groupby", "group", "source",
+                               "method", "metric", "score", "ci")) %>%
+    dplyr::select(-rows) %>%
+    add_column(net = str_split(file, "/")[[1]][5])
+})
 
-net <- str_split(str_remove(str_split(input_files, "/")[[1]][6], ".csv"), "-")[[1]][2]
-meth <- str_split(str_remove(str_split(input_files, "/")[[1]][6], ".csv"), "-")[[1]][1]
+bench_list <- bench_list[!(map_dbl(bench_list, nrow) == 0)]
+bench_df <- bind_rows(bench_list)
 
-## Get rank ---------------------------
-rank_df <- rank_df %>%
-  group_by(targets, target_size, class) %>%
-  summarise(mean_scaled_rank = mean(scaled_rank, na.rm = TRUE),
-            median_scaled_rank = median(scaled_rank, na.rm = TRUE))
+med_auroc <- bench_df %>%
+  group_by(net, method) %>%
+  summarise(auroc = mean(score)) %>%
+  ungroup() %>%
+  rename("prior" = net)
+  
+med_auroc_wide <- med_auroc %>%
+  pivot_wider(names_from = "method", values_from = "auroc") %>%
+  column_to_rownames("prior")
 
-p1 <- ggplot(rank_df, aes(x = target_size, y = mean_scaled_rank)) +
-  geom_boxplot() +
-  labs(title = paste0(net, "-", meth, " target size"),
-       x = "Target size",
-       y = "Scaled rank") +
-  theme_minimal()
+## Load scaled rank and pHit ---------------------------
+rank_list <- map(rank_files, function(file){
+  read_csv(file, col_types = cols()) %>%
+    dplyr::select(method, prior, rank, scaled_rank)
+})
 
-p2 <- ggplot(rank_df, aes(x = class, y = mean_scaled_rank)) +
-  geom_boxplot() +
-  labs(title = paste0(net, "-", meth, " kinase class"),
-       x = "Target size",
-       y = "Scaled rank") +
-  theme_minimal()
+rank_df <- bind_rows(rank_list)
 
-table(rank_df$target_size)
-table(rank_df$class)
-## Get rank ---------------------------
-pdf(out_plot, width = 5, height = 5)
-p1
-p2
+med_rank <- rank_df %>%
+  group_by(prior, method) %>%
+  summarise(scaled_rank = mean(scaled_rank)) %>%
+  ungroup() 
+
+med_rank_wide <- med_rank %>%
+  pivot_wider(names_from = "method", values_from = "scaled_rank") %>%
+  column_to_rownames("prior")
+
+pHit <- rank_df %>%
+  group_by(prior, method) %>%
+  summarise(phit = (sum(rank <= k_phit)/n())) %>%
+  ungroup() 
+
+pHit_wide <- pHit %>%
+  pivot_wider(names_from = "method", values_from = "phit") %>%
+  column_to_rownames("prior")
+
+## Compare metrices ---------------------------
+performance <- left_join(med_auroc, med_rank, by = c("prior", "method")) %>%
+  left_join(pHit, by = c("prior", "method"))
+
+cor(performance[, 3:ncol(performance)], method = "pearson")
+cor.test(performance$scaled_rank, performance$phit, method = "pearson")
+cor.test(performance$scaled_rank, performance$auroc, method = "pearson")
+cor.test(performance$phit, performance$auroc, method = "pearson")
+
+
+## Plot performance ---------------------------
+col_auroc <- colorRamp2(
+  c(min(med_auroc_wide, na.rm = TRUE), mean(unlist(as.vector(med_auroc_wide)), na.rm = TRUE), max(med_auroc_wide, na.rm = TRUE)),
+  c("white", "#edcac6", "#7F0863")
+)
+auroc_p <- Heatmap(med_auroc_wide,
+        name = "AUROC",                             # Name for the legend
+        col = col_auroc,
+        cluster_rows = TRUE,                        # Enable clustering for rows
+        cluster_columns = TRUE,                     # Enable clustering for columns
+        show_row_names = TRUE,                      # Show row names (Methods)
+        show_column_names = TRUE,                   # Show column names (Priors)
+        row_title = "Methods",                      # Row title
+        column_title = "Priors"
+)
+col_rank <- colorRamp2(
+  c(min(med_rank_wide, na.rm = TRUE), mean(unlist(as.vector(med_rank_wide)), na.rm = TRUE), max(med_rank_wide, na.rm = TRUE)),
+  c("#4770b2", "#d6e2f2", "white")
+)
+rank_p <- Heatmap(med_rank_wide,
+        name = "scaled_rank",                             # Name for the legend
+        col = col_rank,
+        cluster_rows = TRUE,                        # Enable clustering for rows
+        cluster_columns = TRUE,                     # Enable clustering for columns
+        show_row_names = TRUE,                      # Show row names (Methods)
+        show_column_names = TRUE,                   # Show column names (Priors)
+        row_title = "Methods",                      # Row title
+        column_title = "Priors"
+)
+
+col_phit <- colorRamp2(
+  c(min(pHit_wide, na.rm = TRUE), mean(unlist(as.vector(pHit_wide)), na.rm = TRUE), max(pHit_wide, na.rm = TRUE)),
+  c("white", "#edcac6", "#7F0863")
+)
+pHit_p <- Heatmap(pHit_wide,
+        name = paste0("pHit(k=", k_phit,")"),       # Name for the legend
+        col =col_phit,
+        cluster_rows = TRUE,                        # Enable clustering for rows
+        cluster_columns = TRUE,                     # Enable clustering for columns
+        show_row_names = TRUE,                      # Show row names (Methods)
+        show_column_names = TRUE,                   # Show column names (Priors)
+        row_title = "Methods",                      # Row title
+        column_title = "Priors"
+)
+
+pdf(performance_plot, width = 8, height = 4)
+auroc_p
+rank_p
+pHit_p
 dev.off()
