@@ -239,10 +239,10 @@ rule run_ptmsea:
         file_dataset="results/01_processed_data/cptac/datasets/{dataset}_{normalisation}.gct",
         file_PKN="results/01_processed_data/cptac/mapped_priors/ptm-sea/{PKN}.gmt"
     output:
-        log=temp("results/02_activity_scores/cptac/ptmsea/res/log/{normalisation}_{dataset}-{PKN}.log"),
+        log=temp("results/02_activity_scores/cptac/ptmsea/res/{normalisation}/{dataset}/log/{dataset}-{PKN}.log"),
         rds="results/02_activity_scores/cptac/ptmsea/{normalisation}/{dataset}-{PKN}.csv"
     params:
-        output_folder=temp("results/02_activity_scores/cptac/ptmsea/res"),
+        output_folder=temp("results/02_activity_scores/cptac/ptmsea/res/{normalisation}/{dataset}"),
         minsize=minsize
     conda:
         "../envs/phospho.yml"
