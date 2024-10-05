@@ -51,7 +51,6 @@ run_lm_rokai <- function(mat,
   # Analysis ----------------------------------------------------------------
   # Change format
   mat <- mat %>% filter(rownames(mat) %in% network_filtered$target)
-  network_filtered <- network_filtered[match(rownames(mat), network_filtered$target),]
 
   network_wide <- network_filtered %>%
     dplyr::select(source, target, mor) %>%
