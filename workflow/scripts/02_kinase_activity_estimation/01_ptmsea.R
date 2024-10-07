@@ -50,7 +50,10 @@ ptmsea <- read.delim(file=paste0(output_folder, "/", PKN_name, "-scores.gct"), s
 ptmsea <- ptmsea %>%
   dplyr::select(colnames(ptmsea)[!str_detect(colnames(ptmsea), "Signature")]) %>%
   dplyr::select(-No.columns.scored)
-colnames(ptmsea) <- str_remove(colnames(ptmsea), "^X")
+
+if (!str_detect(output_folder, "cptac")){
+  colnames(ptmsea) <- str_remove(colnames(ptmsea), "^X")
+}
 
 ptmsea <- ptmsea %>%
   pivot_longer(!id, names_to = "condition", values_to = "score") %>%
