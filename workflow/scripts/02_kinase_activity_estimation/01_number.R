@@ -49,6 +49,11 @@ results_long <- map_dfr(names(results_wide), function(method_i){
     add_column(method = method_i)
 }) %>%
   dplyr::filter(method == "number_of_targets") %>%
+  dplyr::filter(!is.na(score)) %>%
+  dplyr::mutate(score = case_when(
+    score >= minsize ~ score,
+    score < minsize ~ NA
+  )) %>%
   dplyr::filter(!is.na(score))
 
 ## Save results ---------------------------
