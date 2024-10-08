@@ -7,11 +7,11 @@ if(exists("snakemake")){
   k_phit <- snakemake@params$k_phit
   performance_plot <- snakemake@output$plot
 }else{
-  bench_files <- list.files("results/03_benchmark/hernandez/02_benchmark_res",
+  bench_files <- list.files("results/03_benchmark/merged/02_benchmark_res_subset/subset",
                            pattern = "bench", recursive = TRUE, full.names = T)
-  rank_files <-  list.files("results/03_benchmark/hernandez/02_mean_rank", 
+  rank_files <-  list.files("results/03_benchmark/merged/02_mean_rank_subset/subset", 
                             pattern = "csv", recursive = TRUE, full.names = T)                        
-  performance_plot <- "results/04_exploration/hernandez/benchmark/plots/performance.pdf"
+  performance_plot <- "results/04_exploration/merged/benchmark/plots/performance_subset.pdf"
   k_phit <- 10
 }
 
@@ -21,11 +21,17 @@ library(ComplexHeatmap)
 library(circlize)
 
 ## Load AUROC ---------------------------
+if (any(str_detect(bench_files, "subset"))){
+  net_id <- 6
+} else {
+  net_id <- 5
+}
+
 bench_list <- map(bench_files, function(file){
   read.csv(file, col.names = c("rows", "groupby", "group", "source",
                                "method", "metric", "score", "ci")) %>%
     dplyr::select(-rows) %>%
-    add_column(net = str_split(file, "/")[[1]][5])
+    add_column(net = str_split(file, "/")[[1]][net_id])
 })
 
 bench_list <- bench_list[!(map_dbl(bench_list, nrow) == 0)]

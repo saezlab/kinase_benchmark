@@ -28,8 +28,14 @@ targets <- readRDS(target_files)$number_of_targets %>%
 
 obs <- read_csv(meta_input, col_types = cols())
 
-net <- str_split(str_remove(str_split(input_files, "/")[[1]][5], ".csv"), "-")[[1]][2]
-meth <- str_split(str_remove(str_split(input_files, "/")[[1]][5], ".csv"), "-")[[1]][1]
+if (any(str_detect(input_files, "subset"))){
+  id_col <- 6
+} else {
+  id_col <- 5
+}
+
+net <- str_split(str_remove(str_split(input_files, "/")[[1]][id_col], ".csv"), "-")[[1]][2]
+meth <- str_split(str_remove(str_split(input_files, "/")[[1]][id_col], ".csv"), "-")[[1]][1]
 
 kinase_class <- read_csv(kinase_file, col_types = cols()) %>%
   dplyr::filter(resource == net) %>%
