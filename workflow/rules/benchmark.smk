@@ -79,6 +79,8 @@ rule compare_rank:
 def get_methods(wildcards):
     if (wildcards['subset'] == "johnson"):
         methods = config["perturbation"]["methods_johnson"]
+    elif (wildcards['subset'] == "subset"):
+        methods = config["perturbation"]["methods"]
     else:
         methods = config["perturbation"]["methods_subset"]
     return expand("results/03_benchmark/{dataset}/01_input_bench/{methods}-{PKNs}.csv", methods = methods, PKNs = config["perturbation"][wildcards['subset']], dataset = wildcards['dataset'])
@@ -123,4 +125,15 @@ rule run_benchmark_subset:
     script:
         "../scripts/03_benchmark/02_run_bench.py"
 
-
+rule mean_rank_subset:
+    input:
+        scores = "results/03_benchmark/{dataset}/01_input_bench_subset/{subset}/{hernandez_methods}-{PKN}.csv",
+        meta = "results/03_benchmark/{dataset}/01_input_bench_subset/{subset}/obs_{hernandez_methods}-{PKN}.csv",
+        target = "results/02_activity_scores/{dataset}/scores/{PKN}.rds",
+        kinclass = "resources/kinase_class.csv"
+    output:
+        output = "results/03_benchmark/{dataset}/02_mean_rank_subset/{subset}/{PKN}/{hernandez_methods}-{PKN}.csv"
+    conda:
+        "../envs/phospho.yml"
+    script:
+        "../scripts/03_benchmark/02_mean_rank.R"

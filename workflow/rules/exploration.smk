@@ -11,6 +11,20 @@ rule compare_performance:
     script:
         "../scripts/04_exploration/compare_performance.R"
 
+rule compare_performance_subset:
+    input:
+        bench = expand("results/03_benchmark/{{dataset}}/02_benchmark_res_subset/{{subset}}/{PKN}/bench_{hernandez_methods}-{PKN}.csv", hernandez_methods = config["perturbation"]["methods"], PKN = config["perturbation"]["subset"]),
+        rank = expand("results/03_benchmark/{{dataset}}/02_mean_rank_subset/{{subset}}/{PKN}/{hernandez_methods}-{PKN}.csv", hernandez_methods = config["perturbation"]["methods"], PKN = config["perturbation"]["subset"])
+    params:
+        k_phit = 10
+    output:
+        plot = "results/04_exploration/{dataset}/benchmark/plots/performance_{subset}.pdf"
+    conda:
+        "../envs/figures.yml"
+    script:
+        "../scripts/04_exploration/compare_performance.R"
+
+
 rule test_performance:
     input:
         scores = "results/03_benchmark/{dataset}/02_mean_rank/{PKN}/{method}-{PKN}.csv"

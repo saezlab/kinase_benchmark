@@ -18,6 +18,10 @@ rule activity:
         expand("results/02_activity_scores/hernandez/scores/{prior}.rds", prior = config["perturbation"]["PKNs"]),
         expand("results/02_activity_scores/hijazi/scores/{prior}.rds", prior = config["perturbation"]["PKNs"])
 
+rule subset:
+    input:
+        expand("results/03_benchmark/{dataset}/02_benchmark_res_subset/subset/{PKN}/bench_{hernandez_methods}-{PKN}.csv", dataset = ["hernandez", "hijazi", "merged"], hernandez_methods = config["perturbation"]["methods"], PKN = config["perturbation"]["subset"])
+
 rule cptac:
     input:
         expand("results/02_activity_scores/cptac/scores/original/{dataset}-{prior}.rds", dataset = config["cptac"]["datasets"], prior = config["perturbation"]["PKNs"])
@@ -44,7 +48,13 @@ rule exploration:
         expand("results/04_exploration/{dataset}/mean_rank/plots/{hernandez_methods}-{PKN}_targets.pdf", dataset = ["hernandez", "hijazi", "merged"], hernandez_methods = config["perturbation"]["methods"], PKN = config["perturbation"]["PKNs"]),
         expand("results/04_exploration/{dataset}/correlation/plots/correlation_methods_{corr_type}.pdf", dataset = ["hernandez", "hijazi", "merged"], corr_type = ["pearson", "spearman"]),
         expand("results/04_exploration/{dataset}/jaccard/plots/jaccard_methods_{jacc_type}_{jaccard_i}.pdf", dataset = ["hernandez", "hijazi", "merged"], jacc_type = ["up", "down", "abs"], jaccard_i = ["10"]),
-        expand("results/04_exploration/{dataset}/benchmark/plots/performance.pdf", dataset = ["hernandez", "hijazi", "merged"])
+        expand("results/04_exploration/{dataset}/benchmark/plots/performance.pdf", dataset = ["hernandez", "hijazi", "merged"]),
+        expand("results/04_exploration/{dataset}/benchmark/plots/performance_subset.pdf", dataset = ["hernandez", "hijazi", "merged"])
+
+rule tmp:
+    input:
+        #expand("results/04_exploration/{dataset}/benchmark/plots/performance.pdf", dataset = ["hernandez", "hijazi", "merged"]),
+        expand("results/04_exploration/{dataset}/benchmark/plots/performance_subset.pdf", dataset = ["hernandez", "hijazi", "merged"])
 
 rule figures:
     input:
