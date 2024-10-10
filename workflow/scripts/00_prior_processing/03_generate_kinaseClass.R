@@ -114,14 +114,14 @@ kinase_overview <- kinase_overview %>%
     TRUE ~ class
   )) %>%
   filter(class != "Ambiguous") %>% # Remove non-protein kinases
-  dplyr::select(Var1, class) %>%
+  dplyr::select(Var1, class, group) %>%
   distinct()
 
 # Add final classification to the overview
 kinase_type_df <- left_join(kinase_type_df, kinase_overview, by = c("Var1"), relationship = "many-to-many") %>%
   rename("source" = Var1)
 
-kinase_type_df <- kinase_type_df[,c("source", "class", "kinase", "n_targets", "resource", "Serine", "Threonine", "Tyrosin", "Histidine")] #rearrange column order
+kinase_type_df <- kinase_type_df[,c("source", "class", "group", "kinase", "n_targets", "resource", "Serine", "Threonine", "Tyrosin", "Histidine")] #rearrange column order
 
 ## Save data ---------------------------
 write_csv(kinase_type_df, output_file)
