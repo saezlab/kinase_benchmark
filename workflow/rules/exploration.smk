@@ -24,6 +24,28 @@ rule compare_performance_subset:
     script:
         "../scripts/04_exploration/compare_performance.R"
 
+rule compare_performance_tumort:
+    input:
+        bench = expand("results/03_benchmark/merged/02_benchmark_res/{PKN}/bench_{hernandez_methods}-{PKN}.csv", hernandez_methods = config["perturbation"]["methods"], PKN = ["phosphositeplus"]),
+        tumor = "data/misc/known_roc.Rds"
+    output:
+        plot = "results/04_exploration/all/performance.pdf"
+    conda:
+        "../envs/figures.yml"
+    script:
+        "../scripts/04_exploration/compare_tumor_perturbation.R"
+
+rule compare_performance_tumor_subset:
+    input:
+        bench = expand("results/03_benchmark/merged/02_benchmark_res_subset/{{subset}}/{PKN}/bench_{hernandez_methods}-{PKN}.csv", hernandez_methods = config["perturbation"]["methods"], PKN = ["phosphositeplus"]),
+        tumor = "data/misc/known_roc_filt.Rds"
+    output:
+        plot = "results/04_exploration/all/performance_{subset}.pdf"
+    conda:
+        "../envs/figures.yml"
+    script:
+        "../scripts/04_exploration/compare_tumor_perturbation.R"
+
 
 rule test_performance:
     input:
