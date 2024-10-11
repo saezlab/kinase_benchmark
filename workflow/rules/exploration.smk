@@ -87,3 +87,13 @@ rule calculate_jaccard:
         "../envs/figures.yml"
     script:
         "../scripts/04_exploration/calculate_jaccard.R"
+
+rule explore_rank:
+    input:
+        rank = "results/03_benchmark/{dataset}/02_mean_rank/{PKN}/{hernandez_methods}-{PKN}.csv",
+    output:
+        plot = "results/04_exploration/{dataset}/rank/comparison_rank_{hernandez_methods}_{PKN}.pdf"
+    conda:
+        "../envs/figures.yml"
+    script:
+        "../scripts/04_exploration/explore_rank.R"

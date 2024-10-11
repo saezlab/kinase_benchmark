@@ -82,7 +82,6 @@ rank_df <- map_dfr(unique(method_act_long$sample), function(exp){
 })
 
 rank_targets_df <- left_join(rank_df, targets, by = c("sample", "targets")) %>%
-  filter(!is.na(rank)) %>%
   mutate(target_size = case_when(
     measured_targets < 10 ~ "small",
     measured_targets >= 10 & measured_targets < 20 ~ "medium",

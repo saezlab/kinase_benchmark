@@ -53,8 +53,9 @@ rule exploration:
 
 rule tmp:
     input:
-        #expand("results/04_exploration/{dataset}/benchmark/plots/performance.pdf", dataset = ["hernandez", "hijazi", "merged"]),
-        expand("results/04_exploration/{dataset}/benchmark/plots/performance_subset.pdf", dataset = ["hernandez", "hijazi", "merged"])
+        expand("results/04_exploration/{dataset}/benchmark/plots/performance.pdf", dataset = ["hernandez", "hijazi", "merged"]),
+        expand("results/04_exploration/{dataset}/benchmark/plots/performance_subset.pdf", dataset = ["hernandez", "hijazi", "merged"]),
+        expand("results/04_exploration/merged/rank/comparison_rank_{hernandez_methods}_{PKN}.pdf", hernandez_methods = ["zscore"], PKN = config["perturbation"]["PKNs"])
 
 rule figures:
     input:

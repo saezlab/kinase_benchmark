@@ -53,7 +53,8 @@ rank_list <- map(rank_files, function(file){
     dplyr::select(method, prior, rank, scaled_rank)
 })
 
-rank_df <- bind_rows(rank_list)
+rank_df <- bind_rows(rank_list) %>% 
+  filter(!is.na(rank))
 
 med_rank <- rank_df %>%
   group_by(prior, method) %>%
