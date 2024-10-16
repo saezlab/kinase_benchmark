@@ -1,22 +1,31 @@
 # ------------------------------------ FIGURE 1 ------------------------------------
-rule overview_prior:
+rule overview_bench:
     input:
-        prior_files = expand("results/00_prior/{PKN}.tsv", PKN = config["figures"]["PKN_figure1"])
+        bench_files = expand("results/03_benchmark/merged/02_benchmark_res/phosphositeplus/bench_{methods}-phosphositeplus.csv", methods = config["perturbation"]["methods"]),
+        rank = expand("results/03_benchmark/merged/02_mean_rank/phosphositeplus/{methods}-phosphositeplus.csv", methods = config["perturbation"]["methods"])
+    params:
+        k_phit_c = [5, 10, 20]
     output:
-        kin = "results/manuscript_figures/figure_1/coverage_merged.pdf",
-        edges = "results/manuscript_figures/figure_1/edge_overview.pdf",
-        pps =  "results/manuscript_figures/figure_1/jaccard.pdf",
-        kin_heat = "results/manuscript_figures/figure_1/kinase_overview.pdf",
-        kin_type = "results/manuscript_figures/figure_1/kinase_type.pdf",
-        reg = "results/manuscript_figures/figure_1/regulon_size.pdf",
-        upset = "results/manuscript_figures/figure_1/upset_kin.pdf",
-        upsetEdge = "results/manuscript_figures/figure_1/upset_edge.pdf"
+        auroc = "results/manuscript_figures/figure_1/auroc_phosphositeplus.pdf",
+        rank = "results/manuscript_figures/figure_1/scaledrank_phosphositeplus.pdf",
+        phit =  "results/manuscript_figures/figure_1/phit_phosphositeplus.pdf"
     conda:
         "../envs/figures.yml"
     script:
-        "../scripts/05_figures_manuscript/01_figure_overview_priors.R"
+        "../scripts/05_figures_manuscript/01_benchmark_overview.R"
+      
 
 # ------------------------------------ FIGURE 2 ------------------------------------
+rule overview_tumor:
+    input:
+        bench = "data/tumor_benchmark/activity_scores/roc_data.rds"
+    output:
+        plot = "results/manuscript_figures/figure_2/auroc_tumor_phosphositeplus.pdf"
+    conda:
+        "../envs/figures.yml"
+    script:
+        "../scripts/05_figures_manuscript/01_cptac_overview.R"
+        
 rule act_comparison:
     input:
         bench = "results/01_processed_data/hernandez/data/benchmark_data.csv",
