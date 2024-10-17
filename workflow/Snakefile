@@ -28,11 +28,13 @@ rule cptac:
 
 rule normalisation:
     input:
-        expand("results/02_activity_scores/cptac/scores/{normalisation}/{dataset}-{prior}.rds", dataset = config["cptac"]["datasets"], prior = config["cptac"]["normalisation_PKNs"], normalisation = config["cptac"]["normalisation"])
+        expand("results/02_activity_scores/cptac/scores/{normalisation}/{dataset}-phosphositeplus.rds", dataset = config["cptac"]["datasets"], normalisation = config["cptac"]["normalisation"])
 
 rule predicted:
     input:
-        expand("results/03_benchmark/{dataset}/02_benchmark_res_subset/predicted/{PKN}/bench_{hernandez_methods}-{PKN}.csv", dataset = ["hernandez", "hijazi", "merged"], hernandez_methods = config["perturbation"]["methods_subset"], PKN = config["perturbation"]["predicted"]),
+        expand("results/03_benchmark/{dataset}/02_benchmark_res/{PKN}/bench_{hernandez_methods}-{PKN}.csv", dataset = ["hernandez", "hijazi", "merged"], hernandez_methods = config["perturbation"]["methods"], PKN = config["perturbation"]["all"]),
+        expand("results/03_benchmark/{dataset}/02_benchmark_res_subset/predicted/{PKN}/bench_{hernandez_methods}-{PKN}.csv", dataset = ["hernandez", "hijazi", "merged"], hernandez_methods = config["perturbation"]["methods"], PKN = config["perturbation"]["predicted"]),
+        expand("results/02_activity_scores/cptac/scores/original/{dataset}-{prior}.rds", dataset = config["cptac"]["datasets"], prior = config["perturbation"]["all"])
         #expand("results/03_benchmark/{dataset}/02_benchmark_res_subset/johnson/{PKN}/bench_{hernandez_methods}-{PKN}.csv", dataset = ["hernandez", "hijazi", "merged"], hernandez_methods = config["perturbation"]["methods_johnson"], PKN = config["perturbation"]["johnson"])
 
 rule rank:
@@ -53,9 +55,7 @@ rule exploration:
 
 rule tmp:
     input:
-        expand("results/04_exploration/{dataset}/benchmark/plots/performance.pdf", dataset = ["hernandez", "hijazi", "merged"]),
-        expand("results/04_exploration/{dataset}/benchmark/plots/performance_subset.pdf", dataset = ["hernandez", "hijazi", "merged"]),
-        expand("results/04_exploration/merged/rank/comparison_rank_{hernandez_methods}_{PKN}.pdf", hernandez_methods = ["zscore"], PKN = config["perturbation"]["PKNs"])
+        expand("results/03_benchmark/hijaziDiscoverX/02_benchmark_res/phosphositeplus/bench_{hernandez_methods}-phosphositeplus.csv", hernandez_methods = config["perturbation"]["methods"])
 
 rule figures:
     input:
