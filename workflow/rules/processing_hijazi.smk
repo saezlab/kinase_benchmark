@@ -12,7 +12,7 @@ rule format_input:
     output:
         mat = "results/01_processed_data/hijazi/data/benchmark_data.csv",
         meta_out = "results/01_processed_data/hijazi/data/benchmark_metadata.csv",
-        meta_discover = "results/01_processed_data/hijazi/data/benchmark_metadataDiscoverX.csv"
+        meta_discover = "results/01_processed_data/hijaziDiscoverX/data/benchmark_metadata.csv"
     conda:
         "../envs/phospho.yml"
     script:

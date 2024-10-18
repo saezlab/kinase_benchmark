@@ -11,6 +11,16 @@ rule merge_scores:
     script:
         "../scripts/03_benchmark/00_merge_scores.R"
 
+rule copy_scores:
+    input:
+        rds =  "results/02_activity_scores/hijazi/scores/{PKN}.rds",
+    output:
+        output = temp("results/02_activity_scores/hijaziDiscoverX/scores/{PKN}.rds")
+    conda:
+        "../envs/phospho.yml"
+    script:
+        "../scripts/03_benchmark/00_copy_scores.R"
+
 rule merge_meta:
     input:
         meta = "results/01_processed_data/hijazi/data/benchmark_metadata.csv",
