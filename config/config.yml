@@ -17,8 +17,8 @@ perturbation:
   johnson: ["phosphositeplus", "phosphositeplus_johnson15", "phosphositeplus_phosformer15"]
   all: ["omnipath", "phosphositeplus", "ptmsigdb", "GPS", "iKiPdb", "networkin", "shuffled2", "GSknown", "combined", "GSknown_networkin", "GSknown_iKiPdb", "combined_networkin", "combined_iKiPdb"]
   methods: ["chisq","fgsea","fisher", "KARP", "KS", "KSEA", "lmRoKAI", "mean", "median", "mlm", "norm_mean", "number_of_targets", "PCA", "ptmsea", "ulm", "UQ", "viper", "wilcox","zscore"] # "INKA", "UQ", "norm_fgsea"
-  methods_johnson: ["KSEA", "zscore", "fgsea", "mean", "number_of_targets", "ptmsea"]
-  methods_subset: ["KSEA", "zscore", "fgsea", "mean", "number_of_targets", "ptmsea"]
+  methods_johnson: ["chisq","fgsea","fisher", "KARP", "KS", "KSEA", "lmRoKAI", "mean", "median", "mlm", "norm_mean", "number_of_targets", "PCA", "ptmsea", "ulm", "UQ", "viper", "wilcox","zscore"]
+  methods_subset: ["chisq","fgsea","fisher", "KARP", "KS", "KSEA", "lmRoKAI", "mean", "median", "mlm", "norm_mean", "number_of_targets", "PCA", "ptmsea", "ulm", "UQ", "viper", "wilcox","zscore"]
 
 figures:
   PKN_figure1: ["omnipath", "phosphositeplus", "ptmsigdb", "GPS", "iKiPdb", "networkin"]

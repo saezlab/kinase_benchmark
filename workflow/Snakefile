@@ -37,6 +37,12 @@ rule predicted:
         expand("results/02_activity_scores/cptac/scores/original/{dataset}-{prior}.rds", dataset = config["cptac"]["datasets"], prior = config["perturbation"]["all"])
         #expand("results/03_benchmark/{dataset}/02_benchmark_res_subset/johnson/{PKN}/bench_{hernandez_methods}-{PKN}.csv", dataset = ["hernandez", "hijazi", "merged"], hernandez_methods = config["perturbation"]["methods_johnson"], PKN = config["perturbation"]["johnson"])
 
+rule johnson:
+    input:
+        expand("results/03_benchmark/{dataset}/02_benchmark_res/{PKN}/bench_{hernandez_methods}-{PKN}.csv", dataset = ["hernandez", "hijazi", "merged"], hernandez_methods = config["perturbation"]["methods"], PKN = config["perturbation"]["johnson"]),
+        expand("results/03_benchmark/{dataset}/02_benchmark_res_subset/johnson/{PKN}/bench_{hernandez_methods}-{PKN}.csv", dataset = ["hernandez", "hijazi", "merged"], hernandez_methods = config["perturbation"]["methods"], PKN = config["perturbation"]["johnson"]),
+        expand("results/02_activity_scores/cptac/scores/original/{dataset}-{prior}.rds", dataset = config["cptac"]["datasets"], prior = config["perturbation"]["johnson"])
+
 rule rank:
     input:
         expand("results/03_benchmark/{dataset}/02_mean_rank/{PKN}/{hernandez_methods}-{PKN}.csv", dataset = ["hernandez", "hijazi", "merged"], hernandez_methods = config["perturbation"]["methods"], PKN = config["perturbation"]["PKNs"])
