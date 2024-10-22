@@ -15,41 +15,31 @@ rule priors:
 
 rule activity:
     input:
-        expand("results/02_activity_scores/hernandez/scores/{prior}.rds", prior = config["perturbation"]["PKNs"]),
-        expand("results/02_activity_scores/hijazi/scores/{prior}.rds", prior = config["perturbation"]["PKNs"])
-
-rule subset:
-    input:
-        expand("results/03_benchmark/{dataset}/02_benchmark_res_subset/subset/{PKN}/bench_{hernandez_methods}-{PKN}.csv", dataset = ["hernandez", "hijazi", "merged"], hernandez_methods = config["perturbation"]["methods"], PKN = config["perturbation"]["subset"])
-
-rule cptac:
-    input:
-        expand("results/02_activity_scores/cptac/scores/original/{dataset}-{prior}.rds", dataset = config["cptac"]["datasets"], prior = config["perturbation"]["PKNs"])
-
-rule normalisation:
-    input:
-        expand("results/02_activity_scores/cptac/scores/{normalisation}/{dataset}-phosphositeplus.rds", dataset = config["cptac"]["datasets"], normalisation = config["cptac"]["normalisation"])
-
-rule predicted:
-    input:
-        expand("results/03_benchmark/{dataset}/02_benchmark_res/{PKN}/bench_{hernandez_methods}-{PKN}.csv", dataset = ["hernandez", "hijazi", "merged"], hernandez_methods = config["perturbation"]["methods"], PKN = config["perturbation"]["all"]),
-        expand("results/03_benchmark/{dataset}/02_benchmark_res_subset/predicted/{PKN}/bench_{hernandez_methods}-{PKN}.csv", dataset = ["hernandez", "hijazi", "merged"], hernandez_methods = config["perturbation"]["methods"], PKN = config["perturbation"]["predicted"]),
-        expand("results/02_activity_scores/cptac/scores/original/{dataset}-{prior}.rds", dataset = config["cptac"]["datasets"], prior = config["perturbation"]["all"])
-        #expand("results/03_benchmark/{dataset}/02_benchmark_res_subset/johnson/{PKN}/bench_{hernandez_methods}-{PKN}.csv", dataset = ["hernandez", "hijazi", "merged"], hernandez_methods = config["perturbation"]["methods_johnson"], PKN = config["perturbation"]["johnson"])
-
-rule johnson:
-    input:
-        expand("results/03_benchmark/{dataset}/02_benchmark_res/{PKN}/bench_{hernandez_methods}-{PKN}.csv", dataset = ["hernandez", "hijazi", "merged"], hernandez_methods = config["perturbation"]["methods"], PKN = config["perturbation"]["johnson"]),
-        expand("results/03_benchmark/{dataset}/02_benchmark_res_subset/johnson/{PKN}/bench_{hernandez_methods}-{PKN}.csv", dataset = ["hernandez", "hijazi", "merged"], hernandez_methods = config["perturbation"]["methods"], PKN = config["perturbation"]["johnson"]),
-        expand("results/02_activity_scores/cptac/scores/original/{dataset}-{prior}.rds", dataset = config["cptac"]["datasets"], prior = config["perturbation"]["johnson"])
-
-rule rank:
-    input:
-        expand("results/03_benchmark/{dataset}/02_mean_rank/{PKN}/{hernandez_methods}-{PKN}.csv", dataset = ["hernandez", "hijazi", "merged"], hernandez_methods = config["perturbation"]["methods"], PKN = config["perturbation"]["PKNs"])
+        expand("results/02_activity_scores/dataset/scores/{prior}.rds", prior = config["perturbation"]["PKNs"], dataset = ["hernandez", "hijazi", "merged"])
 
 rule benchmark:
     input:
-        expand("results/03_benchmark/{dataset}/02_benchmark_res/{PKN}/bench_{hernandez_methods}-{PKN}.csv", dataset = ["hernandez", "hijazi", "merged"], hernandez_methods = config["perturbation"]["methods"], PKN = config["perturbation"]["PKNs"])
+        expand("results/03_benchmark/{dataset}/02_benchmark_res/{PKN}/bench_{hernandez_methods}-{PKN}.csv", dataset = ["hernandez", "hijazi", "merged"], hernandez_methods = config["perturbation"]["methods"], PKN = config["perturbation"]["PKNs"]),
+        expand("results/03_benchmark/{dataset}/02_mean_rank/{PKN}/{hernandez_methods}-{PKN}.csv", dataset = ["hernandez", "hijazi", "merged"], hernandez_methods = config["perturbation"]["methods"], PKN = config["perturbation"]["PKNs"])
+
+rule subset_predicted:
+    input:
+        expand("results/03_benchmark/{dataset}/02_benchmark_res_subset/GSknownSub/{PKN}/bench_{hernandez_methods}-{PKN}.csv", dataset = ["hernandez", "hijazi", "merged"], hernandez_methods = config["perturbation"]["methods"], PKN = config["perturbation"]["GSknownSub"]),
+        expand("results/03_benchmark/{dataset}/02_benchmark_res_subset/combinedSub/{PKN}/bench_{hernandez_methods}-{PKN}.csv", dataset = ["hernandez", "hijazi", "merged"], hernandez_methods = config["perturbation"]["methods"], PKN = config["perturbation"]["combinedSub"]),
+        expand("results/03_benchmark/{dataset}/02_mean_rank_subset/GSknownSub/{PKN}/{hernandez_methods}-{PKN}.csv", dataset = ["hernandez", "hijazi", "merged"], hernandez_methods = config["perturbation"]["methods"], PKN = config["perturbation"]["GSknownSub"]),
+        expand("results/03_benchmark/{dataset}/02_mean_rank_subset/combinedSub/{PKN}/{hernandez_methods}-{PKN}.csv", dataset = ["hernandez", "hijazi", "merged"], hernandez_methods = config["perturbation"]["methods"], PKN = config["perturbation"]["combinedSub"])
+
+rule subset_johnson:
+    input:
+        expand("results/03_benchmark/{dataset}/02_benchmark_res_subset/johnson1Sub/{PKN}/bench_{hernandez_methods}-{PKN}.csv", dataset = ["hernandez", "hijazi", "merged"], hernandez_methods = config["perturbation"]["methods"], PKN = config["perturbation"]["johnson1Sub"]),
+        expand("results/03_benchmark/{dataset}/02_benchmark_res_subset/johnson2Sub/{PKN}/bench_{hernandez_methods}-{PKN}.csv", dataset = ["hernandez", "hijazi", "merged"], hernandez_methods = config["perturbation"]["methods"], PKN = config["perturbation"]["johnson2Sub"]),
+        expand("results/03_benchmark/{dataset}/02_mean_rank_subset/johnson1Sub/{PKN}/{hernandez_methods}-{PKN}.csv", dataset = ["hernandez", "hijazi", "merged"], hernandez_methods = config["perturbation"]["methods"], PKN = config["perturbation"]["johnson1Sub"]),
+        expand("results/03_benchmark/{dataset}/02_mean_rank_subset/johnson2Sub/{PKN}/{hernandez_methods}-{PKN}.csv", dataset = ["hernandez", "hijazi", "merged"], hernandez_methods = config["perturbation"]["methods"], PKN = config["perturbation"]["johnson2Sub"])
+
+rule hijazi:
+    input:
+        expand("results/03_benchmark/hijaziDiscoverX/02_benchmark_res/phosphositeplus/bench_{hernandez_methods}-phosphositeplus.csv", hernandez_methods = config["perturbation"]["methods"]),
+        expand("results/03_benchmark/hijaziDiscoverX/02_mean_rank/phosphositeplus/{hernandez_methods}-phosphositeplus.csv", hernandez_methods = config["perturbation"]["methods"])
 
 rule exploration:
     input:
@@ -59,9 +49,21 @@ rule exploration:
         expand("results/04_exploration/{dataset}/benchmark/plots/performance.pdf", dataset = ["hernandez", "hijazi", "merged"]),
         expand("results/04_exploration/{dataset}/benchmark/plots/performance_subset.pdf", dataset = ["hernandez", "hijazi", "merged"])
 
-rule tmp:
+rule cptac:
     input:
-        expand("results/03_benchmark/hijaziDiscoverX/02_benchmark_res/phosphositeplus/bench_{hernandez_methods}-phosphositeplus.csv", hernandez_methods = config["perturbation"]["methods"])
+        expand("results/02_activity_scores/cptac/scores/original/{dataset}-{prior}.rds", dataset = config["cptac"]["datasets"], prior = config["perturbation"]["PKNs"])
+
+rule normalisation:
+    input:
+        expand("results/02_activity_scores/cptac/scores/{normalisation}/{dataset}-phosphositeplus.rds", dataset = config["cptac"]["datasets"], normalisation = config["cptac"]["normalisation"])
+
+rule subset_cptac:
+    input:
+        expand("results/02_activity_scores/cptac/scores/original/{dataset}-{prior}.rds", dataset = config["cptac"]["datasets"], prior = config["perturbation"]["johnson1Sub"]),
+        expand("results/02_activity_scores/cptac/scores/original/{dataset}-{prior}.rds", dataset = config["cptac"]["datasets"], prior = config["perturbation"]["johnson2Sub"]),
+        expand("results/02_activity_scores/cptac/scores/original/{dataset}-{prior}.rds", dataset = config["cptac"]["datasets"], prior = config["perturbation"]["GSknownSub"]),
+        expand("results/02_activity_scores/cptac/scores/original/{dataset}-{prior}.rds", dataset = config["cptac"]["datasets"], prior = config["perturbation"]["combinedSub"])
+
 
 rule figures:
     input:
@@ -69,7 +71,6 @@ rule figures:
         #"results/manuscript_figures/figure_2/overview_experiment.pdf",
         #"results/manuscript_figures/figure_3/auroc_res.pdf"
         #"results/manuscript_figures/supp_figures/predicted_combined.pdf"
-
 
 
 # Module for prior processing
