@@ -16,4 +16,4 @@ library(tidyverse)
 act_scores_hijazi <- readRDS(input_file)
 
 ## Save merged data ---------------------------
-saveRDS(act_scores, output_file)
+saveRDS(act_scores_hijazi, output_file)
