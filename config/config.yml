@@ -14,7 +14,10 @@ perturbation:
   PKNs: ["omnipath", "phosphositeplus", "ptmsigdb", "GPS", "iKiPdb", "networkin", "shuffled", "GSknown", "combined", "shuffled2"]
   subset: ["omnipath", "phosphositeplus", "ptmsigdb", "GPS", "iKiPdb", "networkin", "GSknown", "combined"]
   predicted: ["phosphositeplus", "GSknown_networkin", "GSknown_iKiPdb", "combined_networkin", "combined_iKiPdb"]
-  johnson: ["phosphositeplus", "phosphositeplus_johnson15", "phosphositeplus_phosformer15"]
+  GSknownSub: ["GSknown", "GSknown_networkin", "GSknown_iKiPdb"]
+  combinedSub: ["combined", "combined_networkin", "combined_iKiPdb"]
+  johnson1Sub: ["GSknown", "GSknown_johnson15", "GSknown_phosformer15"]
+  johnson2Sub: ["combined", "combined_johnson15", "combined_phosformer15"]
   all: ["omnipath", "phosphositeplus", "ptmsigdb", "GPS", "iKiPdb", "networkin", "shuffled2", "GSknown", "combined", "GSknown_networkin", "GSknown_iKiPdb", "combined_networkin", "combined_iKiPdb"]
   methods: ["chisq","fgsea","fisher", "KARP", "KS", "KSEA", "lmRoKAI", "mean", "median", "mlm", "norm_mean", "number_of_targets", "PCA", "ptmsea", "ulm", "UQ", "viper", "wilcox","zscore"] # "INKA", "UQ", "norm_fgsea"
   methods_johnson: ["chisq","fgsea","fisher", "KARP", "KS", "KSEA", "lmRoKAI", "mean", "median", "mlm", "norm_mean", "number_of_targets", "PCA", "ptmsea", "ulm", "UQ", "viper", "wilcox","zscore"]
