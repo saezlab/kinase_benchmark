@@ -10,12 +10,12 @@ if(exists("snakemake")){
   regulonsize_pdf <- snakemake@output$reg
 }else{
   prior_files <- list.files("results/00_prior", pattern = "tsv", full.names = T)
-  coverage_pdf <- "results/manuscript_figures/figure_1/coverage_merged.pdf"
-  kinase_pdf <- "results/manuscript_figures/figure_1/kinase_overview.pdf"
-  edge_pdf <- "results/manuscript_figures/figure_1/edge_overview.pdf"
-  jaccard_pdf <- "results/manuscript_figures/figure_1/jaccard.pdf"
-  kintype_pdf <- "results/manuscript_figures/figure_1/kinase_type.pdf"
-  regulonsize_pdf <- "results/manuscript_figures/figure_1/regulon_size.pdf"
+  prior_files <- prior_files[c(1,2,3,4,6,7,9,10)]
+  jaccard_pdf <- "results/manuscript_figures/figure_3/supp/jaccard.pdf"
+  kintype_pdf <- "results/manuscript_figures/figure_3/supp/kinase_type.pdf"
+  upset_kin <- "results/manuscript_figures/figure_3/supp/upset_kin.pdf"
+  upset_edge <- "results/manuscript_figures/figure_3/supp/upset_edge.pdf"
+  regulonsize_pdf <- "results/manuscript_figures/figure_3/supp/regulon_size.pdf"
 }
 
 ## Libraries ---------------------------
@@ -62,101 +62,6 @@ PKN_order <- coverage %>%
   arrange(desc(`all kinases`), desc(`kinases with \nat least 5 targets`)) %>%
   pull(PKN)
 coverage$PKN <- factor(coverage$PKN, levels = PKN_order)
-
-text_size <- 10
-
-pps_p <- ggplot(coverage %>% filter(class == "pps")) +
-  aes(x = PKN, y = value) +
-  geom_bar(stat="identity", color="black", position=position_dodge(), fill = "#47AD7A", width=0.7)+
-  theme_minimal() + xlab("") + ylab("") +
-  ggtitle("unique peptides") +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1),
-        text = element_text(size = text_size))
-
-edges_p <- ggplot(coverage %>% filter(class == "edges")) +
-  aes(x = PKN, y = value) +
-  geom_bar(stat="identity", color="black", position=position_dodge(), fill = "#AD477A", width=0.7)+
-  theme_minimal() + xlab("") + ylab("") +
-  ggtitle("kinase-peptide links") +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1),
-        text = element_text(size = text_size)) +
-  scale_y_continuous(expand = c(0, 0))
-
-kin_p <- ggplot(data=coverage %>% filter(class == "kinase"), aes(x=PKN, y=value, fill=type)) +
-  geom_bar(stat="identity",color="black", position=position_dodge(), width=0.7) +
-  scale_fill_manual(labels = c("all", "> 4 targets"), values=c('#477AA3','#97CAF3')) +
-  theme_minimal() + xlab("") + ylab("") + guides(fill=guide_legend(title="kinases")) +
-  ggtitle("unique kinases") +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1),
-        text = element_text(size = text_size),
-        legend.position = "bottom",
-        legend.key.size = unit(0.2, 'cm')) +
-  scale_y_continuous(expand = c(0, 0))
-
-figure_merged <- ggarrange(kin_p + coord_flip(), edges_p + coord_flip(),
-          labels = NULL,
-          ncol = 1,
-          common.legend = TRUE, legend = "top",
-          align = "hv",
-          font.label = list(size = 10, color = "black", face = "bold", family = NULL, position = "top"))
-
-pdf(file=coverage_pdf, height = 5, width = 3)
-plot(figure_merged)
-dev.off()
-
-## Kinase overview ------------------
-resource_df <- map_dfr(names(prior), function(x){
-  df <- prior[[x]]
-  df %>%
-    add_column(resource = x) %>%
-    mutate(edge = paste(source, target, sep = "_"))
-})
-
-kinase_m <- resource_df %>%
-  dplyr::select(source,resource) %>%
-  add_column(present = 1) %>%
-  distinct() %>%
-  pivot_wider(names_from = source, values_from = present, values_fill = 0) %>%
-  column_to_rownames("resource")
-
-sum(colSums(kinase_m) > 1)/ncol(kinase_m)
-kinase_m[colSums(kinase_m) == 1] %>%
-  rowSums()
-order_kin <- colSums(kinase_m) %>%
-  order()
-kinase_m <- kinase_m[c(PKN_order), rev(order_kin)]
-
-coverage_df <- pheatmap(kinase_m, cluster_rows = F,
-                        cluster_cols = F, show_colnames = F,
-                        treeheight_row = 0, color = c("white", "#477AA3"))
-
-pdf(kinase_pdf, height = 1.5, width = 3.7)
-print(coverage_df)
-dev.off()
-
-
-## Edge overview ------------------
-edge_m <- resource_df %>%
-  dplyr::select(edge,resource) %>%
-  add_column(present = 1) %>%
-  distinct() %>%
-  pivot_wider(names_from = edge, values_from = present, values_fill = 0) %>%
-  column_to_rownames("resource")
-
-order_edge <- colSums(edge_m) %>%
-  order()
-edge_m <- edge_m[c(PKN_order), rev(order_edge)]
-sum(colSums(edge_m) > 1)/ncol(edge_m)
-edge_m[colSums(edge_m) == 1] %>%
-  rowSums()
-
-coverage_edge_df <- pheatmap(edge_m, cluster_rows = F,
-                             cluster_cols = F, show_colnames = F,
-                             treeheight_row = 0, color = c("white", "#AD477A"))
-
-pdf(edge_pdf, height = 1.5, width = 7)
-print(coverage_edge_df)
-dev.off()
 
 ## UpSetPlots ------------------
 kin_list <- map(prior, function(df){

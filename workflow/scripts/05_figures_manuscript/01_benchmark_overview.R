@@ -58,6 +58,11 @@ pHit <- map_dfr(k_phit_c, function(k){rank_df %>%
   ungroup()
 })
 
+pHit %>% group_by(method) %>% summarise(phit = mean(phit)) %>% arrange(desc(phit))
+pHit %>% filter(k_phit == 5) %>% arrange(desc(phit))
+pHit %>% filter(k_phit == 10) %>% arrange(desc(phit))
+pHit %>% filter(k_phit == 20) %>% arrange(desc(phit))
+
 ## Load AUROC ---------------------------
 if (any(str_detect(bench_files, "subset"))){
   net_id <- 6
@@ -95,15 +100,21 @@ mean_auroc <- bench_df %>%
   summarize(mean_auroc = mean(score)) %>%
   arrange(desc(mean_auroc))
 
+mean_auroc
+
 mean_rank <- rank_df %>%
   group_by(method) %>%
   summarize(mean_auroc = mean(scaled_rank)) %>%
   arrange(mean_auroc)
 
+mean_rank
+
 mean_phit <- pHit %>%
   group_by(method) %>%
   summarize(mean_auroc = mean(phit)) %>%
   arrange(desc(mean_auroc))
+
+mean_phit
 
 # Update df to ensure methods are ordered based on mean AUROC
 bench_df <- bench_df %>%

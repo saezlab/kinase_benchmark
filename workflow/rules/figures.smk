@@ -85,7 +85,7 @@ rule citation_info:
 rule supp_figure:
     input:
         bench_files = expand("results/03_benchmark/merged/02_benchmark_res_subset/predicted/{PKN}/bench_{methods}-{PKN}.csv", PKN = config["perturbation"]["predicted"], methods = config["perturbation"]["methods"]),
-        predicted = expand("results/03_benchmark/merged/02_benchmark_res_subset/johnson/{PKN}/bench_{methods}-{PKN}.csv", PKN = config["perturbation"]["johnson"], methods = config["perturbation"]["methods_johnson"])
+        #predicted = expand("results/03_benchmark/merged/02_benchmark_res_subset/johnson/{PKN}/bench_{methods}-{PKN}.csv", PKN = config["perturbation"]["johnson"], methods = config["perturbation"]["methods_johnson"])
     output:
         merged = "results/manuscript_figures/supp_figures/combined.pdf",
         pred = "results/manuscript_figures/supp_figures/predicted_combined.pdf"
