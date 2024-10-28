@@ -1,13 +1,13 @@
 if(exists("snakemake")){
-  prior_files <- snakemake@input$prior_files
-  kin_pdf <- snakemake@output$kin
-  kinase_pdf <- snakemake@output$kin_heat
-  edg_pdf <- snakemake@output$edges
-  edge_pdf <- snakemake@output$edges_heat
+  meta_file <- snakemake@input$meta
+  bench_files <- snakemake@input$bench
+  rank_files <- snakemake@input$rank
+  overview_meta <- snakemake@output$ove
+  out_plot <- snakemake@output$out
 }else{
   meta_file <- "results/01_processed_data/merged/data/benchmark_metadata.csv"
   overview_meta <- "results/manuscript_figures/figure_1/supp/overview_kin.pdf"
-    
+
   bench_files <- list.files("results/03_benchmark/hijazi/02_benchmark_res/phosphositeplus",
                             pattern = "bench", recursive = TRUE, full.names = T)
   bench_files <- c(bench_files, list.files("results/03_benchmark/hijaziDiscoverX/02_benchmark_res/phosphositeplus",
@@ -18,6 +18,7 @@ if(exists("snakemake")){
                            pattern = "csv", recursive = TRUE, full.names = T))
   out_plot <- "results/manuscript_figures/figure_1/supp/hijazi.pdf"
 }
+
 
 ## Libraries ---------------------------
 library(tidyverse)
@@ -46,7 +47,7 @@ kin_p <- ggplot(kin_df, aes(x = kinase, y = Freq, fill = perturbation)) +
   geom_bar(stat = "identity") +
   coord_flip() +
   theme_minimal() +
-  scale_fill_manual(values=c("#E69F00", "#56B4E9")) +
+  scale_fill_manual(values=c("#E9B133", "#4E79A7")) +
   xlab("") +
   ylab("# perturbations") +
   theme(legend.key.size = unit(0.3, "cm"),
@@ -58,7 +59,7 @@ length(unique(hernandez_meta$id))
 length(unique(kin_df$kinase))
 kin_df %>% group_by(perturbation) %>% summarise(total = sum(Freq))
 
-pdf(overview_meta, width = 2.7, height = 7.2)
+pdf(overview_meta, width = 3, height = 8)
 kin_p
 dev.off()
 
@@ -96,7 +97,18 @@ df_perturb_all %>% group_by(bench) %>% summarise(auroc = mean(score)) %>% arrang
 
 df_perturb <- df_perturb_all %>%
   dplyr::filter(metric == "mcauroc") %>%
-  dplyr::select(method, bench, score) 
+  dplyr::select(method, bench, score) %>%
+  mutate(method = recode(method,
+                         "chisq" = "X\u00B2 test",
+                         "fisher" = "Fisher",
+                         "KS" = "KS test",
+                         "lmRoKAI" = "lm RoKAI",
+                         "norm_mean" = "norm mean",
+                         "number_of_targets" = "n targets",
+                         "ptmsea" = "PTM-SEA",
+                         "viper" = "VIPER",
+                         "wilcox" = "MWU test",
+                         "zscore" = "z-score"))
 
 mean_auroc <- df_perturb %>%
   group_by(method, bench) %>%
@@ -115,8 +127,8 @@ lines <- mean_auroc$mean_auroc
 names(lines) <- mean_auroc$method
 
 auroc_p <- ggplot(df_perturb, aes(x = method, y = score, fill = bench)) +
-  geom_boxplot(linewidth = 0.5, outlier.size = 0.8) +
-  scale_fill_manual(values = c("#4292C6", "#b54d4a")) +  # Muted scientific color palette
+  geom_boxplot(linewidth = 0.3, outlier.size = 0.5) +
+  scale_fill_manual(values = c("#4292C6", "#C67642")) +  # Muted scientific color palette
   theme_bw() +
   theme(
     legend.position = "none",
@@ -144,10 +156,10 @@ kin_p <- ggplot(kin_df, aes(x = method, y = kinases, fill = bench)) +
   scale_y_continuous(
     name = "tmp",
     limits = c(0, 50),
-    breaks = seq(0, 50, by = 10) #
+    breaks = seq(0, 50, by = 20) #
   ) +
   theme_bw() +
-  theme(
+  theme(legend.key.size = unit(0.3, "cm"),
     legend.position = "none",
     panel.spacing.x = unit(0, "lines"),
     text = element_text(family = "Helvetica", size = 11), # Set label font to Helvetica size 9
@@ -156,11 +168,11 @@ kin_p <- ggplot(kin_df, aes(x = method, y = kinases, fill = bench)) +
     axis.text.x = element_blank(),   # Remove x-axis text labels
     axis.ticks.x = element_blank()
   )+
-  scale_fill_manual(values = c("#4292C6", "#b54d4a")) +
+  scale_fill_manual(values = c("#4292C6", "#C67642")) +
   ggtitle("Number of Kinases in Evaluation Set")
 
-full_p <- ggarrange(kin_p, auroc_p, ncol = 1, common.legend = T, heights = c(3, 9))
+full_p <- ggarrange(kin_p, auroc_p, ncol = 1, common.legend = T, heights = c(3.3, 9))
 
-pdf(out_plot, width = 7, height = 4)
+pdf(out_plot, width = 4, height = 3.8)
 full_p
 dev.off()

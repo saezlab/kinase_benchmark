@@ -13,7 +13,30 @@ rule overview_bench:
         "../envs/figures.yml"
     script:
         "../scripts/05_figures_manuscript/01_benchmark_overview.R"
-      
+
+rule supp_figure1_overview:
+    input:
+        meta = "results/01_processed_data/merged/data/benchmark_metadata.csv",
+        bench = expand("results/03_benchmark/{dataset}/02_benchmark_res/phosphositeplus/bench_{methods}-phosphositeplus.csv", dataset = ["hijazi", "hijaziDiscoverX"], methods = config["perturbation"]["methods"]),
+        rank = expand("results/03_benchmark/{dataset}/02_mean_rank/phosphositeplus/{methods}-phosphositeplus.csv", dataset = ["hijazi", "hijaziDiscoverX"], methods = config["perturbation"]["methods"])
+    output:
+        ove = "results/manuscript_figures/figure_1/supp/overview_kin.pdf",
+        out = "results/manuscript_figures/figure_1/supp/hijazi.pdf"
+    conda:
+        "../envs/figures.yml"
+    script:
+        "../scripts/05_figures_manuscript/01.1_supp_overview.R"
+
+rule supp_figure1_rank:
+    input:
+        rank = expand("results/03_benchmark/merged/02_mean_rank/{PKN}/{methods}-{PKN}.csv", PKN = ["phosphositeplus"], methods = ["zscore"])
+    output:
+        plot = "results/manuscript_figures/figure_1/supp/comparison_rank_subset.pdf"
+    conda:
+        "../envs/figures.yml"
+    script:
+        "../scripts/05_figures_manuscript/01.1_supp_rank.R"
+        
 
 # ------------------------------------ FIGURE 2 ------------------------------------
 rule overview_tumor:
