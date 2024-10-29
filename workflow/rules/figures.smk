@@ -48,28 +48,38 @@ rule overview_tumor:
         "../envs/figures.yml"
     script:
         "../scripts/05_figures_manuscript/01_cptac_overview.R"
-        
-rule act_comparison:
+      
+
+# ------------------------------------ FIGURE 3 ------------------------------------
+rule prior_coverage:
     input:
-        bench = "results/01_processed_data/hernandez/data/benchmark_data.csv",
-        benchMeta = "results/01_processed_data/hernandez/data/benchmark_metadata.csv",
-        hijazi = "results/01_processed_data/hijazi/data/benchmark_data.csv",
-        hijMeta = "results/01_processed_data/hijazi/data/benchmark_metadata.csv",
-        prior_files = expand("results/01_processed_data/hernandez/mapped_priors/{PKN}.tsv", PKN = config["figures"]["PKN_figure1"]),
-        hijPrior = expand("results/01_processed_data/hijazi/mapped_priors/{PKN}.tsv", PKN = config["figures"]["PKN_figure1"]),
-        act =  expand("results/02_activity_scores/merged/final_scores/{PKN}.rds", PKN = config["figures"]["PKN_figure1"])
+        prior_files = expand("results/00_prior/{PKN}.tsv", PKN = config["figures"]["coverage"])
     output:
-        overview = "results/manuscript_figures/figure_2/overview_experiment.pdf",
-        corrMeth = "results/manuscript_figures/figure_2/corrplot_methods.pdf",
-        corrPrior = "results/manuscript_figures/figure_2/corrplot_priors.pdf"
-    params:
-        methods = config["perturbation"]["methods"]
+        kin="results/manuscript_figures/figure_3/coverage_kin.pdf",
+        kin_heat="results/manuscript_figures/figure_3/kinase_overview.pdf",
+        edges="results/manuscript_figures/figure_3/coverage_edge.pdf",
+        edges_heat="results/manuscript_figures/figure_3/edge_overview.pdf"
     conda:
         "../envs/figures.yml"
     script:
-        "../scripts/05_figures_manuscript/02_figure_comparison_activity.R"
+        "../scripts/05_figures_manuscript/03_prior_coverage.R"
+        
+rule performance_priors:
+    input:
+        bench = expand("results/03_benchmark/merged/02_benchmark_res/{PKN}/bench_zscore-{PKN}.csv", PKN = config["figures"]["evaluation"]),
+        rank = expand("results/03_benchmark/merged/02_mean_rank/{PKN}/zscore-{PKN}.csv", PKN = config["figures"]["evaluation"]),
+        act = expand("data/tumor_benchmark/activity_scores/{PKN_cptac}_roc_actsiteBM.rds", PKN_cptac = congif["figures"]["evaluation_cptac"])
+        tumor = "data/tumor_benchmark/activity_scores/roc_data.rds"
+    output:
+        plt="results/manuscript_figures/figure_3/zscore.pdf"
+    conda:
+        "../envs/figures.yml"
+    script:
+        "../scripts/05_figures_manuscript/03_prior_evaluation.R"
+        
 
-# ------------------------------------ FIGURE 3 ------------------------------------
+
+        
 rule benchmark_figure:
     input:
         bench_files = expand("results/03_benchmark/merged/02_benchmark_res/{PKN}/bench_{methods}-{PKN}.csv", PKN = config["figures"]["PKN_figure2"], methods = config["perturbation"]["methods"]),
@@ -103,6 +113,26 @@ rule citation_info:
         "../envs/figures.yml"
     script:
         "../scripts/01_data_processing/protein_citations.R"
+        
+rule act_comparison:
+    input:
+        bench = "results/01_processed_data/hernandez/data/benchmark_data.csv",
+        benchMeta = "results/01_processed_data/hernandez/data/benchmark_metadata.csv",
+        hijazi = "results/01_processed_data/hijazi/data/benchmark_data.csv",
+        hijMeta = "results/01_processed_data/hijazi/data/benchmark_metadata.csv",
+        prior_files = expand("results/01_processed_data/hernandez/mapped_priors/{PKN}.tsv", PKN = config["figures"]["PKN_figure1"]),
+        hijPrior = expand("results/01_processed_data/hijazi/mapped_priors/{PKN}.tsv", PKN = config["figures"]["PKN_figure1"]),
+        act =  expand("results/02_activity_scores/merged/final_scores/{PKN}.rds", PKN = config["figures"]["PKN_figure1"])
+    output:
+        overview = "results/manuscript_figures/figure_2/overview_experiment.pdf",
+        corrMeth = "results/manuscript_figures/figure_2/corrplot_methods.pdf",
+        corrPrior = "results/manuscript_figures/figure_2/corrplot_priors.pdf"
+    params:
+        methods = config["perturbation"]["methods"]
+    conda:
+        "../envs/figures.yml"
+    script:
+        "../scripts/05_figures_manuscript/02_figure_comparison_activity.R"
 
 # ------------------------------------ SUPP. FIGURE ------------------------------------
 rule supp_figure:
