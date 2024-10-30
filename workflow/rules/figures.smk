@@ -41,9 +41,11 @@ rule supp_figure1_rank:
 # ------------------------------------ FIGURE 2 ------------------------------------
 rule overview_tumor:
     input:
-        bench = "data/tumor_benchmark/activity_scores/roc_data.rds"
+        bench = "data/tumor_benchmark/activity_scores/roc_data.rds",
+        act = "data/tumor_benchmark/activity_scores/psp_roc_actsiteBM.rds"
     output:
-        plot = "results/manuscript_figures/figure_2/auroc_tumor_phosphositeplus.pdf"
+        plot = "results/manuscript_figures/figure_2/auroc_tumor_phosphositeplus.pdf",
+        plotact = "results/manuscript_figures/figure_2/auroc_act_phosphositeplus.pdf"
     conda:
         "../envs/figures.yml"
     script:
