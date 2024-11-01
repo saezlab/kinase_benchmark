@@ -70,7 +70,7 @@ rule performance_priors:
     input:
         bench = expand("results/03_benchmark/merged/02_benchmark_res/{PKN}/bench_zscore-{PKN}.csv", PKN = config["figures"]["evaluation"]),
         rank = expand("results/03_benchmark/merged/02_mean_rank/{PKN}/zscore-{PKN}.csv", PKN = config["figures"]["evaluation"]),
-        act = expand("data/tumor_benchmark/activity_scores/{PKN_cptac}_roc_actsiteBM.rds", PKN_cptac = congif["figures"]["evaluation_cptac"])
+        act = expand("data/tumor_benchmark/activity_scores/{PKN_cptac}_roc_actsiteBM.rds", PKN_cptac = config["figures"]["evaluation_cptac"]),
         tumor = "data/tumor_benchmark/activity_scores/roc_data.rds"
     output:
         plt="results/manuscript_figures/figure_3/zscore.pdf"
@@ -79,6 +79,45 @@ rule performance_priors:
     script:
         "../scripts/05_figures_manuscript/03_prior_evaluation.R"
         
+rule prior_coverage_supp:
+    input:
+        prior_files = expand("results/00_prior/{PKN}.tsv", PKN = config["figures"]["coverage"]),
+        class_kin = "resources/kinase_class.csv"
+    output:
+        upset="results/manuscript_figures/figure_3/supp/upset_kin.pdf",
+        upsetEdge="results/manuscript_figures/figure_3/supp/upset_edge.pdf",
+        pps="results/manuscript_figures/figure_3/supp/jaccard.pdf",
+        kin_type="results/manuscript_figures/figure_3/supp/kinase_type.pdf",
+        reg="results/manuscript_figures/figure_3/supp/regulon_size.pdf"
+    conda:
+        "../envs/figures.yml"
+    script:
+        "../scripts/05_figures_manuscript/03.1supp_overview_priors.R"       
+
+rule correlation_analysis:
+    input:
+        pearson_prior="results/04_exploration/merged/correlation/correlation_priors_pearson.rds",
+        pearson_method="results/04_exploration/merged/correlation/correlation_methods_pearson.rds",
+        spearman_prior="results/04_exploration/merged/correlation/correlation_priors_spearman.rds",
+        spearman_method="results/04_exploration/merged/correlation/correlation_methods_spearman.rds",
+        jaccard_up_prior="results/04_exploration/merged/jaccard/jaccard_priors_up_10.rds",
+        jaccard_down_prior="results/04_exploration/merged/jaccard/jaccard_priors_down_10.rds",
+        jaccard_up_method="results/04_exploration/merged/jaccard/jaccard_methods_up_10.rds",
+        jaccard_down_method="results/04_exploration/merged/jaccard/jaccard_methods_down_10.rds"
+    output:
+        cor_plot_pearson_prior="results/manuscript_figures/figure_3/supp/corrplot_pearson_priors.pdf",
+        cor_plot_spearman_prior="results/manuscript_figures/figure_3/supp/corrplot_spearman_priors.pdf",
+        cor_plot_jacc_up_prior="results/manuscript_figures/figure_3/supp/corrplot_jacc_up_priors.pdf",
+        cor_plot_jacc_down_prior="results/manuscript_figures/figure_3/supp/corrplot_jacc_down_priors.pdf",
+        cor_plot_pearson_method="results/manuscript_figures/figure_3/supp/corrplot_pearson_methods.pdf",
+        cor_plot_spearman_method="results/manuscript_figures/figure_3/supp/corrplot_spearman_methods.pdf",
+        cor_plot_jacc_up_method="results/manuscript_figures/figure_3/supp/corrplot_jacc_up_methods.pdf",
+        cor_plot_jacc_down_method="results/manuscript_figures/figure_3/supp/corrplot_jacc_down_methods.pdf"
+    conda:
+        "../envs/figures.yml"
+    script:
+        "../scripts/05_figures_manuscript/03.1supp_comparison_activity.R"       
+  
 
 
         

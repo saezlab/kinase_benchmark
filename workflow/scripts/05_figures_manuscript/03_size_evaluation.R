@@ -6,9 +6,10 @@ if(exists("snakemake")){
 }else{
   rank_files <- list.files("results/03_benchmark/merged/02_mean_rank",
                            pattern = "csv", recursive = TRUE, full.names = T)
-  rank_files <- rank_files[str_detect(rank_files, "/shuffled2/|/iKiPdb/|/GPS/|/omnipath/|/networkin/|/phosphositeplus/|/ptmsigdb/|/combined/|/GSknown/")]
+  rank_files <- rank_files[str_detect(rank_files, "/iKiPdb/|/GPS/|/omnipath/|/networkin/|/phosphositeplus/|/ptmsigdb/|/combined/|/GSknown/")]
   activating_strat <- "data/tumor_benchmark/performance_regulon/known_strat_rocs_actsiteBM.Rds"
   activating_kins <- "data/tumor_benchmark/performance_regulon/known_eval_kins_actsiteBM.Rds"
+  activating_kins_medium <- "data/tumor_benchmark/performance_regulon/known_"
   performance_pert <- "results/manuscript_figures/figure_3/regulon_perturbation.pdf"
   performance_act <- "results/manuscript_figures/figure_3/regulon_activatingsites.pdf"
   performance_tumor <- "results/manuscript_figures/figure_3/regulon_tumor.pdf"
@@ -56,7 +57,7 @@ rank_df <- rank_df %>%
   left_join(kinase_strat, by = "targets") %>%
   dplyr::filter(!is.na(strat))
 
-order_net <- c("curated combined", "GPS gold", "PhosphoSitePlus", "PTMsigDB", "NetworKIN", "OmniPath", "extended combined", "iKiP-DB", "Shuffled")
+order_net <- c("curated combined", "GPS gold", "PhosphoSitePlus", "PTMsigDB", "NetworKIN", "OmniPath", "extended combined", "iKiP-DB")
 rank_df$prior <- factor(rank_df$prior, levels = order_net)
 rank_df$strat <- factor(rank_df$strat, levels = c("small", "medium", "large"))
 
@@ -140,6 +141,8 @@ df_act <- readRDS(activating_strat) %>%
 
 df_act$prior <- factor(df_act$prior, levels = order_net)
 df_act$strat <- factor(df_act$strat, levels = c("small", "medium", "large"))
+
+readRDS(activating_kins)
 
 auroc_p <- ggplot(df_act, aes(x = prior, y = auroc, fill = strat)) +
   geom_boxplot(linewidth = 0.3, outlier.size = 0.1) +

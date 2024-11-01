@@ -7,11 +7,12 @@ if(exists("snakemake")){
   plot_priors <-  snakemake@output$plotPriors
 }else{
   act_files <- list.files("results/02_activity_scores/merged/scores", pattern = "rds", recursive = T, full.names = T)
+  act_files <- act_files[c(8, 4, 10, 9, 13, 14, 3, 7)]
   corr_type <- "spearman"
   correlation_methods <- "results/04_exploration/merged/correlation/correlation_methods_spearman.rds"
   correlation_priors <- "results/04_exploration/merged/correlation/correlation_priors_spearman.rds"
-  plot_methods <- "results/04_exploration/merged/correlation/plots/correlation_methods_spearman.rds"
-  plot_priors <- "results/04_exploration/merged/correlation/plots/correlation_priors_spearman.rds"
+  plot_methods <- "results/04_exploration/merged/correlation/plots/correlation_methods_spearman.pdf"
+  plot_priors <- "results/04_exploration/merged/correlation/plots/correlation_priors_spearman.pdf"
 }
 
 ## Libraries ---------------------------
@@ -69,11 +70,11 @@ prior_comparison <- map(names(act_list[[1]]), function(method_idx){
 })
 
 names(prior_comparison) <- names(act_list[[1]])
- 
+
 ## Plot jaccard ---------------------------
 method_mean <- map_dfr(names(method_comparison), function(prior_id){
     mat <- method_comparison[[prior_id]]
-    mat %>% 
+    mat %>%
     data.frame() %>%
     rownames_to_column("method1") %>%
       pivot_longer(!method1, names_to = "method2", values_to = "jaccard")
@@ -82,8 +83,8 @@ method_mean <- map_dfr(names(method_comparison), function(prior_id){
   summarise(jaccard = mean(jaccard)) %>%
   ungroup() %>%
   pivot_wider(names_from = method2, values_from = jaccard) %>%
-  column_to_rownames("method1") 
-  
+  column_to_rownames("method1")
+
 method_mean <- method_mean %>%
   as.matrix()
 
@@ -97,8 +98,8 @@ dev.off()
 
 prior_mean <- map_dfr(names(prior_comparison), function(prior_id){
     mat <- prior_comparison[[prior_id]]
-    mat %>% 
-    data.frame() %>% 
+    mat %>%
+    data.frame() %>%
     rownames_to_column("prior1") %>%
       pivot_longer(!prior1, names_to = "prior2", values_to = "jaccard")
 }) %>%
@@ -106,8 +107,8 @@ prior_mean <- map_dfr(names(prior_comparison), function(prior_id){
   summarise(jaccard = mean(jaccard)) %>%
   ungroup() %>%
   pivot_wider(names_from = prior2, values_from = jaccard) %>%
-  column_to_rownames("prior1") 
-  
+  column_to_rownames("prior1")
+
 prior_mean <- prior_mean %>%
   as.matrix()
 

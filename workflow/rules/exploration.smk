@@ -59,7 +59,7 @@ rule test_performance:
 
 rule calculate_correlation:
     input:
-        act_files = expand("results/02_activity_scores/{{dataset}}/scores/{PKN}.rds", PKN = config["perturbation"]["PKNs"]),
+        act_files = expand("results/02_activity_scores/{{dataset}}/scores/{PKN}.rds", PKN = config["figures"]["coverage"]),
     params:
         corr_type = lambda w: w.corr_type
     output:
@@ -74,7 +74,7 @@ rule calculate_correlation:
 
 rule calculate_jaccard:
     input:
-        act_files = expand("results/02_activity_scores/{{dataset}}/scores/{PKN}.rds", PKN = config["perturbation"]["PKNs"]), 
+        act_files = expand("results/02_activity_scores/{{dataset}}/scores/{PKN}.rds", PKN = config["figures"]["coverage"]), 
     params:
         jaccard_i = lambda w: w.jaccard_i,
         jacc_type = lambda w: w.jacc_type

@@ -1,8 +1,6 @@
 if(exists("snakemake")){
   prior_files <- snakemake@input$prior_files
-  coverage_pdf <- snakemake@output$kin
-  kinase_pdf <- snakemake@output$kin_heat
-  edge_pdf <- snakemake@output$edges
+  resource_class <- snakemake@input$class_kin
   upset_kin <- snakemake@output$upset
   upset_edge <- snakemake@output$upsetEdge
   jaccard_pdf <- snakemake@output$pps
@@ -10,6 +8,7 @@ if(exists("snakemake")){
   regulonsize_pdf <- snakemake@output$reg
 }else{
   prior_files <- list.files("results/00_prior", pattern = "tsv", full.names = T)
+  resource_class <- "resources/kinase_class.csv"
   prior_files <- prior_files[c(1,2,3,4,6,7,9,10)]
   jaccard_pdf <- "results/manuscript_figures/figure_3/supp/jaccard.pdf"
   kintype_pdf <- "results/manuscript_figures/figure_3/supp/kinase_type.pdf"
@@ -30,38 +29,17 @@ prior <- map(prior_files, function(file){read_tsv(file, col_types = cols()) %>%
     dplyr::filter(mor == 1) %>%
     filter(!str_detect(source, "-family")) %>%
     filter(!str_detect(source, "-subfamily"))})
-names(prior) <- str_remove(str_remove(prior_files, "results/00_prior/"), ".tsv")
-
-coverage <- map_dfr(names(prior), function(PKN_idx){
-  PKN <- prior[[PKN_idx]]
-  kinases <- table(PKN$source) %>% as.data.frame()
-
-  data.frame(PKN = PKN_idx,
-             value = c(nrow(kinases),
-                       nrow(kinases %>% dplyr::filter(Freq >= 5)),
-                       length(unique(PKN$target)),
-                       nrow(PKN)),
-             type = c("all kinases",
-                      "kinases with \nat least 5 targets",
-                      "none",
-                      "none"),
-             class = c("kinase", "kinase", "pps", "edges"))
-})
-
-coverage <- coverage %>% arrange(desc(value))
-coverage %>%
-  filter(type == "all kinases" & class == "kinase")
-
-coverage %>%
-  filter(class == "edges")
-
-PKN_order <- coverage %>%
-  dplyr::filter(class == "kinase") %>%
-  dplyr::select(PKN, type, value) %>%
-  pivot_wider(names_from = type, values_from = value) %>%
-  arrange(desc(`all kinases`), desc(`kinases with \nat least 5 targets`)) %>%
-  pull(PKN)
-coverage$PKN <- factor(coverage$PKN, levels = PKN_order)
+tmp <- data.frame(name = str_remove(str_remove(prior_files, "results/00_prior/"), ".tsv")) %>%
+  mutate(PKN = recode(name,
+                      "iKiPdb" = "iKiP-DB",
+                      "GPS" = "GPS gold",
+                      "omnipath" = "OmniPath",
+                      "networkin" = "NetworKIN",
+                      "phosphositeplus" = "PhosphoSitePlus",
+                      "ptmsigdb" = "PTMsigDB",
+                      "combined" = "extended combined",
+                      "GSknown" = "curated combined"))
+names(prior) <- tmp$PKN
 
 ## UpSetPlots ------------------
 kin_list <- map(prior, function(df){
@@ -128,50 +106,32 @@ dev.off()
 
 jaccard_m
 ## Tyrosine versus Serin/Thr
-kinase_type_df <- map_dfr(names(prior), function(x){
-  df <- prior[[x]]
-  tmp <- df %>%
-    mutate(kinase = case_when(
-      str_detect(position, "T") ~ "Threonine",
-      str_detect(position, "S") ~ "Serine",
-      str_detect(position, "Y") ~ "Tyrosin",
-      str_detect(position, "H") ~ "Histidine"
-    ))
+class_kin <- "prior"
+kinase_type_df <- read_csv(resource_class, col_types = cols()) %>%
+  mutate(resource = recode(resource,
+                      "iKiPdb" = "iKiP-DB",
+                      "GPS" = "GPS gold",
+                      "omnipath" = "OmniPath",
+                      "networkin" = "NetworKIN",
+                      "phosphositeplus" = "PhosphoSitePlus",
+                      "ptmsigdb" = "PTMsigDB",
+                      "combined" = "extended combined",
+                      "GSknown" = "curated combined")) %>%
+  filter(resource %in% names(prior))
 
-  if ("Histidine" %in% tmp$kinase){
-    overview_kin_type <- table(tmp$source, tmp$kinase) %>%
-      as.data.frame() %>%
-      pivot_wider(names_from = "Var2", values_from = "Freq") %>%
-      mutate(kinase = case_when(
-        (Serine > 0 | Threonine > 0) & Tyrosin == 0 & Histidine == 0 ~ "Serine/Threonine",
-        (Serine == 0 & Threonine == 0) & Tyrosin == 0 & Histidine > 0 ~ "Histidine",
-        (Serine == 0 & Threonine == 0) & Histidine == 0 & Tyrosin > 0 ~ "Tyrosine",
-        ((Serine > 0 | Threonine > 0) & Tyrosin > 0) | (Histidine > 0 & Tyrosin > 0) | ((Serine > 0 | Threonine > 0) & Histidine > 0)~ "Ambiguous"
-      ))
-    overview_kin_type$n_targets <- rowSums(overview_kin_type[2:5])
-    overview_kin_type$resource <- x
-  } else{
-    overview_kin_type <- table(tmp$source, tmp$kinase) %>%
-      as.data.frame() %>%
-      pivot_wider(names_from = "Var2", values_from = "Freq") %>%
-      mutate(kinase = case_when(
-        (Serine > 0 | Threonine > 0) & Tyrosin == 0 ~ "Serine/Threonine",
-        (Serine == 0 & Threonine == 0) & Tyrosin > 0 ~ "Tyrosine",
-        ((Serine > 0 | Threonine > 0) & Tyrosin > 0)~ "Ambiguous"
-      ))
-    overview_kin_type$n_targets <- rowSums(overview_kin_type[2:4])
-    overview_kin_type$resource <- x
-    overview_kin_type <- overview_kin_type %>%
-      add_column(Histidine = 0, .before = "Serine")
-  }
-  overview_kin_type
-})
-
-kin_type <- kinase_type_df %>%
-  group_by(resource, kinase) %>%
-  summarise(n = n())
-kin_type$kinase <- factor(kin_type$kinase, levels = c("Serine/Threonine", "Tyrosine", "Histidine", "Ambiguous"))
-kin_type$resource <- factor(kin_type$resource, levels = unique(kin_type %>% arrange(desc(n)) %>% pull(resource)))
+if (class_kin == "prior"){
+  kin_type <- kinase_type_df %>%
+    group_by(resource, class) %>%
+    summarise(n = n())
+  kin_type$kinase <- factor(kin_type$class, levels = c("Serine/Threonine", "Tyrosine", "Histidine", "Dual-specificity"))
+  kin_type$resource <- factor(kin_type$resource, levels = unique(kin_type %>% arrange(desc(n)) %>% pull(resource)))
+} else {
+  kin_type <- kinase_type_df %>%
+    group_by(resource, kinase) %>%
+    summarise(n = n())
+  kin_type$kinase <- factor(kin_type$kinase, levels = c("Serine/Threonine", "Tyrosine", "Histidine", "Ambiguous"))
+  kin_type$resource <- factor(kin_type$resource, levels = unique(kin_type %>% arrange(desc(n)) %>% pull(resource)))
+}
 
 cbPalette <- c("#56B4E9", "#009E73",  "#CC79A7", "#E69F00")
 

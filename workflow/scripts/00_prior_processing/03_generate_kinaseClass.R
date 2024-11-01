@@ -62,7 +62,7 @@ kinase_type_df <- map_dfr(names(prior), function(x){
 })
 
 ## Add literature information ---------------------------
-literature_kinase <- read_csv(literature_file, col_types = cols()) %>% 
+literature_kinase <- read_csv(literature_file, col_types = cols()) %>%
   dplyr::rename("Var1" = gene)
 dual_spec_kins <- c('CLK1', 'CLK2', 'CLK3', 'CLK4', 'DYRK1A', 'DYRK1B', 'DYRK2',
                     'DYRK3', 'DYRK4', 'MAP2K1', 'MAP2K2', 'MAP2K3', 'MAP2K4',
@@ -91,7 +91,7 @@ kinase_overview <- kinase_overview %>%
   mutate(
     group = coalesce(group_uniprot, group_gene)
   ) %>%
-  select(-group_uniprot, -group_gene) 
+  select(-group_uniprot, -group_gene)
 
 kinase_overview <- kinase_overview %>%
   mutate(class = case_when( # Assign class based on literature
@@ -119,7 +119,13 @@ kinase_overview <- kinase_overview %>%
 
 # Add final classification to the overview
 kinase_type_df <- left_join(kinase_type_df, kinase_overview, by = c("Var1"), relationship = "many-to-many") %>%
-  rename("source" = Var1)
+  rename("source" = Var1) %>%
+  mutate(class = case_when( # Manually check kinases with ambiguous classification
+    source %in% c("NPR1") ~ "Serine/Threonine",
+    source %in% c("PKMYT1") ~ "Tyrosine",
+    TRUE ~ class
+  )) %>%
+  filter(!is.na(class))
 
 kinase_type_df <- kinase_type_df[,c("source", "class", "group", "kinase", "n_targets", "resource", "Serine", "Threonine", "Tyrosin", "Histidine")] #rearrange column order
 
