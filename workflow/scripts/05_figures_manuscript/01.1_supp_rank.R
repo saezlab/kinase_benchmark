@@ -3,14 +3,10 @@
 ## Snakemake ---------------------------
 if(exists("snakemake")){
   rank_files <- snakemake@input$rank
-  prior_id <- snakemake@wildcards$PKN
-  method_id <- snakemake@wildcards$methods
   performance_plot <- snakemake@output$plot
 }else{
   rank_files <-  "results/03_benchmark/merged/02_mean_rank/phosphositeplus/zscore-phosphositeplus.csv"
   performance_plot <- "results/manuscript_figures/figure_1/supp/comparison_rank_subset.pdf"
-  prior_id <- "phosphositeplus"
-  method_id <- "zscore"
 }
 
 ## Libraries ---------------------------
@@ -18,10 +14,6 @@ library(tidyverse)
 
 ## Load scaled rank ---------------------------
 rank_df <- read_csv(rank_files, col_types = cols())
-
-rank_df <- rank_df %>%
-  dplyr::filter(prior == prior_id) %>%
-  dplyr::filter(method == method_id)
 
 kinase_pert <- rank_df %>%
   filter(!is.na(rank)) %>%
