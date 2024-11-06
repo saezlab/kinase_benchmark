@@ -116,7 +116,7 @@ rule correlation_analysis:
     conda:
         "../envs/figures.yml"
     script:
-        "../scripts/05_figures_manuscript/03.1supp_comparison_activity.R"       
+        "../scripts/05_figures_manuscript/03.1_supp_comparison_activity.R"       
   
 
 
