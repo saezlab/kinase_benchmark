@@ -6,7 +6,7 @@ if(exists("snakemake")){
   edge_pdf <- snakemake@output$edges_heat
 }else{
   prior_files <- list.files("results/00_prior", pattern = "tsv", full.names = T)
-  prior_files <- prior_files[c(1:4,6,7,9,10)]
+  prior_files <- prior_files[c(2:4,6,7,9,10)]
   kin_pdf <- "results/manuscript_figures/figure_3/coverage_kin.pdf"
   kinase_pdf <- "results/manuscript_figures/figure_3/kinase_overview.pdf"
   edg_pdf <- "results/manuscript_figures/figure_3/coverage_edge.pdf"
@@ -53,7 +53,7 @@ coverage <- coverage %>% arrange(desc(value)) %>%
                       "phosphositeplus" = "PhosphoSitePlus",
                       "ptmsigdb" = "PTMsigDB",
                       "combined" = "extended combined",
-                      "GSknown" = "curated combined"))
+                      "GSknown" = "curated"))
 coverage %>%
   filter(type == "all kinases" & class == "kinase")
 
@@ -109,7 +109,7 @@ resource_df <- map_dfr(names(prior), function(x){
                            "phosphositeplus" = "PhosphoSitePlus",
                            "ptmsigdb" = "PTMsigDB",
                            "combined" = "extended combined",
-                           "GSknown" = "curated combined"))
+                           "GSknown" = "curated"))
 
 kinase_m <- resource_df %>%
   dplyr::select(source,resource) %>%

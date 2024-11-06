@@ -20,7 +20,7 @@ if(exists("snakemake")){
 }else{
   bench_files <- list.files("results/03_benchmark/merged/02_benchmark_res",
                             pattern = "bench", recursive = TRUE, full.names = T)
-  bench_files <- bench_files[str_detect(bench_files, "/shuffled2/|/iKiPdb/|/GPS/|/omnipath/|/networkin/|/phosphositeplus/|/ptmsigdb/|/combined/|/GSknown/")]
+  bench_files <- bench_files[str_detect(bench_files, "/shuffled2/|/iKiPdb/|/GPS/|/omnipath/|/networkin/|/phosphositeplus/|/ptmsigdb/|/GSknown/")]
   activating_files <- list.files("data/tumor_benchmark/activity_scores",
                                  pattern = "actsiteBM", full.names = T)
   tumor_files <- "data/tumor_benchmark/activity_scores/roc_data.rds"
@@ -72,7 +72,7 @@ bench_df <- bind_rows(bench_list) %>%
                       "phosphositeplus" = "PhosphoSitePlus",
                       "ptmsigdb" = "PTMsigDB",
                       "combined" = "extended combined",
-                      "GSknown" = "curated combined",
+                      "GSknown" = "curated",
                       "shuffled2" = "shuffled"))
 
 med_mat <- bench_df %>%
@@ -136,7 +136,7 @@ df_tumor <- df_tumor_all %>%
                       "phosphositeplus" = "PhosphoSitePlus",
                       "ptmsigdb" = "PTMsigDB",
                       "combined" = "extended combined",
-                      "GSknown" = "curated combined",
+                      "GSknown" = "curated",
                       "shuffled2" = "shuffled"))
 
 med_mat <- df_tumor %>%
@@ -205,7 +205,7 @@ df_act <- df_act_all %>%
                       "psp" = "PhosphoSitePlus",
                       "ptmsig" = "PTMsigDB",
                       "combo" = "extended combined",
-                      "known" = "curated combined",
+                      "known" = "curated",
                       "shuffled2" = "shuffled"))
 
 med_mat <- df_act %>%

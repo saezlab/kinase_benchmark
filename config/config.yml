@@ -24,8 +24,8 @@ perturbation:
   methods_subset: ["chisq","fgsea","fisher", "KARP", "KS", "KSEA", "lmRoKAI", "mean", "median", "mlm", "norm_mean", "number_of_targets", "PCA", "ptmsea", "ulm", "UQ", "viper", "wilcox","zscore"]
 
 figures:
-  coverage: ["omnipath", "phosphositeplus", "ptmsigdb", "GPS", "iKiPdb", "networkin", "GSknown", "combined"]
-  evaluation: ["omnipath", "phosphositeplus", "ptmsigdb", "GPS", "iKiPdb", "networkin", "GSknown", "combined", "shuffled2"]
+  coverage: ["omnipath", "phosphositeplus", "ptmsigdb", "GPS", "iKiPdb", "networkin", "GSknown"]
+  evaluation: ["omnipath", "phosphositeplus", "ptmsigdb", "GPS", "iKiPdb", "networkin", "GSknown", "shuffled2"]
   evaluation_cptac: ["combo", "known", "gps", "ikip", "nwkin", "omni", "psp", "ptmsig"]
   PKN_figure1: ["omnipath", "phosphositeplus", "ptmsigdb", "GPS", "nwkin", "omni", "psp", "ptmsig"]
   PKN_figure2: ["omnipath", "phosphositeplus", "ptmsigdb", "GPS", "iKiPdb", "networkin", "shuffled"]

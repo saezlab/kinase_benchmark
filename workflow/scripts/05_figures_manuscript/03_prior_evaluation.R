@@ -7,10 +7,10 @@ if(exists("snakemake")){
 }else{
   bench_files <- list.files("results/03_benchmark/merged/02_benchmark_res",
                             pattern = "bench", recursive = TRUE, full.names = T)
-  bench_files <- bench_files[str_detect(bench_files, "/shuffled2/|/iKiPdb/|/GPS/|/omnipath/|/networkin/|/phosphositeplus/|/ptmsigdb/|/combined/|/GSknown/")]
+  bench_files <- bench_files[str_detect(bench_files, "/shuffled2/|/iKiPdb/|/GPS/|/omnipath/|/networkin/|/phosphositeplus/|/ptmsigdb/|/GSknown/")]
   rank_files <- list.files("results/03_benchmark/merged/02_mean_rank",
                            pattern = "csv", recursive = TRUE, full.names = T)
-  rank_files <- rank_files[str_detect(rank_files, "/shuffled2/|/iKiPdb/|/GPS/|/omnipath/|/networkin/|/phosphositeplus/|/ptmsigdb/|/combined/|/GSknown/")]
+  rank_files <- rank_files[str_detect(rank_files, "/shuffled2/|/iKiPdb/|/GPS/|/omnipath/|/networkin/|/phosphositeplus/|/ptmsigdb/|/GSknown/")]
   activating_files <- list.files("data/tumor_benchmark/activity_scores",
                                  pattern = "actsiteBM", full.names = T)
   tumor_files <- "data/tumor_benchmark/activity_scores/roc_data.rds"
@@ -39,7 +39,7 @@ rank_df <- bind_rows(rank_list) %>%
                       "phosphositeplus" = "PhosphoSitePlus",
                       "ptmsigdb" = "PTMsigDB",
                       "combined" = "extended combined",
-                      "GSknown" = "curated combined",
+                      "GSknown" = "curated",
                       "shuffled2" = "Shuffled"))
 
 
@@ -73,7 +73,7 @@ df_perturb_all <- bind_rows(bench_list)  %>%
                         "phosphositeplus" = "PhosphoSitePlus",
                         "ptmsigdb" = "PTMsigDB",
                         "combined" = "extended combined",
-                        "GSknown" = "curated combined",
+                        "GSknown" = "curated",
                         "shuffled2" = "Shuffled"))
 
 df_perturb_all %>% filter(!net %in% c("shuffled", "shuffled2")) %>% group_by(method) %>% summarise(auroc = mean(score)) %>% arrange(desc(auroc))
@@ -111,7 +111,7 @@ df_tumor <- df_tumor_all %>%
                       "phosphositeplus" = "PhosphoSitePlus",
                       "ptmsigdb" = "PTMsigDB",
                       "combined" = "extended combined",
-                      "GSknown" = "curated combined",
+                      "GSknown" = "curated",
                       "shuffled2" = "Shuffled"))
 
 n_kinases_tumor <- map_dfr(names(roc_list), function(roc_i){
@@ -128,7 +128,7 @@ n_kinases_tumor <- map_dfr(names(roc_list), function(roc_i){
                       "phosphositeplus" = "PhosphoSitePlus",
                       "ptmsigdb" = "PTMsigDB",
                       "combined" = "extended combined",
-                      "GSknown" = "curated combined",
+                      "GSknown" = "curated",
                       "shuffled2" = "Shuffled"))
 
 rm(known_roc)
@@ -163,7 +163,7 @@ df_act <- df_act_all %>%
                       "psp" = "PhosphoSitePlus",
                       "ptmsig" = "PTMsigDB",
                       "combo" = "extended combined",
-                      "known" = "curated combined",
+                      "known" = "curated",
                       "shuffled2" = "shuffled"))
 
 n_kinases_act <- map_dfr(names(roc_list), function(roc_i){
@@ -180,7 +180,7 @@ n_kinases_act <- map_dfr(names(roc_list), function(roc_i){
                       "psp" = "PhosphoSitePlus",
                       "ptmsig" = "PTMsigDB",
                       "combo" = "extended combined",
-                      "known" = "curated combined",
+                      "known" = "curated",
                       "shuffled2" = "shuffled"))
 
 ## Combine
