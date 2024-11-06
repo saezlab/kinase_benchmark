@@ -25,16 +25,18 @@ rule benchmark:
 rule subset_predicted:
     input:
         expand("results/03_benchmark/{dataset}/02_benchmark_res_subset/GSknownSub/{PKN}/bench_{hernandez_methods}-{PKN}.csv", dataset = ["hernandez", "hijazi", "merged"], hernandez_methods = config["perturbation"]["methods"], PKN = config["perturbation"]["GSknownSub"]),
-        expand("results/03_benchmark/{dataset}/02_benchmark_res_subset/combinedSub/{PKN}/bench_{hernandez_methods}-{PKN}.csv", dataset = ["hernandez", "hijazi", "merged"], hernandez_methods = config["perturbation"]["methods"], PKN = config["perturbation"]["combinedSub"]),
+        expand("results/03_benchmark/{dataset}/02_benchmark_res/{PKN}/bench_{hernandez_methods}-{PKN}.csv", dataset = ["hernandez", "hijazi", "merged"], hernandez_methods = config["perturbation"]["methods"], PKN = config["perturbation"]["GSknownSub"]),
+        #expand("results/03_benchmark/{dataset}/02_benchmark_res_subset/combinedSub/{PKN}/bench_{hernandez_methods}-{PKN}.csv", dataset = ["hernandez", "hijazi", "merged"], hernandez_methods = config["perturbation"]["methods"], PKN = config["perturbation"]["combinedSub"]),
         expand("results/03_benchmark/{dataset}/02_mean_rank_subset/GSknownSub/{PKN}/{hernandez_methods}-{PKN}.csv", dataset = ["hernandez", "hijazi", "merged"], hernandez_methods = config["perturbation"]["methods"], PKN = config["perturbation"]["GSknownSub"]),
-        expand("results/03_benchmark/{dataset}/02_mean_rank_subset/combinedSub/{PKN}/{hernandez_methods}-{PKN}.csv", dataset = ["hernandez", "hijazi", "merged"], hernandez_methods = config["perturbation"]["methods"], PKN = config["perturbation"]["combinedSub"])
+        expand("results/03_benchmark/{dataset}/02_mean_rank/{PKN}/{hernandez_methods}-{PKN}.csv", dataset = ["hernandez", "hijazi", "merged"], hernandez_methods = config["perturbation"]["methods"], PKN = config["perturbation"]["GSknownSub"]),
+        #expand("results/03_benchmark/{dataset}/02_mean_rank_subset/combinedSub/{PKN}/{hernandez_methods}-{PKN}.csv", dataset = ["hernandez", "hijazi", "merged"], hernandez_methods = config["perturbation"]["methods"], PKN = config["perturbation"]["combinedSub"])
 
 rule subset_johnson:
     input:
         expand("results/03_benchmark/{dataset}/02_benchmark_res_subset/johnson1Sub/{PKN}/bench_{hernandez_methods}-{PKN}.csv", dataset = ["hernandez", "hijazi", "merged"], hernandez_methods = config["perturbation"]["methods"], PKN = config["perturbation"]["johnson1Sub"]),
-        expand("results/03_benchmark/{dataset}/02_benchmark_res_subset/johnson2Sub/{PKN}/bench_{hernandez_methods}-{PKN}.csv", dataset = ["hernandez", "hijazi", "merged"], hernandez_methods = config["perturbation"]["methods"], PKN = config["perturbation"]["johnson2Sub"]),
+        #expand("results/03_benchmark/{dataset}/02_benchmark_res_subset/johnson2Sub/{PKN}/bench_{hernandez_methods}-{PKN}.csv", dataset = ["hernandez", "hijazi", "merged"], hernandez_methods = config["perturbation"]["methods"], PKN = config["perturbation"]["johnson2Sub"]),
         expand("results/03_benchmark/{dataset}/02_mean_rank_subset/johnson1Sub/{PKN}/{hernandez_methods}-{PKN}.csv", dataset = ["hernandez", "hijazi", "merged"], hernandez_methods = config["perturbation"]["methods"], PKN = config["perturbation"]["johnson1Sub"]),
-        expand("results/03_benchmark/{dataset}/02_mean_rank_subset/johnson2Sub/{PKN}/{hernandez_methods}-{PKN}.csv", dataset = ["hernandez", "hijazi", "merged"], hernandez_methods = config["perturbation"]["methods"], PKN = config["perturbation"]["johnson2Sub"])
+        #expand("results/03_benchmark/{dataset}/02_mean_rank_subset/johnson2Sub/{PKN}/{hernandez_methods}-{PKN}.csv", dataset = ["hernandez", "hijazi", "merged"], hernandez_methods = config["perturbation"]["methods"], PKN = config["perturbation"]["johnson2Sub"])
 
 rule hijazi:
     input:
@@ -64,10 +66,17 @@ rule subset_cptac:
 
 rule figures:
     input:
-        "results/manuscript_figures/figure_1/auroc_phosphositeplus.pdf"
-        #"results/manuscript_figures/figure_2/overview_experiment.pdf",
-        #"results/manuscript_figures/figure_3/auroc_res.pdf"
-        #"results/manuscript_figures/supp_figures/predicted_combined.pdf"
+        "results/manuscript_figures/figure_1/auroc_phosphositeplus.pdf",
+        "results/manuscript_figures/figure_1/supp/overview_kin.pdf",
+        "results/manuscript_figures/figure_2/auroc_tumor_phosphositeplus.pdf",
+        "results/manuscript_figures/figure_3/coverage_kin.pdf",
+        "results/manuscript_figures/figure_3/zscore.pdf"
+
+rule supp_figures:
+    input:
+        "results/manuscript_figures/figure_1/supp/comparison_rank_subset.pdf",
+        "results/manuscript_figures/figure_3/supp/upset_kin.pdf",
+        "results/manuscript_figures/figure_3/supp/corrplot_pearson_priors.pdf"
 
 
 # Module for prior processing

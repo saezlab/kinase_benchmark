@@ -14,7 +14,7 @@ perturbation:
   PKNs: ["omnipath", "phosphositeplus", "ptmsigdb", "GPS", "iKiPdb", "networkin", "shuffled", "GSknown", "combined", "shuffled2"]
   subset: ["omnipath", "phosphositeplus", "ptmsigdb", "GPS", "iKiPdb", "networkin", "GSknown", "combined"]
   predicted: ["phosphositeplus", "GSknown_networkin", "GSknown_iKiPdb", "combined_networkin", "combined_iKiPdb"]
-  GSknownSub: ["GSknown", "GSknown_networkin", "GSknown_iKiPdb"]
+  GSknownSub: ["GSknown", "GSknown_networkin", "GSknown_iKiPdb", "combined"]
   combinedSub: ["combined", "combined_networkin", "combined_iKiPdb"]
   johnson1Sub: ["GSknown", "GSknown_johnson15", "GSknown_phosformer15"]
   johnson2Sub: ["combined", "combined_johnson15", "combined_phosformer15"]
@@ -26,6 +26,6 @@ perturbation:
 figures:
   coverage: ["omnipath", "phosphositeplus", "ptmsigdb", "GPS", "iKiPdb", "networkin", "GSknown"]
   evaluation: ["omnipath", "phosphositeplus", "ptmsigdb", "GPS", "iKiPdb", "networkin", "GSknown", "shuffled2"]
-  evaluation_cptac: ["combo", "known", "gps", "ikip", "nwkin", "omni", "psp", "ptmsig"]
+  evaluation_cptac: ["known", "gps", "ikip", "nwkin", "omni", "psp", "ptmsig"]
   PKN_figure1: ["omnipath", "phosphositeplus", "ptmsigdb", "GPS", "nwkin", "omni", "psp", "ptmsig"]
   PKN_figure2: ["omnipath", "phosphositeplus", "ptmsigdb", "GPS", "iKiPdb", "networkin", "shuffled"]
