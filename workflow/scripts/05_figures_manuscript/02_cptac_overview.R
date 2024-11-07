@@ -7,8 +7,8 @@ if(exists("snakemake")){
   auroc_plot <- snakemake@output$plot
   auroc_plot_act <- snakemake@output$plotact
 }else{
-  tumor_files <- "data/tumor_benchmark/activity_scores/roc_data.rds"
-  act_files <- "data/tumor_benchmark/activity_scores/psp_roc_actsiteBM.rds"
+  act_files <- "data/results_cptac/performance/psp_roc_actsiteBM.rds"
+  tumor_files <- "data/results_cptac/performance/psp_roc_protBM.rds"
   auroc_plot <- "results/manuscript_figures/figure_2/auroc_tumor_phosphositeplus.pdf"
   auroc_plot_act <- "results/manuscript_figures/figure_2/auroc_act_phosphositeplus.pdf"
 }
@@ -17,8 +17,7 @@ if(exists("snakemake")){
 library(tidyverse)
 
 ## Load AUROC tumor benchmark ---------------------------
-roc <- readRDS(tumor_files)
-psp_roc <- roc$phosphositeplus
+psp_roc <- readRDS(tumor_files)
 roc_list <- lapply(psp_roc$ROC_results, "[[", "sample_AUROCs")
 
 df_tumor <- do.call(rbind, lapply(names(roc_list), function(method) {
@@ -51,7 +50,7 @@ df_tumor <- df_tumor %>%
 
 ## Plot performance ---------------------------
 auroc_p <- ggplot(df_tumor, aes(x = method, y = score)) +
-  geom_boxplot(fill = "#b54d4a", linewidth = 0.5, outlier.size = 0.8) + # Boxplot for AUROC
+  geom_boxplot(fill = "#b54d4a", linewidth = 0.3, outlier.size = 0.1) + # Boxplot for AUROC
   scale_y_continuous(
     name = "AUROC") +
   geom_hline(yintercept = 0.5, linetype = "dashed", color = "black", linewidth = 0.5) +
@@ -103,7 +102,7 @@ df_tumor <- df_tumor %>%
 
 ## Plot performance ---------------------------
 auroc_p <- ggplot(df_tumor, aes(x = method, y = score)) +
-  geom_boxplot(fill = "#C67642", linewidth = 0.5, outlier.size = 0.8) + # Boxplot for AUROC
+  geom_boxplot(fill = "#C67642", linewidth = 0.3, outlier.size = 0.1) + # Boxplot for AUROC
   scale_y_continuous(
     name = "AUROC") +
   geom_hline(yintercept = 0.5, linetype = "dashed", color = "black", linewidth = 0.5) +

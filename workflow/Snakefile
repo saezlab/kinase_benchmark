@@ -67,14 +67,16 @@ rule subset_cptac:
 rule figures:
     input:
         "results/manuscript_figures/figure_1/auroc_phosphositeplus.pdf",
-        "results/manuscript_figures/figure_1/supp/overview_kin.pdf",
         "results/manuscript_figures/figure_2/auroc_tumor_phosphositeplus.pdf",
         "results/manuscript_figures/figure_3/coverage_kin.pdf",
-        "results/manuscript_figures/figure_3/zscore.pdf"
+        "results/manuscript_figures/figure_3/zscore.pdf",
+        "results/manuscript_figures/figure_4/combinations_zscore.pdf",
+        "results/manuscript_figures/figure_4/combinations_subset_zscore.pdf"
 
 rule supp_figures:
     input:
         "results/manuscript_figures/figure_1/supp/comparison_rank_subset.pdf",
+        "results/manuscript_figures/figure_1/supp/overview_kin.pdf",
         "results/manuscript_figures/figure_3/supp/upset_kin.pdf",
         "results/manuscript_figures/figure_3/supp/corrplot_pearson_priors.pdf"
 

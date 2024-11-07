@@ -1,8 +1,10 @@
 if(exists("snakemake")){
   bench_files <- snakemake@input$bench
   rank_files <- snakemake@input$rank
-  activating_files <- snakemake@input$act
-  tumor_files <- snakemake@input$tumor
+  activating_files_roc <- snakemake@input$act_roc
+  activating_files_kin <- snakemake@input$act_kin
+  tumor_files_roc <- snakemake@input$tumor_roc
+  tumor_files_kin <- snakemake@input$tumor_kin
   performance_plot <- snakemake@output$plt
 }else{
   bench_files <- list.files("results/03_benchmark/merged/02_benchmark_res_subset/GSknownSub",
@@ -69,13 +71,13 @@ df_perturb_all <- bind_rows(bench_list)  %>%
                         "GSknown_networkin" = "curated + NetworKIN",
                         "combined" = "curated + OmniPath"))
 
-df_perturb_all %>% filter(!net %in% c("shuffled", "shuffled2")) %>% group_by(method) %>% summarise(auroc = mean(score)) %>% arrange(desc(auroc))
-
 df_perturb <- df_perturb_all %>%
   dplyr::filter(method == "zscore") %>%
   dplyr::filter(metric == "mcauroc") %>%
   dplyr::select(net, score) %>%
   add_column(benchmark = "perturbation-based")
+
+df_perturb %>% filter(!net %in% c("shuffled", "shuffled2")) %>% group_by(net) %>% summarise(auroc = mean(score)) %>% arrange(desc(auroc))
 
 ## tumor benchmark
 df_tumor <- map_dfr(tumor_files_roc, function(file_roc){
@@ -89,6 +91,7 @@ df_tumor <- map_dfr(tumor_files_roc, function(file_roc){
                         "known_nwkin" = "curated + NetworKIN",
                         "combo" = "curated + OmniPath"))
 
+df_tumor %>% filter(!net %in% c("shuffled", "shuffled2")) %>% group_by(net) %>% summarise(auroc = mean(score)) %>% arrange(desc(auroc))
 
 ## load number of kinases
 kins <- readRDS(tumor_files_kin) %>%
@@ -129,7 +132,8 @@ mean_auroc <- bench_df %>%
   ungroup() %>%
   group_by(net) %>%
   summarize(mean_auroc = mean(tmp_auroc)) %>%
-  arrange(desc(mean_auroc))  # Sorting methods by mean AUROC
+  arrange(desc(mean_auroc))  %>% # Sorting methods by mean AUROC
+  arrange(desc(net == "curated"))
 
 # Update df to ensure methods are ordered based on mean AUROC
 bench_df <- bench_df %>%
@@ -140,9 +144,9 @@ bench_df <- bench_df %>%
 lines <- mean_auroc$mean_auroc
 names(lines) <- mean_auroc$net
 
-auroc_p <- ggplot(bench_df, aes(x = net, y = score, fill = benchmark)) +
-  geom_boxplot(linewidth = 0.3, outlier.size = 0.1) +
-  scale_fill_manual(values = c("#4292C6", "#C67642", "#b54d4a")) +  # Muted scientific color palette
+auroc_p <- ggplot(bench_df, aes(x = benchmark, y = score)) +
+  geom_boxplot(aes(fill = benchmark, alpha = net), linewidth = 0.3, outlier.size = 0.1) +
+  scale_fill_manual(values =  c("#4292C6", "#C67642", "#b54d4a")) +  # Muted scientific color palette
   theme_bw() +
   theme(
     axis.text.x = element_text(angle = 45, hjust = 1),
@@ -153,9 +157,6 @@ auroc_p <- ggplot(bench_df, aes(x = net, y = score, fill = benchmark)) +
     axis.title.y = element_text(family = "Helvetica", size = 10), # Set y-axis label size to 10
     axis.title.x = element_text(family = "Helvetica", size = 10)
   ) +
-  # Add horizontal lines or dots for mean AUROC
-  geom_point(data = data.frame(net = names(lines), mean_auroc = lines), aes(x = net, y = mean_auroc),
-             color = "black", size = 2, shape = 3, fill = "white")  +
   xlab("") +
   ylab("AUROC")  +
   geom_hline(yintercept = 0.5, linetype = "dashed", color = "black", linewidth = 0.5)
@@ -165,8 +166,8 @@ kin_df <- rbind(n_kinases, n_kinases_tumor, n_kinases_act)
 kin_df$prior <- factor(kin_df$prior, levels = mean_auroc$net)
 kin_df$benchmark <- factor(kin_df$benchmark, levels = c("perturbation-based", "activating sites", "tumor-based"))
 
-kin_p <- ggplot(kin_df, aes(x = prior, y = kinases, fill = benchmark)) +
-  geom_bar(stat="identity", position=position_dodge(), width = 0.4)+ # Line connecting the dots
+kin_p <- ggplot(kin_df, aes(x = benchmark, y = kinases)) +
+  geom_bar(aes(fill = benchmark, alpha = prior), stat="identity", position=position_dodge(), width = 0.4)+ # Line connecting the dots
   scale_y_continuous(
     name = "tmp",
     limits = c(0, 175),
@@ -190,4 +191,5 @@ full_p <- ggarrange(kin_p, auroc_p, ncol = 1, common.legend = T, heights = c(3, 
 pdf(performance_plot, width = 3.9, height = 4.2)
 full_p
 dev.off()
+
 

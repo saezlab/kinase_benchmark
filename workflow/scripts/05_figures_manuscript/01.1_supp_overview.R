@@ -78,7 +78,18 @@ rank_df <- bind_rows(rank_list) %>%
 n_kinases <- rank_df %>%
   group_by(bench, method) %>%
   summarise(kinases = length(unique(targets))) %>%
-  select(method, bench, kinases)
+  select(method, bench, kinases) %>%
+  mutate(method = recode(method,
+                         "chisq" = "X\u00B2 test",
+                         "fisher" = "Fisher",
+                         "KS" = "KS test",
+                         "lmRoKAI" = "lm RoKAI",
+                         "norm_mean" = "norm mean",
+                         "number_of_targets" = "n targets",
+                         "ptmsea" = "PTM-SEA",
+                         "viper" = "VIPER",
+                         "wilcox" = "MWU test",
+                         "zscore" = "z-score"))
 
 bench_list <- map(bench_files, function(file){
   read.csv(file, col.names = c("rows", "groupby", "group", "source",
@@ -128,7 +139,7 @@ names(lines) <- mean_auroc$method
 
 auroc_p <- ggplot(df_perturb, aes(x = method, y = score, fill = bench)) +
   geom_boxplot(linewidth = 0.3, outlier.size = 0.5) +
-  scale_fill_manual(values = c("#4292C6", "#C67642")) +  # Muted scientific color palette
+  scale_fill_manual(values = c("#4292C6", "#AA42C6")) +  # Muted scientific color palette
   theme_bw() +
   theme(
     legend.position = "none",
@@ -138,9 +149,6 @@ auroc_p <- ggplot(df_perturb, aes(x = method, y = score, fill = bench)) +
     axis.title.y = element_text(family = "Helvetica", size = 10), # Set y-axis label size to 10
     axis.title.x = element_text(family = "Helvetica", size = 10)
   ) +
-  # Add horizontal lines or dots for mean AUROC
-  geom_point(data = data.frame(method = names(lines), mean_auroc = lines), aes(x = method, y = mean_auroc),
-             color = "black", size = 2, shape = 3, fill = "white")  +
   xlab("") +
   ylab("AUROC")  +
   geom_hline(yintercept = 0.5, linetype = "dashed", color = "black", linewidth = 0.5)
@@ -168,7 +176,7 @@ kin_p <- ggplot(kin_df, aes(x = method, y = kinases, fill = bench)) +
     axis.text.x = element_blank(),   # Remove x-axis text labels
     axis.ticks.x = element_blank()
   )+
-  scale_fill_manual(values = c("#4292C6", "#C67642")) +
+  scale_fill_manual(values = c("#4292C6", "#AA42C6")) +
   ggtitle("Number of Kinases in Evaluation Set")
 
 full_p <- ggarrange(kin_p, auroc_p, ncol = 1, common.legend = T, heights = c(3.3, 9))

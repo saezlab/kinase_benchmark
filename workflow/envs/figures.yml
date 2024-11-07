@@ -9,4 +9,5 @@ dependencies:
   - r-corrplot
   - r-ggpubr
   - r-pheatmap
+  - r-patchwork
   - bioconductor-complexheatmap

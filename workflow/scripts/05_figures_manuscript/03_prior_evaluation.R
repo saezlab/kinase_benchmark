@@ -13,7 +13,7 @@ if(exists("snakemake")){
   rank_files <- rank_files[str_detect(rank_files, "/shuffled2/|/iKiPdb/|/GPS/|/omnipath/|/networkin/|/phosphositeplus/|/ptmsigdb/|/GSknown/")]
   activating_files <- list.files("data/tumor_benchmark/activity_scores",
                                  pattern = "actsiteBM", full.names = T)
-  tumor_files <- "data/tumor_benchmark/activity_scores/roc_data.rds"
+  tumor_files <- "data/results_cptac/performance/roc_data.rds"
   performance_plot <- "results/manuscript_figures/figure_3/zscore.pdf"
 }
 
@@ -129,7 +129,7 @@ n_kinases_tumor <- map_dfr(names(roc_list), function(roc_i){
                       "ptmsigdb" = "PTMsigDB",
                       "combined" = "extended combined",
                       "GSknown" = "curated",
-                      "shuffled2" = "Shuffled"))
+                      "shuffled2" = "shuffled"))
 
 rm(known_roc)
 ## activating sites benchmark
@@ -184,6 +184,7 @@ n_kinases_act <- map_dfr(names(roc_list), function(roc_i){
                       "shuffled2" = "shuffled"))
 
 ## Combine
+df_tumor <- df_tumor %>% filter(net %in% unique(df_perturb$net))
 bench_df <- rbind(df_perturb, df_tumor, df_act)
 
 mean_auroc <- bench_df %>%
@@ -216,14 +217,11 @@ auroc_p <- ggplot(bench_df, aes(x = net, y = score, fill = benchmark)) +
     axis.title.y = element_text(family = "Helvetica", size = 10), # Set y-axis label size to 10
     axis.title.x = element_text(family = "Helvetica", size = 10)
   ) +
-  # Add horizontal lines or dots for mean AUROC
-  geom_point(data = data.frame(net = names(lines), mean_auroc = lines), aes(x = net, y = mean_auroc),
-             color = "black", size = 2, shape = 3, fill = "white")  +
   xlab("") +
   ylab("AUROC")  +
   geom_hline(yintercept = 0.5, linetype = "dashed", color = "black", linewidth = 0.5)
 
-
+n_kinases_tumor <- n_kinases_tumor %>% filter(prior %in% unique(n_kinases$prior))
 kin_df <- rbind(n_kinases, n_kinases_tumor, n_kinases_act)
 kin_df$prior <- factor(kin_df$prior, levels = mean_auroc$net)
 kin_df$benchmark <- factor(kin_df$benchmark, levels = c("perturbation-based", "activating sites", "tumor-based"))

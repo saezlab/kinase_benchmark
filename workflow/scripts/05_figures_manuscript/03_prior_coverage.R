@@ -18,8 +18,6 @@ library(tidyverse)
 library(pheatmap)
 library(corrplot)
 library(ggpubr)
-library(ComplexHeatmap)
-library(patchwork)
 
 ## Compare coverage ------------------
 prior <- map(prior_files, function(file){read_tsv(file, col_types = cols()) %>%

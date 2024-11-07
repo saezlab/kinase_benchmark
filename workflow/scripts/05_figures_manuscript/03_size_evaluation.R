@@ -52,12 +52,12 @@ rank_df <- rank_df %>%
                         "phosphositeplus" = "PhosphoSitePlus",
                         "ptmsigdb" = "PTMsigDB",
                         "combined" = "extended combined",
-                        "GSknown" = "curated combined",
+                        "GSknown" = "curated",
                         "shuffled2" = "Shuffled")) %>%
   left_join(kinase_strat, by = "targets") %>%
   dplyr::filter(!is.na(strat))
 
-order_net <- c("curated combined", "GPS gold", "PhosphoSitePlus", "PTMsigDB", "NetworKIN", "OmniPath", "extended combined", "iKiP-DB")
+order_net <- c("curated", "GPS gold", "PhosphoSitePlus", "PTMsigDB", "NetworKIN", "OmniPath", "extended combined", "iKiP-DB")
 rank_df$prior <- factor(rank_df$prior, levels = order_net)
 rank_df$strat <- factor(rank_df$strat, levels = c("small", "medium", "large"))
 
