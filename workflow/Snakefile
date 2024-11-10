@@ -63,6 +63,10 @@ rule subset_cptac:
         expand("results/02_activity_scores/cptac/scores/original/{dataset}-{prior}.rds", dataset = config["cptac"]["datasets"], prior = config["perturbation"]["GSknownSub"]),
         expand("results/02_activity_scores/cptac/scores/original/{dataset}-{prior}.rds", dataset = config["cptac"]["datasets"], prior = config["perturbation"]["combinedSub"])
 
+rule cptac_auto:
+    input:
+        expand("results/02_activity_scores_auto/cptac/scores/original/{dataset}-{prior}.rds", dataset = config["cptac"]["datasets"], prior = ["GSknown_networkin", "GSknown"])
+
 
 rule figures:
     input:

@@ -331,7 +331,7 @@ rule run_zscore:
 
 rule combine_scores:
     input:
-        file_scores=expand("results/02_activity_scores/cptac/{method}/{{normalisation}}/{{normalisation}}_{{dataset}}-{{PKN}}.csv", method = config["perturbation"]["methods"]),
+        file_scores=expand("results/02_activity_scores/cptac/{method}/{{normalisation}}/{{dataset}}-{{PKN}}.csv", method = config["perturbation"]["methods"]),
     output:
         rds="results/02_activity_scores/cptac/scores/{normalisation}/{dataset}-{PKN}.rds"
     conda:
@@ -339,3 +339,32 @@ rule combine_scores:
     script:
         "../scripts/02_kinase_activity_estimation/02_combine_scores.R"
 
+
+## Run with autophosphorylation
+rule run_zscore_auto:
+    input:
+        file_dataset= "results/01_processed_data/cptac/data/original/{dataset}.csv",
+        file_PKN="results/01_processed_data/cptac/mapped_priors/{PKN}.tsv",
+        scripts="workflow/scripts/methods/run_zscore.R",
+        script_support="workflow/scripts/methods/support_functions.R"
+    output:
+        rds="results/02_activity_scores_auto/cptac/zscore/original/{dataset}-{PKN}.csv"
+    params:
+        rm_auto=False,
+        minsize=minsize
+    threads:
+        threads
+    conda:
+        "../envs/phospho.yml"
+    script:
+        "../scripts/02_kinase_activity_estimation/01_zscore.R"
+
+rule combine_scores_auto:
+    input:
+        file_scores=expand("results/02_activity_scores_auto/cptac/{method}/original/{{dataset}}-{{PKN}}.csv", method = ["zscore"]),
+    output:
+        rds="results/02_activity_scores_auto/cptac/scores/original/{dataset}-{PKN}.rds"
+    conda:
+        "../envs/phospho.yml"
+    script:
+        "../scripts/02_kinase_activity_estimation/02_combine_scores.R"
