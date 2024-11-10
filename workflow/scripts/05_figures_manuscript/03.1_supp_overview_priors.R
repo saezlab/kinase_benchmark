@@ -9,7 +9,7 @@ if(exists("snakemake")){
 }else{
   prior_files <- list.files("results/00_prior", pattern = "tsv", full.names = T)
   resource_class <- "resources/kinase_class.csv"
-  prior_files <- prior_files[c(1,2,3,4,6,7,9,10)]
+  prior_files <- prior_files[c(2,3,4,6,7,9,10)]
   jaccard_pdf <- "results/manuscript_figures/figure_3/supp/jaccard.pdf"
   kintype_pdf <- "results/manuscript_figures/figure_3/supp/kinase_type.pdf"
   upset_kin <- "results/manuscript_figures/figure_3/supp/upset_kin.pdf"
@@ -22,6 +22,7 @@ library(tidyverse)
 library(pheatmap)
 library(corrplot)
 library(ggpubr)
+library(ComplexHeatmap)
 
 ## Compare coverage ------------------
 prior <- map(prior_files, function(file){read_tsv(file, col_types = cols()) %>%
@@ -37,7 +38,7 @@ tmp <- data.frame(name = str_remove(str_remove(prior_files, "results/00_prior/")
                       "phosphositeplus" = "PhosphoSitePlus",
                       "ptmsigdb" = "PTMsigDB",
                       "combined" = "extended combined",
-                      "GSknown" = "curated combined"))
+                      "GSknown" = "curated"))
 names(prior) <- tmp$PKN
 
 ## UpSetPlots ------------------
@@ -115,8 +116,9 @@ kinase_type_df <- read_csv(resource_class, col_types = cols()) %>%
                       "phosphositeplus" = "PhosphoSitePlus",
                       "ptmsigdb" = "PTMsigDB",
                       "combined" = "extended combined",
-                      "GSknown" = "curated combined")) %>%
-  filter(resource %in% names(prior))
+                      "GSknown" = "curated")) %>%
+  filter(resource %in% names(prior)) %>%
+  filter(!is.na(class))
 
 if (class_kin == "prior"){
   kin_type <- kinase_type_df %>%
