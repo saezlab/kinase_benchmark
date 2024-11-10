@@ -41,8 +41,8 @@ rule supp_figure1_rank:
 # ------------------------------------ FIGURE 2 ------------------------------------
 rule overview_tumor:
     input:
-        act = "data/results_cptac/performance/psp_roc_actsiteBM.rds",
-        bench = "data/results_cptac/performance/psp_roc_protBM.rds"
+        act="data/results_cptac/overall_performance/actsiteBM/all_kins/actsiteBM_5perThr_psp_roc_table.rds",
+        bench="data/results_cptac/overall_performance/protBM/all_kins/protBM_5perThr_psp_roc_table.rds"
     output:
         plot = "results/manuscript_figures/figure_2/auroc_tumor_phosphositeplus.pdf",
         plotact = "results/manuscript_figures/figure_2/auroc_act_phosphositeplus.pdf"

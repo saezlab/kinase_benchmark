@@ -7,8 +7,8 @@ if(exists("snakemake")){
   auroc_plot <- snakemake@output$plot
   auroc_plot_act <- snakemake@output$plotact
 }else{
-  act_files <- "data/results_cptac/performance/psp_roc_actsiteBM.rds"
-  tumor_files <- "data/results_cptac/performance/psp_roc_protBM.rds"
+  act_files <- "data/results_cptac/overall_performance/actsiteBM/all_kins/actsiteBM_5perThr_psp_roc_table.rds"
+  tumor_files <- "data/results_cptac/overall_performance/protBM/all_kins/protBM_5perThr_psp_roc_table.rds"
   auroc_plot <- "results/manuscript_figures/figure_2/auroc_tumor_phosphositeplus.pdf"
   auroc_plot_act <- "results/manuscript_figures/figure_2/auroc_act_phosphositeplus.pdf"
 }
@@ -18,11 +18,10 @@ library(tidyverse)
 
 ## Load AUROC tumor benchmark ---------------------------
 psp_roc <- readRDS(tumor_files)
-roc_list <- lapply(psp_roc$ROC_results, "[[", "sample_AUROCs")
-
-df_tumor <- do.call(rbind, lapply(names(roc_list), function(method) {
-  data.frame(method = method, score = roc_list[[method]])
-}))
+df_tumor <- psp_roc %>%
+  as.data.frame() %>%
+  add_column(net = "phosphositeplus") %>%
+  pivot_longer(!net, values_to = "score", names_to = "method")
 
 df_tumor <- df_tumor %>%
   mutate(method = recode(method,
@@ -71,10 +70,11 @@ dev.off()
 
 ## Load AUROC tumor benchmark ---------------------------
 psp_roc <- readRDS(act_files)
-roc_list <- lapply(psp_roc$ROC_results, "[[", "sample_AUROCs")
-df_tumor <- do.call(rbind, lapply(names(roc_list), function(method) {
-  data.frame(method = method, score = roc_list[[method]])
-}))
+df_tumor <- psp_roc %>%
+  as.data.frame() %>%
+  add_column(net = "phosphositeplus") %>%
+  pivot_longer(!net, values_to = "score", names_to = "method")
+
 
 df_tumor <- df_tumor %>%
   mutate(method = recode(method,
