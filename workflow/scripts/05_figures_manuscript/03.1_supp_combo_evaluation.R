@@ -3,32 +3,32 @@
 ## Snakemake ---------------------------
 if(exists("snakemake")){
   bench_files <- snakemake@input$bench_files
-  meta_file <- snakemake@input$meta
-  auroc_plot <- snakemake@output$auroc
-  overview_meta <- snakemake@output$meta_over
-  rank_files <- snakemake@input$rank
-  rank_plot <- snakemake@output$rankPlt
-  kin_file <- snakemake@output$rankKin
-  heat_plot <- snakemake@output$heat
-  medRank_plot <- snakemake@output$medRank
-  gene_citations <- snakemake@input$cit
-  cor_plot <- snakemake@output$cor
-  ppsp_file <- snakemake@input$ppsp
-  cor_target_plot <- snakemake@output$target
-  prior_csv <- snakemake@output$statPrior
-  method_csv <- snakemake@output$statMethod
+  activating_files <-  snakemake@input$act
+  tumor_files <-  snakemake@input$tumor
+
+  heat_plot <-  snakemake@output$plt
+  heat_plot_tumor <-  snakemake@output$plt_tumor
+  heat_plot_act <-  snakemake@output$plt_act
+
+  prior_csv <- snakemake@output$csv_prior
+  method_csv <- snakemake@output$csv_method
+  prior_csv_tumor <- snakemake@output$csv_prior_tumor
+  method_csv_tumor <- snakemake@output$csv_method_tumor
+  prior_csv_act <- snakemake@output$csv_prior_act
+  method_csv_act <- snakemake@output$csv_method_act
 }else{
   bench_files <- list.files("results/03_benchmark/merged/02_benchmark_res",
                             pattern = "bench", recursive = TRUE, full.names = T)
   bench_files <- bench_files[str_detect(bench_files, "/shuffled2/|/iKiPdb/|/GPS/|/omnipath/|/networkin/|/phosphositeplus/|/ptmsigdb/|/GSknown/")]
-  activating_files <- list.files("data/tumor_benchmark/activity_scores",
-                                 pattern = "actsiteBM", full.names = T)
-  tumor_files <- "data/tumor_benchmark/activity_scores/roc_data.rds"
+  activating_files <- list.files("data/results_cptac/overall_performance/actsiteBM/all_kins",
+                                 pattern = "table", full.names = T)
+  tumor_files <- list.files("data/results_cptac/overall_performance/protBM/all_kins",
+                                 pattern = "table", full.names = T)
 
   heat_plot <- "results/manuscript_figures/figure_3/supp/median_auroc.pdf"
   heat_plot_tumor <- "results/manuscript_figures/figure_3/supp/median_auroc_tumor.pdf"
   heat_plot_act <- "results/manuscript_figures/figure_3/supp/median_auroc_act.pdf"
-  medRank_plot <- "results/manuscript_figures/figure_3/median_rank.pdf"
+  
   prior_csv <- "results/manuscript_figures/supp_files/prior_comparison_perturbation.csv"
   method_csv <- "results/manuscript_figures/supp_files/method_comparison_perturbation.csv"
   prior_csv_tumor <- "results/manuscript_figures/supp_files/prior_comparison_tumor.csv"
@@ -73,7 +73,9 @@ bench_df <- bind_rows(bench_list) %>%
                       "ptmsigdb" = "PTMsigDB",
                       "combined" = "extended combined",
                       "GSknown" = "curated",
-                      "shuffled2" = "shuffled"))
+                      "shuffled2" = "shuffled")) %>%
+  add_column(benchmark = "perturbation-based") %>%
+  dplyr::select(net, score, method, benchmark)
 
 med_mat <- bench_df %>%
   group_by(net, method) %>%
@@ -99,23 +101,24 @@ Heatmap(med_mat, row_split = 4, column_split = 5,border = TRUE, rect_gp = gpar(c
 dev.off()
 
 ## tumor bench ---------------------------
-known_roc <- readRDS(tumor_files)
-
-roc_list <- map(known_roc, function(known_roc_i) {
-  lapply(known_roc_i$ROC_results, "[[", "sample_AUROCs")}
-)
-names(roc_list) <- names(known_roc)
-
-df_tumor_all <- map_dfr(names(roc_list), function(roc_i){
-  roc <- roc_list[[roc_i]]
-  do.call(rbind, lapply(names(roc), function(method) {
-    data.frame(method = method, score = roc[[method]], benchmark = "tumor-based")
-  })) %>%
-    add_column(net = roc_i)
-})
-df_tumor_all %>% group_by(method) %>% summarise(auroc = mean(score)) %>% arrange(desc(auroc))
-
-df_tumor <- df_tumor_all %>%
+df_tumor <- map_dfr(tumor_files, function(file_roc){
+    roc <- readRDS(file_roc)
+    net_id <- str_extract(file_roc, "(?<=5perThr_).*?(?=_roc_)")
+    map_dfr(colnames(roc), function(method_id){
+        data.frame(net = net_id, score = roc[colnames(roc) == method_id], method = method_id, benchmark = "tumor-based")
+    })
+    
+}) %>%
+  mutate(net = recode(net,
+                      "ikip" = "iKiP-DB",
+                      "gps" = "GPS gold",
+                      "omni" = "OmniPath",
+                      "nwkin" = "NetworKIN",
+                      "psp" = "PhosphoSitePlus",
+                      "ptmsig" = "PTMsigDB",
+                      "combo" = "extended combined",
+                      "known" = "curated",
+                      "shuffled2" = "shuffled")) %>%
   mutate(method = recode(method,
                          "chisq" = "X\u00B2 test",
                          "fisher" = "Fisher",
@@ -127,17 +130,8 @@ df_tumor <- df_tumor_all %>%
                          "viper" = "VIPER",
                          "wilcox" = "MWU test",
                          "zscore" = "z-score")) %>%
-  dplyr::select(net, score, method, benchmark) %>%
-  mutate(net = recode(net,
-                      "iKiPdb" = "iKiP-DB",
-                      "GPS" = "GPS gold",
-                      "omnipath" = "OmniPath",
-                      "networkin" = "NetworKIN",
-                      "phosphositeplus" = "PhosphoSitePlus",
-                      "ptmsigdb" = "PTMsigDB",
-                      "combined" = "extended combined",
-                      "GSknown" = "curated",
-                      "shuffled2" = "shuffled"))
+  dplyr::select(net, score, method, benchmark)
+
 
 med_mat <- df_tumor %>%
   group_by(net, method) %>%
@@ -165,26 +159,23 @@ dev.off()
 
 ## activating site
 # activating sites benchmark
-act_roc <- map(activating_files, readRDS)
-names(act_roc) <- map_chr(str_split(activating_files, "/"), 4) %>%
-  str_remove("_roc_actsiteBM.rds")
-
-roc_list <- map(act_roc, function(known_roc_i) {
-  lapply(known_roc_i$ROC_results, "[[", "sample_AUROCs")}
-)
-names(roc_list) <- map_chr(str_split(activating_files, "/"), 4) %>%
-  str_remove("_roc_actsiteBM.rds")
-
-df_act_all <- map_dfr(names(roc_list), function(roc_i){
-  roc <- roc_list[[roc_i]]
-  do.call(rbind, lapply(names(roc), function(method) {
-    data.frame(method = method, score = roc[[method]], benchmark = "activating sites")
-  })) %>%
-    add_column(net = roc_i)
-})
-df_act_all %>% group_by(method) %>% summarise(auroc = mean(score)) %>% arrange(desc(auroc))
-
-df_act <- df_act_all %>%
+df_act <- map_dfr(activating_files, function(file_roc){
+    roc <- readRDS(file_roc)
+    net_id <- str_extract(file_roc, "(?<=5perThr_).*?(?=_roc_)")
+    map_dfr(colnames(roc), function(method_id){
+        data.frame(net = net_id, score = roc[colnames(roc) == method_id], method = method_id, benchmark = "activating site")
+    })   
+}) %>%
+  mutate(net = recode(net,
+                      "ikip" = "iKiP-DB",
+                      "gps" = "GPS gold",
+                      "omni" = "OmniPath",
+                      "nwkin" = "NetworKIN",
+                      "psp" = "PhosphoSitePlus",
+                      "ptmsig" = "PTMsigDB",
+                      "combo" = "extended combined",
+                      "known" = "curated",
+                      "shuffled2" = "shuffled")) %>%
   mutate(method = recode(method,
                          "chisq" = "X\u00B2 test",
                          "fisher" = "Fisher",
@@ -196,17 +187,7 @@ df_act <- df_act_all %>%
                          "viper" = "VIPER",
                          "wilcox" = "MWU test",
                          "zscore" = "z-score")) %>%
-  dplyr::select(net, score, method, benchmark) %>%
-  mutate(net = recode(net,
-                      "ikip" = "iKiP-DB",
-                      "gps" = "GPS gold",
-                      "omni" = "OmniPath",
-                      "nwkin" = "NetworKIN",
-                      "psp" = "PhosphoSitePlus",
-                      "ptmsig" = "PTMsigDB",
-                      "combo" = "extended combined",
-                      "known" = "curated",
-                      "shuffled2" = "shuffled"))
+  dplyr::select(net, score, method, benchmark)
 
 med_mat <- df_act %>%
   group_by(net, method) %>%
@@ -230,6 +211,22 @@ Heatmap(med_mat, row_split = 4, column_split = 5,border = TRUE, rect_gp = gpar(c
         cell_fun = function(j, i, x, y, width, height, fill) {
           grid.text(sprintf("%.2f", med_mat[i, j]), x, y, gp = gpar(fontsize = 6))})
 dev.off()
+
+## Correlation -----------
+ comb_mat <- rbind(bench_df, df_tumor, df_act) %>%
+  group_by(method, net, benchmark) %>%
+  summarise(score = mean(score)) %>%
+  mutate(id = paste(method, net, sep = "_")) %>%
+  ungroup() %>%
+  dplyr::select(id, score, benchmark) %>%
+  pivot_wider(names_from = "benchmark", values_from = "score") %>%
+  column_to_rownames("id")
+
+comb_mat %>% 
+  cor(method = "spearman")
+
+comb_mat %>%
+  cor(method = "pearson")
 
 
 ## Statistics -----------
@@ -320,26 +317,30 @@ method_mat <- bench_df %>%
 # AUROC
 prior.wilcox <- perform.multi.wilcox(prior_mat) %>%
   mutate(wilcoxon = round(t.value, digits = 1)) %>%
-  select(-t.value)
+  select(-t.value) %>%
+  arrange(desc(wilcoxon))
 
 prior.wilcox$p.adj[prior.wilcox$p.adj == 0] <- 2.2e-16
 
 write_csv(prior.wilcox, prior_csv)
 
 prior.wilcox %>%
-  filter(p.adj <= 0.05)
+  filter(p.adj <= 0.05) %>%
+  arrange(desc(wilcoxon))
 
 # method
 method.wilcox <- perform.multi.wilcox(method_mat) %>%
   mutate(wilcoxon = round(t.value, digits = 1)) %>%
-  select(-t.value)
+  select(-t.value)  %>%
+  arrange(desc(wilcoxon))
 
 method.wilcox$p.adj[method.wilcox$p.adj == 0] <- 2.2e-16
 
 write_csv(method.wilcox, method_csv)
 
 method.wilcox %>%
-  filter(p.adj <= 0.05)
+  filter(p.adj <= 0.05)  %>%
+  arrange(desc(wilcoxon))
 
 ## Tumor based
 ### change format into matrix for AUROC and AUPRC
@@ -358,7 +359,7 @@ method_mat <- df_tumor %>%
   group_by(net, method) %>%
   summarise(score = mean(score)) %>%
   ungroup() %>%
-  add_column(counter = rep(c(1:(length(unique(df_tumor$net)))), each = length(unique(df_tumor$method)))) %>%
+  add_column(counter = rep(c(1:(length(unique(df_tumor$net))-1)), each = length(unique(df_tumor$method)))) %>%
   select(score, method, counter) %>%
   pivot_wider(names_from = method, values_from = score) %>%
   column_to_rownames("counter")
@@ -367,26 +368,30 @@ method_mat <- df_tumor %>%
 # AUROC
 prior.wilcox <- perform.multi.wilcox(prior_mat) %>%
   mutate(wilcoxon = round(t.value, digits = 1)) %>%
-  select(-t.value)
+  select(-t.value) %>%
+  arrange(desc(wilcoxon))
 
 prior.wilcox$p.adj[prior.wilcox$p.adj == 0] <- 2.2e-16
 
 write_csv(prior.wilcox, prior_csv_tumor)
 
 prior.wilcox %>%
-  filter(p.adj <= 0.05)
+  filter(p.adj <= 0.05) %>%
+  arrange(desc(wilcoxon))
 
 # method
 method.wilcox <- perform.multi.wilcox(method_mat) %>%
   mutate(wilcoxon = round(t.value, digits = 1)) %>%
-  select(-t.value)
+  select(-t.value) %>%
+  arrange(desc(wilcoxon))
 
 method.wilcox$p.adj[method.wilcox$p.adj == 0] <- 2.2e-16
 
 write_csv(method.wilcox, method_csv_tumor)
 
 method.wilcox %>%
-  filter(p.adj <= 0.05)
+  filter(p.adj <= 0.05) %>%
+  arrange(desc(wilcoxon))
 
 ## Activating sites based
 ### change format into matrix for AUROC and AUPRC
@@ -405,7 +410,7 @@ method_mat <- df_act %>%
   group_by(net, method) %>%
   summarise(score = mean(score)) %>%
   ungroup() %>%
-  add_column(counter = rep(c(1:(length(unique(df_act$net)))), each = length(unique(df_act$method)))) %>%
+  add_column(counter = rep(c(1:(length(unique(df_act$net))-1)), each = length(unique(df_act$method)))) %>%
   select(score, method, counter) %>%
   pivot_wider(names_from = method, values_from = score) %>%
   column_to_rownames("counter")
@@ -414,23 +419,27 @@ method_mat <- df_act %>%
 # AUROC
 prior.wilcox <- perform.multi.wilcox(prior_mat) %>%
   mutate(wilcoxon = round(t.value, digits = 1)) %>%
-  select(-t.value)
+  select(-t.value) %>%
+  arrange(desc(wilcoxon))
 
 prior.wilcox$p.adj[prior.wilcox$p.adj == 0] <- 2.2e-16
 
 write_csv(prior.wilcox, prior_csv_act)
 
 prior.wilcox %>%
-  filter(p.adj <= 0.05)
+  filter(p.adj <= 0.05) %>%
+  arrange(desc(wilcoxon))
 
 # method
 method.wilcox <- perform.multi.wilcox(method_mat) %>%
   mutate(wilcoxon = round(t.value, digits = 1)) %>%
-  select(-t.value)
+  select(-t.value) %>%
+  arrange(desc(wilcoxon))
 
 method.wilcox$p.adj[method.wilcox$p.adj == 0] <- 2.2e-16
 
 write_csv(method.wilcox, method_csv_act)
 
 method.wilcox %>%
-  filter(p.adj <= 0.05)
+  filter(p.adj <= 0.05) %>%
+  arrange(desc(wilcoxon))

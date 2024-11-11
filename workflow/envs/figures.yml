@@ -1,4 +1,4 @@
-name: benchmark
+name: figures
 channels:
   - conda-forge
   - bioconda
@@ -10,4 +10,4 @@ dependencies:
   - r-ggpubr
   - r-pheatmap
   - r-patchwork
-  - bioconductor-complexheatmap
+  - bioconductor-complexheatmap=2.18.0

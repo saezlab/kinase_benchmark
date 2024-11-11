@@ -2,7 +2,9 @@ if(exists("snakemake")){
   bench_files <- snakemake@input$bench
   rank_files <- snakemake@input$rank
   activating_files <- snakemake@input$act
+  activating_files_kin <- snakemake@input$act_kin
   tumor_files <- snakemake@input$tumor
+  tumor_files_kin <- snakemake@input$tumor_kin
   performance_plot <- snakemake@output$plt
 }else{
   bench_files <- list.files("results/03_benchmark/merged/02_benchmark_res",
@@ -11,9 +13,14 @@ if(exists("snakemake")){
   rank_files <- list.files("results/03_benchmark/merged/02_mean_rank",
                            pattern = "csv", recursive = TRUE, full.names = T)
   rank_files <- rank_files[str_detect(rank_files, "/shuffled2/|/iKiPdb/|/GPS/|/omnipath/|/networkin/|/phosphositeplus/|/ptmsigdb/|/GSknown/")]
-  activating_files <- list.files("data/tumor_benchmark/activity_scores",
-                                 pattern = "actsiteBM", full.names = T)
-  tumor_files <- "data/results_cptac/performance/roc_data.rds"
+  activating_files <- list.files("data/results_cptac/overall_performance/actsiteBM/all_kins",
+                                 pattern = "table", full.names = T)
+  activating_files_kin <- list.files("data/results_cptac/overall_performance/actsiteBM/all_kins",
+                                 pattern = "kins", full.names = T)
+  tumor_files <- list.files("data/results_cptac/overall_performance/protBM/all_kins",
+                                 pattern = "table", full.names = T)
+  tumor_files_kin <- list.files("data/results_cptac/overall_performance/protBM/all_kins",
+                                 pattern = "kins", full.names = T)
   performance_plot <- "results/manuscript_figures/figure_3/zscore.pdf"
 }
 
@@ -40,7 +47,7 @@ rank_df <- bind_rows(rank_list) %>%
                       "ptmsigdb" = "PTMsigDB",
                       "combined" = "extended combined",
                       "GSknown" = "curated",
-                      "shuffled2" = "Shuffled"))
+                      "shuffled2" = "shuffled"))
 
 
 n_kinases <- rank_df %>%
@@ -74,7 +81,7 @@ df_perturb_all <- bind_rows(bench_list)  %>%
                         "ptmsigdb" = "PTMsigDB",
                         "combined" = "extended combined",
                         "GSknown" = "curated",
-                        "shuffled2" = "Shuffled"))
+                        "shuffled2" = "shuffled"))
 
 df_perturb_all %>% filter(!net %in% c("shuffled", "shuffled2")) %>% group_by(method) %>% summarise(auroc = mean(score)) %>% arrange(desc(auroc))
 
@@ -85,76 +92,11 @@ df_perturb <- df_perturb_all %>%
   add_column(benchmark = "perturbation-based")
 
 ## tumor benchmark
-known_roc <- readRDS(tumor_files)
-roc_list <- map(known_roc, function(known_roc_i) {
-  lapply(known_roc_i$ROC_results, "[[", "sample_AUROCs")}
-)
-names(roc_list) <- names(known_roc)
-
-df_tumor_all <- map_dfr(names(roc_list), function(roc_i){
-  roc <- roc_list[[roc_i]]
-  do.call(rbind, lapply(names(roc), function(method) {
-    data.frame(method = method, score = roc[[method]], benchmark = "tumor-based")
-  })) %>%
-    add_column(net = roc_i)
-})
-df_tumor_all %>% group_by(method) %>% summarise(auroc = mean(score)) %>% arrange(desc(auroc))
-
-df_tumor <- df_tumor_all %>%
-  dplyr::filter(method == "zscore") %>%
-  dplyr::select(net, score, benchmark) %>%
-  mutate(net = recode(net,
-                      "iKiPdb" = "iKiP-DB",
-                      "GPS" = "GPS gold",
-                      "omnipath" = "OmniPath",
-                      "networkin" = "NetworKIN",
-                      "phosphositeplus" = "PhosphoSitePlus",
-                      "ptmsigdb" = "PTMsigDB",
-                      "combined" = "extended combined",
-                      "GSknown" = "curated",
-                      "shuffled2" = "Shuffled"))
-
-n_kinases_tumor <- map_dfr(names(roc_list), function(roc_i){
-  roc <- known_roc[[roc_i]]
-  data.frame(prior = roc_i,
-             kinases = length(unique(roc$evaluation_kinases %>% unlist())),
-             benchmark = "tumor-based")
+df_tumor <- map_dfr(tumor_files, function(file_roc){
+    roc <- readRDS(file_roc)
+    net_id <- str_extract(file_roc, "(?<=5perThr_).*?(?=_roc_)")
+    data.frame(net = net_id, score = roc[colnames(roc) == "zscore"], benchmark = "tumor-based")
 }) %>%
-  mutate(prior = recode(prior,
-                      "iKiPdb" = "iKiP-DB",
-                      "GPS" = "GPS gold",
-                      "omnipath" = "OmniPath",
-                      "networkin" = "NetworKIN",
-                      "phosphositeplus" = "PhosphoSitePlus",
-                      "ptmsigdb" = "PTMsigDB",
-                      "combined" = "extended combined",
-                      "GSknown" = "curated",
-                      "shuffled2" = "shuffled"))
-
-rm(known_roc)
-## activating sites benchmark
-act_roc <- map(activating_files, readRDS)
-names(act_roc) <- map_chr(str_split(activating_files, "/"), 4) %>%
-  str_remove("_roc_actsiteBM.rds")
-
-roc_list <- map(act_roc, function(known_roc_i) {
-  lapply(known_roc_i$ROC_results, "[[", "sample_AUROCs")}
-)
-names(roc_list) <- map_chr(str_split(activating_files, "/"), 4) %>%
-  str_remove("_roc_actsiteBM.rds")
-
-df_act_all <- map_dfr(names(roc_list), function(roc_i){
-  roc <- roc_list[[roc_i]]
-  do.call(rbind, lapply(names(roc), function(method) {
-    data.frame(method = method, score = roc[[method]], benchmark = "activating sites")
-  })) %>%
-    add_column(net = roc_i)
-})
-df_act_all %>% group_by(method) %>% summarise(auroc = mean(score)) %>% arrange(desc(auroc))
-
-df_act <- df_act_all %>%
-  dplyr::filter(method == "zscore") %>%
-  dplyr::select(net, score, benchmark) %>%
   mutate(net = recode(net,
                       "ikip" = "iKiP-DB",
                       "gps" = "GPS gold",
@@ -166,10 +108,52 @@ df_act <- df_act_all %>%
                       "known" = "curated",
                       "shuffled2" = "shuffled"))
 
-n_kinases_act <- map_dfr(names(roc_list), function(roc_i){
-  roc <- act_roc[[roc_i]]
-  data.frame(prior = roc_i,
-             kinases = length(unique(roc$evaluation_kinases %>% unlist())),
+## load number of kinases
+n_kinases_tumor <- map_dfr(tumor_files_kin, function(file_roc){
+  kin <- readRDS(file_roc) %>%
+    unlist() %>%
+    unique()
+  net_id <- str_extract(file_roc, "(?<=5perThr_).*?(?=_roc_)")
+  data.frame(prior = net_id,
+             kinases = length(kin),
+             benchmark = "tumor-based")
+}) %>%
+  mutate(prior = recode(prior,
+                      "ikip" = "iKiP-DB",
+                      "gps" = "GPS gold",
+                      "omni" = "OmniPath",
+                      "nwkin" = "NetworKIN",
+                      "psp" = "PhosphoSitePlus",
+                      "ptmsig" = "PTMsigDB",
+                      "combo" = "extended combined",
+                      "known" = "curated",
+                      "shuffled2" = "shuffled"))
+
+## activating sites benchmark
+df_act <- map_dfr(activating_files, function(file_roc){
+    roc <- readRDS(file_roc)
+    net_id <- str_extract(file_roc, "(?<=5perThr_).*?(?=_roc_)")
+    data.frame(net = net_id, score = roc[colnames(roc) == "zscore"], benchmark = "activating sites")
+}) %>%
+  mutate(net = recode(net,
+                      "ikip" = "iKiP-DB",
+                      "gps" = "GPS gold",
+                      "omni" = "OmniPath",
+                      "nwkin" = "NetworKIN",
+                      "psp" = "PhosphoSitePlus",
+                      "ptmsig" = "PTMsigDB",
+                      "combo" = "extended combined",
+                      "known" = "curated",
+                      "shuffled2" = "shuffled"))
+
+## load number of kinases
+n_kinases_act <- map_dfr(activating_files_kin, function(file_roc){
+  kin <- readRDS(file_roc) %>%
+    unlist() %>%
+    unique()
+  net_id <- str_extract(file_roc, "(?<=5perThr_).*?(?=_roc_)")
+  data.frame(prior = net_id,
+             kinases = length(kin),
              benchmark = "activating sites")
 }) %>%
   mutate(prior = recode(prior,
@@ -183,9 +167,17 @@ n_kinases_act <- map_dfr(names(roc_list), function(roc_i){
                       "known" = "curated",
                       "shuffled2" = "shuffled"))
 
+
 ## Combine
 df_tumor <- df_tumor %>% filter(net %in% unique(df_perturb$net))
 bench_df <- rbind(df_perturb, df_tumor, df_act)
+
+bench_df %>%
+  group_by(net, benchmark) %>%
+  summarise(score = mean(score)) %>%
+  pivot_wider(names_from = benchmark, values_from = score) %>%
+  column_to_rownames("net") %>%
+  cor()
 
 mean_auroc <- bench_df %>%
   group_by(net, benchmark) %>%
@@ -201,9 +193,6 @@ bench_df <- bench_df %>%
   mutate(benchmark = factor(benchmark, levels = c("perturbation-based", "activating sites", "tumor-based")))
 
 # Create the boxplot with ggplot2
-lines <- mean_auroc$mean_auroc
-names(lines) <- mean_auroc$net
-
 auroc_p <- ggplot(bench_df, aes(x = net, y = score, fill = benchmark)) +
   geom_boxplot(linewidth = 0.3, outlier.size = 0.1) +
   scale_fill_manual(values = c("#4292C6", "#C67642", "#b54d4a")) +  # Muted scientific color palette

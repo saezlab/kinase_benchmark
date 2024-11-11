@@ -82,7 +82,9 @@ rule supp_figures:
         "results/manuscript_figures/figure_1/supp/comparison_rank_subset.pdf",
         "results/manuscript_figures/figure_1/supp/overview_kin.pdf",
         "results/manuscript_figures/figure_3/supp/upset_kin.pdf",
-        "results/manuscript_figures/figure_3/supp/corrplot_pearson_priors.pdf"
+        "results/manuscript_figures/figure_3/supp/corrplot_pearson_priors.pdf",
+        "results/manuscript_figures/figure_3/supp/zscore_supp.pdf",
+        "results/manuscript_figures/figure_3/supp/median_auroc.pdf"
 
 
 # Module for prior processing

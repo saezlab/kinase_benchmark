@@ -70,10 +70,27 @@ rule performance_priors:
     input:
         bench = expand("results/03_benchmark/merged/02_benchmark_res/{PKN}/bench_zscore-{PKN}.csv", PKN = config["figures"]["evaluation"]),
         rank = expand("results/03_benchmark/merged/02_mean_rank/{PKN}/zscore-{PKN}.csv", PKN = config["figures"]["evaluation"]),
-        act = expand("data/results_cptac/performance/{PKN_cptac}_roc_actsiteBM.rds", PKN_cptac = config["figures"]["evaluation_cptac"]),
-        tumor = "data/results_cptac/performance/roc_data.rds"
+        act = expand("data/results_cptac/overall_performance/actsiteBM/all_kins/actsiteBM_5perThr_{PKN_cptac}_roc_table.rds", PKN_cptac = config["figures"]["evaluation_cptac"]),
+        act_kin = expand("data/results_cptac/overall_performance/actsiteBM/all_kins/actsiteBM_5perThr_{PKN_cptac}_roc_kins.rds", PKN_cptac = config["figures"]["evaluation_cptac"]),
+        tumor = expand("data/results_cptac/overall_performance/protBM/all_kins/protBM_5perThr_{PKN_cptac}_roc_table.rds", PKN_cptac = config["figures"]["evaluation_cptac"]),
+        tumor_kin = expand("data/results_cptac/overall_performance/protBM/all_kins/protBM_5perThr_{PKN_cptac}_roc_kins.rds", PKN_cptac = config["figures"]["evaluation_cptac"])
     output:
         plt="results/manuscript_figures/figure_3/zscore.pdf"
+    conda:
+        "../envs/figures.yml"
+    script:
+        "../scripts/05_figures_manuscript/03_prior_evaluation.R"
+
+rule performance_priors_subset_supp:
+    input:
+        bench = expand("results/03_benchmark/merged/02_benchmark_res_subset/subset/{PKN}/bench_zscore-{PKN}.csv", PKN = config["figures"]["coverage"]),
+        rank = expand("results/03_benchmark/merged/02_mean_rank_subset/subset/{PKN}/zscore-{PKN}.csv", PKN = config["figures"]["coverage"]),
+        act = expand("data/results_cptac/overall_performance/actsiteBM/same_kins/actsiteBM_5perThr_{PKN_cptac}_roc_filt_table.rds", PKN_cptac = config["figures"]["cptac"]),
+        act_kin = expand("data/results_cptac/overall_performance/actsiteBM/same_kins/actsiteBM_5perThr_{PKN_cptac}_roc_filt_kins.rds", PKN_cptac = config["figures"]["cptac"]),
+        tumor = expand("data/results_cptac/overall_performance/protBM/same_kins/protBM_5perThr_{PKN_cptac}_roc_filt_table.rds", PKN_cptac = config["figures"]["cptac"]),
+        tumor_kin = expand("data/results_cptac/overall_performance/protBM/same_kins/protBM_5perThr_{PKN_cptac}_roc_filt_kins.rds", PKN_cptac = config["figures"]["cptac"])
+    output:
+        plt="results/manuscript_figures/figure_3/supp/zscore_supp.pdf"
     conda:
         "../envs/figures.yml"
     script:
@@ -92,7 +109,7 @@ rule prior_coverage_supp:
     conda:
         "../envs/figures.yml"
     script:
-        "../scripts/05_figures_manuscript/03.1supp_overview_priors.R"       
+        "../scripts/05_figures_manuscript/03.1_supp_overview_priors.R"       
 
 rule correlation_analysis:
     input:
@@ -118,6 +135,26 @@ rule correlation_analysis:
     script:
         "../scripts/05_figures_manuscript/03.1_supp_comparison_activity.R"       
   
+rule performance_priors_all:
+    input:
+        bench_files = expand("results/03_benchmark/merged/02_benchmark_res/{PKN}/bench_{methods}-{PKN}.csv", PKN = config["figures"]["evaluation"],  methods = config["perturbation"]["methods"]),
+        act = expand("data/results_cptac/overall_performance/actsiteBM/all_kins/actsiteBM_5perThr_{PKN_cptac}_roc_table.rds", PKN_cptac = config["figures"]["evaluation_cptac"]),
+        tumor = expand("data/results_cptac/overall_performance/protBM/all_kins/protBM_5perThr_{PKN_cptac}_roc_table.rds", PKN_cptac = config["figures"]["evaluation_cptac"])
+    output:
+        plt = "results/manuscript_figures/figure_3/supp/median_auroc.pdf",
+        plt_tumor = "results/manuscript_figures/figure_3/supp/median_auroc_tumor.pdf",
+        plt_act = "results/manuscript_figures/figure_3/supp/median_auroc_act.pdf",
+        csv_prior = "results/manuscript_figures/supp_files/prior_comparison_perturbation.csv",
+        csv_method = "results/manuscript_figures/supp_files/method_comparison_perturbation.csv",
+        csv_prior_tumor = "results/manuscript_figures/supp_files/prior_comparison_tumor.csv",
+        csv_method_tumor = "results/manuscript_figures/supp_files/method_comparison_tumor.csv",
+        csv_prior_act = "results/manuscript_figures/supp_files/prior_comparison_act.csv",
+        csv_method_act = "results/manuscript_figures/supp_files/method_comparison_act.csv"
+    conda:
+        "../envs/figures.yml"
+    script:
+        "../scripts/05_figures_manuscript/03.1_supp_combo_evaluation.R"
+
 
 # ------------------------------------ FIGURE 4 ------------------------------------
 rule performance_combinations:
