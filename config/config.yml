@@ -25,6 +25,7 @@ perturbation:
 
 figures:
   coverage: ["omnipath", "phosphositeplus", "ptmsigdb", "GPS", "iKiPdb", "networkin", "GSknown"]
+  normalisation: ["glob", "perprot", "persite", "sub", "unnorm"]
   evaluation: ["omnipath", "phosphositeplus", "ptmsigdb", "GPS", "iKiPdb", "networkin", "GSknown", "shuffled2"]
   evaluation_cptac: ["known", "gps", "ikip", "nwkin", "omni", "psp", "ptmsig", "shuffled2"]
   cptac: ["known", "gps", "ikip", "nwkin", "omni", "psp", "ptmsig"]
