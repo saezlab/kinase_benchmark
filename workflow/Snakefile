@@ -74,8 +74,9 @@ rule figures:
         "results/manuscript_figures/figure_2/auroc_tumor_phosphositeplus.pdf",
         "results/manuscript_figures/figure_3/coverage_kin.pdf",
         "results/manuscript_figures/figure_3/zscore.pdf",
-        "results/manuscript_figures/figure_4/combinations_zscore.pdf",
-        "results/manuscript_figures/figure_4/combinations_subset_zscore.pdf"
+        "results/manuscript_figures/figure_3/regulon_perturbation.pdf",
+        "results/manuscript_figures/figure_4/combinations_zscore_perturbation.pdf",
+        "results/manuscript_figures/figure_4/combinations_subset_zscore_perturbation.pdf"
 
 rule supp_figures:
     input:
@@ -84,7 +85,9 @@ rule supp_figures:
         "results/manuscript_figures/figure_3/supp/upset_kin.pdf",
         "results/manuscript_figures/figure_3/supp/corrplot_pearson_priors.pdf",
         "results/manuscript_figures/figure_3/supp/zscore_supp.pdf",
-        "results/manuscript_figures/figure_3/supp/median_auroc.pdf"
+        "results/manuscript_figures/figure_3/supp/median_auroc.pdf",
+        "results/manuscript_figures/figure_4/supp/combinations_zscore_perturbation.pdf",
+        #"results/manuscript_figures/figure_4/supp/combinations_subset_zscore_perturbation.pdf"
 
 
 # Module for prior processing

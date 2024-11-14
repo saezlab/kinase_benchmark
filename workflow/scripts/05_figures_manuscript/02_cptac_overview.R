@@ -138,8 +138,8 @@ df_norm_prot <- map_dfr(norm_prot_files, function(file_roc){
 }) %>%
    mutate(normalisation = recode(normalisation,
                         "glob" = "global LM",
-                        "perprot" = "per prot LM",
-                        "persite" = "per site LM",
+                        "prot" = "per prot LM",
+                        "site" = "per site LM",
                         "sub" = "ratio/subtract",
                         "unnorm" = "no norm")) %>%
   mutate(method = recode(method,
@@ -156,17 +156,17 @@ df_norm_prot <- map_dfr(norm_prot_files, function(file_roc){
   filter(method %in% c("z-score", "PTM-SEA", "mean", "fgsea", "VIPER", "KSEA", "n targets")) 
 
 order_norm <- df_norm_prot %>%
-  group_by(normalisation) %>%
-  summarise(score = mean(score)) %>%
-  arrange(desc(score))
+  arrange(desc(score)) %>%
+  pull(normalisation) %>%
+  unique()
 
 order_method <- df_norm_prot %>%
-  group_by(method) %>%
-  summarise(score = mean(score)) %>%
-  arrange(desc(score))
+  arrange(desc(score)) %>%
+  pull(method) %>%
+  unique()
 
-df_norm_prot$normalisation <- factor(df_norm_prot$normalisation, levels = order_norm$normalisation)
-df_norm_prot$method <- factor(df_norm_prot$method, levels = order_method$method)
+df_norm_prot$normalisation <- factor(df_norm_prot$normalisation, levels = order_norm)
+df_norm_prot$method <- factor(df_norm_prot$method, levels = order_method)
 
 norm_prot_plt <- df_norm_prot %>%
   ggplot( aes(x = method, y = score, fill = normalisation)) +
@@ -187,7 +187,7 @@ norm_prot_plt <- df_norm_prot %>%
   ) +
   xlab("")
 
-pdf(norm_plot, width = 4, height = 3.5)
+pdf(norm_plot, width = 4, height = 3)
 norm_prot_plt
 dev.off()
 
@@ -220,17 +220,17 @@ df_norm_act <- map_dfr(norm_act_files, function(file_roc){
   filter(method %in% c("z-score", "PTM-SEA", "mean", "fgsea", "VIPER", "KSEA", "n targets")) 
 
 order_norm <- df_norm_act %>%
-  group_by(normalisation) %>%
-  summarise(score = mean(score)) %>%
-  arrange(desc(score))
+  arrange(desc(score)) %>%
+  pull(normalisation) %>%
+  unique()
 
 order_method <- df_norm_act %>%
-  group_by(method) %>%
-  summarise(score = mean(score)) %>%
-  arrange(desc(score))
+  arrange(desc(score)) %>%
+  pull(method) %>%
+  unique()
 
-df_norm_act$normalisation <- factor(df_norm_act$normalisation, levels = order_norm$normalisation)
-df_norm_act$method <- factor(df_norm_act$method, levels = order_method$method)
+df_norm_act$normalisation <- factor(df_norm_act$normalisation, levels = order_norm)
+df_norm_act$method <- factor(df_norm_act$method, levels = order_method)
 
 norm_act_plt <- df_norm_act %>%
   ggplot( aes(x = method, y = score, fill = normalisation)) +
@@ -251,6 +251,6 @@ norm_act_plt <- df_norm_act %>%
   ) +
   xlab("")
 
-pdf(norm_plot_act, width = 4, height = 3.5)
+pdf(norm_plot_act, width = 4, height = 3)
 norm_act_plt
 dev.off()

@@ -44,7 +44,7 @@ rule overview_tumor:
         act="data/results_cptac/overall_performance/actsiteBM/all_kins/actsiteBM_5perThr_psp_roc_table.rds",
         bench="data/results_cptac/overall_performance/protBM/all_kins/protBM_5perThr_psp_roc_table.rds",
         norm_act=expand("data/results_cptac/normalisation/actsiteBM/actsiteBM_5perThr_{norm}_roc_table.rds", norm = config["figures"]["normalisation"]),
-        prot_act=expand("data/results_cptac/normalisation/proteinBM/proteinBM_5perThr_{norm}_roc_table.rds", norm = config["figures"]["normalisation"])
+        prot_act=expand("data/results_cptac/normalisation/proteinBM/protBM_5perThr_{norm}_roc_table.rds", norm = config["figures"]["normalisation_prot"])
     output:
         plot = "results/manuscript_figures/figure_2/auroc_tumor_phosphositeplus.pdf",
         plotact = "results/manuscript_figures/figure_2/auroc_act_phosphositeplus.pdf",
@@ -85,6 +85,21 @@ rule performance_priors:
     script:
         "../scripts/05_figures_manuscript/03_prior_evaluation.R"
 
+rule performance_strat:
+    input:
+        rank = expand("results/03_benchmark/merged/02_mean_rank/{PKN}/zscore-{PKN}.csv", PKN = config["figures"]["evaluation"]),
+        act = expand("data/results_cptac/stratified_kinases/all_kins/actsiteBM/actsiteBM_{PKN_cptac}_{strat}_roc_list.Rds", PKN_cptac = config["figures"]["evaluation_cptac"], strat = ["0to10", "11to25", "26plus"]),
+        tumor = expand("data/results_cptac/stratified_kinases/all_kins/protBM/protBM_{PKN_cptac}_{strat}_roc_list.Rds", PKN_cptac = config["figures"]["evaluation_cptac"], strat = ["0to10", "11to25", "26plus"])
+    output:
+        plt_pert="results/manuscript_figures/figure_3/regulon_perturbation.pdf",
+        plt_act="results/manuscript_figures/figure_3/regulon_activatingsite.pdf",
+        plt_tumor="results/manuscript_figures/figure_3/regulon_tumor.pdf"
+    conda:
+        "../envs/figures.yml"
+    script:
+        "../scripts/05_figures_manuscript/03_size_evaluation.R"
+
+
 rule performance_priors_subset_supp:
     input:
         bench = expand("results/03_benchmark/merged/02_benchmark_res_subset/subset/{PKN}/bench_zscore-{PKN}.csv", PKN = config["figures"]["coverage"]),
@@ -115,7 +130,7 @@ rule prior_coverage_supp:
     script:
         "../scripts/05_figures_manuscript/03.1_supp_overview_priors.R"       
 
-rule correlation_analysis:
+rule correlation_analysis_supp:
     input:
         pearson_prior="results/04_exploration/merged/correlation/correlation_priors_pearson.rds",
         pearson_method="results/04_exploration/merged/correlation/correlation_methods_pearson.rds",
@@ -139,7 +154,7 @@ rule correlation_analysis:
     script:
         "../scripts/05_figures_manuscript/03.1_supp_comparison_activity.R"       
   
-rule performance_priors_all:
+rule performance_priors_all_supp:
     input:
         bench_files = expand("results/03_benchmark/merged/02_benchmark_res/{PKN}/bench_{methods}-{PKN}.csv", PKN = config["figures"]["evaluation"],  methods = config["perturbation"]["methods"]),
         act = expand("data/results_cptac/overall_performance/actsiteBM/all_kins/actsiteBM_5perThr_{PKN_cptac}_roc_table.rds", PKN_cptac = config["figures"]["evaluation_cptac"]),
@@ -163,29 +178,69 @@ rule performance_priors_all:
 # ------------------------------------ FIGURE 4 ------------------------------------
 rule performance_combinations:
     input:
-        bench = expand("results/03_benchmark/merged/02_benchmark_res/{PKN}/bench_zscore-{PKN}.csv", PKN = config["figures"]["combination"]),
-        rank = expand("results/03_benchmark/merged/02_mean_rank/{PKN}/zscore-{PKN}.csv", PKN = config["figures"]["combination"]),
+        bench = expand("results/03_benchmark/merged/02_benchmark_res/{PKN}/bench_{methods}-{PKN}.csv", PKN = config["figures"]["combination"], methods = config["figures"]["combination_methods"]),
+        rank = expand("results/03_benchmark/merged/02_mean_rank/{PKN}/{methods}-{PKN}.csv", PKN = config["figures"]["combination"], methods = config["figures"]["combination_methods"]),
         act_roc = expand("data/results_cptac/performance_combinations/GSknown/all_kins/actsiteBM_5perThr_combofig_{PKN_cptac}_roc_table.rds", PKN_cptac = config["figures"]["combination_cptac"]),
         act_kin = expand("data/results_cptac/performance_combinations/GSknown/all_kins/actsiteBM_5perThr_combofig_{PKN_cptac}_roc_kins.rds", PKN_cptac = config["figures"]["combination_cptac"]),
         tumor_roc = expand("data/results_cptac/performance_combinations/GSknown/all_kins/protBM_5perThr_combofig_{PKN_cptac}_roc_table.rds", PKN_cptac = config["figures"]["combination_cptac"]),
         tumor_kin = expand("data/results_cptac/performance_combinations/GSknown/all_kins/protBM_5perThr_combofig_{PKN_cptac}_roc_kins.rds", PKN_cptac = config["figures"]["combination_cptac"])
     output:
-        plt="results/manuscript_figures/figure_4/combinations_zscore.pdf"
+        plt="results/manuscript_figures/figure_4/combinations_zscore_perturbation.pdf",
+        plt_act="results/manuscript_figures/figure_4/combinations_zscore_actsite.pdf",
+        plt_prot="results/manuscript_figures/figure_4/combinations_zscore_protein.pdf"
     conda:
         "../envs/figures.yml"
     script:
         "../scripts/05_figures_manuscript/04_combination_evaluation.R"
 
+
 rule performance_combinations_subset:
     input:
-        bench = expand("results/03_benchmark/merged/02_benchmark_res_subset/GSknownSub/{PKN}/bench_zscore-{PKN}.csv", PKN = config["figures"]["combination"]),
-        rank = expand("results/03_benchmark/merged/02_mean_rank_subset/GSknownSub/{PKN}/zscore-{PKN}.csv", PKN = config["figures"]["combination"]),
+        bench = expand("results/03_benchmark/merged/02_benchmark_res_subset/GSknownSub/{PKN}/bench_{methods}-{PKN}.csv", PKN = config["figures"]["combination"], methods = config["figures"]["combination_methods"]),
+        rank = expand("results/03_benchmark/merged/02_mean_rank_subset/GSknownSub/{PKN}/{methods}-{PKN}.csv", PKN = config["figures"]["combination"], methods = config["figures"]["combination_methods"]),
         act_roc = expand("data/results_cptac/performance_combinations/GSknown/same_kins/actsiteBM_5perThr_combofig_{PKN_cptac}_roc_filt_table.rds", PKN_cptac = config["figures"]["combination_cptac"]),
         act_kin = "data/results_cptac/performance_combinations/GSknown/same_kins/actsiteBM_5perThr_combofig_known_roc_kins_used4all.rds",
         tumor_roc = expand("data/results_cptac/performance_combinations/GSknown/same_kins/protBM_5perThr_combofig_{PKN_cptac}_roc_filt_table.rds", PKN_cptac = config["figures"]["combination_cptac"]),
         tumor_kin = "data/results_cptac/performance_combinations/GSknown/same_kins/protBM_5perThr_combofig_known_roc_kins_used4all.rds"
     output:
-        plt="results/manuscript_figures/figure_4/combinations_subset_zscore.pdf"
+        plt="results/manuscript_figures/figure_4/combinations_subset_zscore_perturbation.pdf",
+        plt_act="results/manuscript_figures/figure_4/combinations_subset_zscore_actsite.pdf",
+        plt_prot="results/manuscript_figures/figure_4/combinations_subset_zscore_protein.pdf"
+    conda:
+        "../envs/figures.yml"
+    script:
+        "../scripts/05_figures_manuscript/04_combination_subset_evaluation.R"
+
+rule performance_combinations_supp:
+    input:
+        bench = expand("results/03_benchmark/merged/02_benchmark_res/{PKN}/bench_{methods}-{PKN}.csv", PKN = config["perturbation"]["johnson1Sub"], methods = config["figures"]["combination_methods"]),
+        rank = expand("results/03_benchmark/merged/02_mean_rank/{PKN}/{methods}-{PKN}.csv", PKN = config["perturbation"]["johnson1Sub"], methods = config["figures"]["combination_methods"]),
+        act_roc = expand("data/results_cptac/performance_combinations/GSknown/all_kins/actsiteBM_5perThr_combofig_{PKN_cptac}_roc_table.rds", PKN_cptac = config["figures"]["combination_cptac_2"]),
+        act_kin = expand("data/results_cptac/performance_combinations/GSknown/all_kins/actsiteBM_5perThr_combofig_{PKN_cptac}_roc_kins.rds", PKN_cptac = config["figures"]["combination_cptac_2"]),
+        tumor_roc = expand("data/results_cptac/performance_combinations/GSknown/all_kins/protBM_5perThr_combofig_{PKN_cptac}_roc_table.rds", PKN_cptac = config["figures"]["combination_cptac_2"]),
+        tumor_kin = expand("data/results_cptac/performance_combinations/GSknown/all_kins/protBM_5perThr_combofig_{PKN_cptac}_roc_kins.rds", PKN_cptac = config["figures"]["combination_cptac_2"])
+    output:
+        plt="results/manuscript_figures/figure_4/supp/combinations_zscore_perturbation.pdf",
+        plt_act="results/manuscript_figures/figure_4/supp/combinations_zscore_actsite.pdf",
+        plt_prot="results/manuscript_figures/figure_4/supp/combinations_zscore_protein.pdf"
+    conda:
+        "../envs/figures.yml"
+    script:
+        "../scripts/05_figures_manuscript/04_combination_evaluation.R"
+
+
+rule performance_combinations_subset_supp:
+    input:
+        bench = expand("results/03_benchmark/merged/02_benchmark_res_subset/GSknownSub/{PKN}/bench_{methods}-{PKN}.csv", PKN = config["perturbation"]["johnson1Sub"], methods = config["figures"]["combination_methods"]),
+        rank = expand("results/03_benchmark/merged/02_mean_rank_subset/GSknownSub/{PKN}/{methods}-{PKN}.csv", PKN = config["perturbation"]["johnson1Sub"], methods = config["figures"]["combination_methods"]),
+        act_roc = expand("data/results_cptac/performance_combinations/GSknown/same_kins/actsiteBM_5perThr_combofig_{PKN_cptac}_roc_filt_table.rds", PKN_cptac = config["figures"]["combination_cptac_2"]),
+        act_kin = "data/results_cptac/performance_combinations/GSknown/same_kins/actsiteBM_5perThr_combofig_known_roc_kins_used4all.rds",
+        tumor_roc = expand("data/results_cptac/performance_combinations/GSknown/same_kins/protBM_5perThr_combofig_{PKN_cptac}_roc_filt_table.rds", PKN_cptac = config["figures"]["combination_cptac_2"]),
+        tumor_kin = "data/results_cptac/performance_combinations/GSknown/same_kins/protBM_5perThr_combofig_known_roc_kins_used4all.rds"
+    output:
+        plt="results/manuscript_figures/figure_4/supp/combinations_subset_zscore_perturbation.pdf",
+        plt_act="results/manuscript_figures/figure_4/supp/combinations_subset_zscore_actsite.pdf",
+        plt_prot="results/manuscript_figures/figure_4/supp/combinations_subset_zscore_protein.pdf"
     conda:
         "../envs/figures.yml"
     script:

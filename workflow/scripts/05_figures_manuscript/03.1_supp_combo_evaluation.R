@@ -105,7 +105,7 @@ df_tumor <- map_dfr(tumor_files, function(file_roc){
     roc <- readRDS(file_roc)
     net_id <- str_extract(file_roc, "(?<=5perThr_).*?(?=_roc_)")
     map_dfr(colnames(roc), function(method_id){
-        data.frame(net = net_id, score = roc[colnames(roc) == method_id], method = method_id, benchmark = "tumor-based")
+        data.frame(net = net_id, score = roc[,colnames(roc) == method_id], method = method_id, benchmark = "tumor-based")
     })
     
 }) %>%
@@ -163,7 +163,7 @@ df_act <- map_dfr(activating_files, function(file_roc){
     roc <- readRDS(file_roc)
     net_id <- str_extract(file_roc, "(?<=5perThr_).*?(?=_roc_)")
     map_dfr(colnames(roc), function(method_id){
-        data.frame(net = net_id, score = roc[colnames(roc) == method_id], method = method_id, benchmark = "activating site")
+        data.frame(net = net_id, score = roc[,colnames(roc) == method_id], method = method_id, benchmark = "activating site")
     })   
 }) %>%
   mutate(net = recode(net,
@@ -212,12 +212,20 @@ Heatmap(med_mat, row_split = 4, column_split = 5,border = TRUE, rect_gp = gpar(c
           grid.text(sprintf("%.2f", med_mat[i, j]), x, y, gp = gpar(fontsize = 6))})
 dev.off()
 
-## Correlation -----------
- comb_mat <- rbind(bench_df, df_tumor, df_act) %>%
+## Exploration -----------
+comb_df <- rbind(bench_df, df_tumor, df_act) %>%
   group_by(method, net, benchmark) %>%
   summarise(score = mean(score)) %>%
   mutate(id = paste(method, net, sep = "_")) %>%
-  ungroup() %>%
+  ungroup() 
+
+comb_df %>% arrange(desc(score)) %>% group_by(id) %>% summarise(score = mean(score)) %>% arrange(desc(score))
+comb_df %>% filter(!net == "shuffled") %>% group_by(method, benchmark) %>% summarise(score = mean(score)) %>% ungroup() %>% arrange(desc(score)) %>% group_by(benchmark) %>% group_split()
+comb_df %>% filter(!method == "n_targets") %>% group_by(net, benchmark) %>% summarise(score = mean(score)) %>% ungroup() %>% arrange(desc(score)) %>% group_by(benchmark) %>% group_split()
+comb_df %>% filter(net == "curated" & method == "z-score") %>% summarise(score = mean(score)) 
+
+## Correlation ----------- 
+comb_mat <- comb_df %>%
   dplyr::select(id, score, benchmark) %>%
   pivot_wider(names_from = "benchmark", values_from = "score") %>%
   column_to_rownames("id")

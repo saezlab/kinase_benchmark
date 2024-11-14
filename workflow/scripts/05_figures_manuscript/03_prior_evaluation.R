@@ -95,7 +95,7 @@ df_perturb <- df_perturb_all %>%
 df_tumor <- map_dfr(tumor_files, function(file_roc){
     roc <- readRDS(file_roc)
     net_id <- str_extract(file_roc, "(?<=5perThr_).*?(?=_roc_)")
-    data.frame(net = net_id, score = roc[colnames(roc) == "zscore"], benchmark = "tumor-based")
+    data.frame(net = net_id, score = roc[,colnames(roc) == "zscore"], benchmark = "tumor-based")
 }) %>%
   mutate(net = recode(net,
                       "ikip" = "iKiP-DB",
@@ -133,7 +133,7 @@ n_kinases_tumor <- map_dfr(tumor_files_kin, function(file_roc){
 df_act <- map_dfr(activating_files, function(file_roc){
     roc <- readRDS(file_roc)
     net_id <- str_extract(file_roc, "(?<=5perThr_).*?(?=_roc_)")
-    data.frame(net = net_id, score = roc[colnames(roc) == "zscore"], benchmark = "activating sites")
+    data.frame(net = net_id, score = roc[,colnames(roc) == "zscore"], benchmark = "activating sites")
 }) %>%
   mutate(net = recode(net,
                       "ikip" = "iKiP-DB",
@@ -215,12 +215,20 @@ kin_df <- rbind(n_kinases, n_kinases_tumor, n_kinases_act)
 kin_df$prior <- factor(kin_df$prior, levels = mean_auroc$net)
 kin_df$benchmark <- factor(kin_df$benchmark, levels = c("perturbation-based", "activating sites", "tumor-based"))
 
+if (any(str_detect(activating_files_kin, "same_kins"))){
+  limits <- c(0,40)
+  breaks <- seq(0, 50, by = 20)
+} else {
+  limits <- c(0, 160)
+  breaks <- seq(0, 160, by = 50) 
+}
+
 kin_p <- ggplot(kin_df, aes(x = prior, y = kinases, fill = benchmark)) +
   geom_bar(stat="identity", position=position_dodge(), width = 0.4)+ # Line connecting the dots
   scale_y_continuous(
     name = "tmp",
-    limits = c(0, 160),
-    breaks = seq(0, 160, by = 50) #
+    limits = limits,
+    breaks = breaks#
   ) +
   theme_bw() +
   theme(
@@ -240,3 +248,7 @@ full_p <- ggarrange(kin_p, auroc_p, ncol = 1, common.legend = T, heights = c(3, 
 pdf(performance_plot, width = 3.9, height = 4.2)
 full_p
 dev.off()
+
+bench_df %>% group_by(net) %>% summarise(score = mean(score)) %>% arrange(desc(score))
+kin_df %>% filter(prior %in% c("curated"))
+kin_df %>% filter(prior %in% c("OmniPath", "iKiP-DB"))
