@@ -334,6 +334,8 @@ rule combine_scores:
         file_scores=expand("results/02_activity_scores/{{dataset}}/{method}/{{PKN}}.csv", method = config["perturbation"]["methods"]),
     output:
         rds="results/02_activity_scores/{dataset}/scores/{PKN}.rds"
+    wildcard_constraints:
+        dataset = '(?!cptac)[a-zA-Z0-9_]+'
     conda:
         "../envs/phospho.yml"
     script:
