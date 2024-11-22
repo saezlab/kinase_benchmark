@@ -8,8 +8,8 @@ if(exists("snakemake")){
   performance_plot <- snakemake@output$plot
 }else{
   rank_files <-  "results/03_benchmark/merged/02_mean_rank/omnipath/zscore-omnipath.csv"                        
-  performance_plot <- "results/04_exploration/merged/benchmark/plots/comparison_rank_subset.pdf"
-  prior_id <- "phosphositeplus"
+  performance_plot <- "results/04_exploration/merged/rank/comparison_rank_zscore_omnipath.pdf"
+  prior_id <- "omnipath"
   method_id <- "zscore"
 }
 
@@ -59,10 +59,11 @@ rank_overview <- map_dfr(kinase_pert, function(kin_id){
   pivot_longer(!kinase, names_to = "type", values_to = "scaled_rank") %>%
   mutate(benchmark = map_chr(str_split(type, "_"), 2)) %>%
   mutate(metric = map_chr(str_split(type, "_"), 1))
-
+mean_non <- rank_overview %>% filter(benchmark == "nonpert") %>% filter(metric == "mean") %>% pull(scaled_rank) %>% mean(na.rm = T)
 
 scaled_p <- ggplot(rank_overview %>% filter(metric == "mean"), aes(x = scaled_rank, y = kinase, color = benchmark)) +
- geom_point()
+ geom_point() +
+ ggtitle(paste0(round(mean_non, digits = 2)))
 
 pdf(performance_plot, width = 8, height = 4)
 scaled_p
