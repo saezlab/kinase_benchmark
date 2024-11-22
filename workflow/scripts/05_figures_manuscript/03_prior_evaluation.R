@@ -6,6 +6,7 @@ if(exists("snakemake")){
   tumor_files <- snakemake@input$tumor
   tumor_files_kin <- snakemake@input$tumor_kin
   performance_plot <- snakemake@output$plt
+  overview_csv <- snakemake@output$csv
 }else{
   bench_files <- list.files("results/03_benchmark/merged/02_benchmark_res",
                             pattern = "bench", recursive = TRUE, full.names = T)
@@ -22,6 +23,7 @@ if(exists("snakemake")){
   tumor_files_kin <- list.files("data/results_cptac/overall_performance/protBM/all_kins",
                                  pattern = "kins", full.names = T)
   performance_plot <- "results/manuscript_figures/figure_3/zscore.pdf"
+  overview_csv <- "results/manuscript_figures/supp_files/overview_benchmark.csv"
 }
 
 ## Libraries ---------------------------
@@ -52,9 +54,9 @@ rank_df <- bind_rows(rank_list) %>%
 
 n_kinases <- rank_df %>%
   group_by(prior, method) %>%
-  summarise(kinases = length(unique(targets))) %>%
+  summarise(TP = n(), kinases = length(unique(targets))) %>%
   filter(method == "zscore") %>%
-  select(prior, kinases) %>%
+  select(prior, kinases, TP) %>%
   add_column(benchmark = "perturbation-based")
 
 if (any(str_detect(bench_files, "subset"))){
@@ -111,11 +113,11 @@ df_tumor <- map_dfr(tumor_files, function(file_roc){
 ## load number of kinases
 n_kinases_tumor <- map_dfr(tumor_files_kin, function(file_roc){
   kin <- readRDS(file_roc) %>%
-    unlist() %>%
-    unique()
+    unlist()
   net_id <- str_extract(file_roc, "(?<=5perThr_).*?(?=_roc_)")
   data.frame(prior = net_id,
-             kinases = length(kin),
+             kinases = length(unique(kin)),
+             TP = length(kin),
              benchmark = "tumor-based")
 }) %>%
   mutate(prior = recode(prior,
@@ -149,11 +151,11 @@ df_act <- map_dfr(activating_files, function(file_roc){
 ## load number of kinases
 n_kinases_act <- map_dfr(activating_files_kin, function(file_roc){
   kin <- readRDS(file_roc) %>%
-    unlist() %>%
-    unique()
+    unlist()
   net_id <- str_extract(file_roc, "(?<=5perThr_).*?(?=_roc_)")
   data.frame(prior = net_id,
-             kinases = length(kin),
+             kinases = length(unique(kin)),
+             TP = length(kin),
              benchmark = "activating sites")
 }) %>%
   mutate(prior = recode(prior,
@@ -252,3 +254,14 @@ dev.off()
 bench_df %>% group_by(net) %>% summarise(score = mean(score)) %>% arrange(desc(score))
 kin_df %>% filter(prior %in% c("curated"))
 kin_df %>% filter(prior %in% c("OmniPath", "iKiP-DB"))
+
+kin_csv <- kin_df %>%
+  mutate(benchmark = recode(benchmark,
+                            "tumor-based" = "protein-based",
+                            "activating sites" = "activating site-based")) %>%
+  rename("kinase-substrate library" = prior,
+         "unique kinases in GS set" = kinases,
+         "unique pairs in GS set" = TP,
+         "benchmark approach" = benchmark)
+
+write_csv(kin_csv, overview_csv)
