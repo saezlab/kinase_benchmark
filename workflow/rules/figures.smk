@@ -36,6 +36,16 @@ rule supp_figure1_rank:
         "../envs/figures.yml"
     script:
         "../scripts/05_figures_manuscript/01.1_supp_rank.R"
+
+rule supp_table_hijazi:
+    input:
+        meta = "results/01_processed_data/hijaziDiscoverX/data/benchmark_metadata.csv"
+    output:
+        out = "results/manuscript_figures/supp_files/hijazi_meta.csv"
+    conda:
+        "../envs/figures.yml"
+    script:
+        "../scripts/05_figures_manuscript/01.1_supp_hijazi.R"
         
 
 # ------------------------------------ FIGURE 2 ------------------------------------
@@ -79,7 +89,8 @@ rule performance_priors:
         tumor = expand("data/results_cptac/overall_performance/protBM/all_kins/protBM_5perThr_{PKN_cptac}_roc_table.rds", PKN_cptac = config["figures"]["evaluation_cptac"]),
         tumor_kin = expand("data/results_cptac/overall_performance/protBM/all_kins/protBM_5perThr_{PKN_cptac}_roc_kins.rds", PKN_cptac = config["figures"]["evaluation_cptac"])
     output:
-        plt="results/manuscript_figures/figure_3/zscore.pdf"
+        plt="results/manuscript_figures/figure_3/zscore.pdf",
+        csv="results/manuscript_figures/supp_files/overview_benchmark.csv"
     conda:
         "../envs/figures.yml"
     script:
@@ -174,6 +185,17 @@ rule performance_priors_all_supp:
     script:
         "../scripts/05_figures_manuscript/03.1_supp_combo_evaluation.R"
 
+rule supp_table_comparison:
+    input:
+        prior = expand("results/manuscript_figures/supp_files/prior_comparison_{bench}.csv", bench = ["act", "perturbation", "tumor"]),
+        method = expand("results/manuscript_figures/supp_files/method_file_comparison_{bench}.csv", bench = ["act", "perturbation", "tumor"])
+    output:
+        prior_out = "results/manuscript_figures/supp_files/prior_comparison.csv",
+        method_out = "results/manuscript_figures/supp_files/method_comparison.csv"
+    conda:
+        "../envs/figures.yml"
+    script:
+        "../scripts/05_figures_manuscript/03.1_supp_combo_table.R"
 
 # ------------------------------------ FIGURE 4 ------------------------------------
 rule performance_combinations:

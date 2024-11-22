@@ -26,17 +26,13 @@ rule subset_predicted:
     input:
         expand("results/03_benchmark/{dataset}/02_benchmark_res_subset/GSknownSub/{PKN}/bench_{hernandez_methods}-{PKN}.csv", dataset = ["hernandez", "hijazi", "merged"], hernandez_methods = config["perturbation"]["methods"], PKN = config["perturbation"]["GSknownSub"]),
         expand("results/03_benchmark/{dataset}/02_benchmark_res/{PKN}/bench_{hernandez_methods}-{PKN}.csv", dataset = ["hernandez", "hijazi", "merged"], hernandez_methods = config["perturbation"]["methods"], PKN = config["perturbation"]["GSknownSub"]),
-        #expand("results/03_benchmark/{dataset}/02_benchmark_res_subset/combinedSub/{PKN}/bench_{hernandez_methods}-{PKN}.csv", dataset = ["hernandez", "hijazi", "merged"], hernandez_methods = config["perturbation"]["methods"], PKN = config["perturbation"]["combinedSub"]),
         expand("results/03_benchmark/{dataset}/02_mean_rank_subset/GSknownSub/{PKN}/{hernandez_methods}-{PKN}.csv", dataset = ["hernandez", "hijazi", "merged"], hernandez_methods = config["perturbation"]["methods"], PKN = config["perturbation"]["GSknownSub"]),
-        expand("results/03_benchmark/{dataset}/02_mean_rank/{PKN}/{hernandez_methods}-{PKN}.csv", dataset = ["hernandez", "hijazi", "merged"], hernandez_methods = config["perturbation"]["methods"], PKN = config["perturbation"]["GSknownSub"]),
-        #expand("results/03_benchmark/{dataset}/02_mean_rank_subset/combinedSub/{PKN}/{hernandez_methods}-{PKN}.csv", dataset = ["hernandez", "hijazi", "merged"], hernandez_methods = config["perturbation"]["methods"], PKN = config["perturbation"]["combinedSub"])
+        expand("results/03_benchmark/{dataset}/02_mean_rank/{PKN}/{hernandez_methods}-{PKN}.csv", dataset = ["hernandez", "hijazi", "merged"], hernandez_methods = config["perturbation"]["methods"], PKN = config["perturbation"]["GSknownSub"])
 
 rule subset_johnson:
     input:
         expand("results/03_benchmark/{dataset}/02_benchmark_res_subset/johnson1Sub/{PKN}/bench_{hernandez_methods}-{PKN}.csv", dataset = ["hernandez", "hijazi", "merged"], hernandez_methods = config["perturbation"]["methods"], PKN = config["perturbation"]["johnson1Sub"]),
-        #expand("results/03_benchmark/{dataset}/02_benchmark_res_subset/johnson2Sub/{PKN}/bench_{hernandez_methods}-{PKN}.csv", dataset = ["hernandez", "hijazi", "merged"], hernandez_methods = config["perturbation"]["methods"], PKN = config["perturbation"]["johnson2Sub"]),
-        expand("results/03_benchmark/{dataset}/02_mean_rank_subset/johnson1Sub/{PKN}/{hernandez_methods}-{PKN}.csv", dataset = ["hernandez", "hijazi", "merged"], hernandez_methods = config["perturbation"]["methods"], PKN = config["perturbation"]["johnson1Sub"]),
-        #expand("results/03_benchmark/{dataset}/02_mean_rank_subset/johnson2Sub/{PKN}/{hernandez_methods}-{PKN}.csv", dataset = ["hernandez", "hijazi", "merged"], hernandez_methods = config["perturbation"]["methods"], PKN = config["perturbation"]["johnson2Sub"])
+        expand("results/03_benchmark/{dataset}/02_mean_rank_subset/johnson1Sub/{PKN}/{hernandez_methods}-{PKN}.csv", dataset = ["hernandez", "hijazi", "merged"], hernandez_methods = config["perturbation"]["methods"], PKN = config["perturbation"]["johnson1Sub"])
 
 rule hijazi:
     input:
@@ -87,8 +83,13 @@ rule supp_figures:
         "results/manuscript_figures/figure_3/supp/zscore_supp.pdf",
         "results/manuscript_figures/figure_3/supp/median_auroc.pdf",
         "results/manuscript_figures/figure_4/supp/combinations_zscore_perturbation.pdf",
-        #"results/manuscript_figures/figure_4/supp/combinations_subset_zscore_perturbation.pdf"
+        "results/manuscript_figures/figure_4/supp/combinations_subset_zscore_perturbation.pdf"
 
+rule supp_files:
+    input:
+        "results/manuscript_figures/supp_files/hijazi_meta.csv",
+        "results/manuscript_figures/supp_files/overview_benchmark.csv",
+        "results/manuscript_figures/supp_files/prior_comparison.csv"
 
 # Module for prior processing
 module prior:
