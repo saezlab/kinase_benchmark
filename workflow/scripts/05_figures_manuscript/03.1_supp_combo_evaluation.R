@@ -224,6 +224,18 @@ comb_df %>% filter(!net == "shuffled") %>% group_by(method, benchmark) %>% summa
 comb_df %>% filter(!method == "n_targets") %>% group_by(net, benchmark) %>% summarise(score = mean(score)) %>% ungroup() %>% arrange(desc(score)) %>% group_by(benchmark) %>% group_split()
 comb_df %>% filter(net == "curated" & method == "z-score") %>% summarise(score = mean(score)) 
 
+mat_ppsp <- comb_df %>% filter(net == "PhosphoSitePlus") %>% select(method, benchmark, score) %>% pivot_wider(names_from = "benchmark", values_from = "score") %>% column_to_rownames("method")
+cor(mat_ppsp)
+
+cor.test(mat_ppsp$`activating site`, mat_ppsp$`tumor-based`, method = "pearson")
+cor.test(mat_ppsp$`activating site`, mat_ppsp$`perturbation-based`, method = "pearson")
+cor.test(mat_ppsp$`perturbation-based`, mat_ppsp$`tumor-based`, method = "pearson")
+
+mat_comb <- comb_df %>% filter(!net == "shuffled") %>% filter(!method == "n_targets") %>% select(id, benchmark, score) %>% pivot_wider(names_from = "benchmark", values_from = "score") %>% column_to_rownames("id")
+
+cor.test(mat_comb$`activating site`, mat_comb$`tumor-based`, method = "pearson")
+cor.test(mat_comb$`activating site`, mat_comb$`perturbation-based`, method = "pearson")
+cor.test(mat_comb$`perturbation-based`, mat_comb$`tumor-based`, method = "pearson")
 ## Correlation ----------- 
 comb_mat <- comb_df %>%
   dplyr::select(id, score, benchmark) %>%
