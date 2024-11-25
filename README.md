@@ -6,10 +6,15 @@
 ## Overview
 In this study, we present a flexible framework to assess different combinations of computational algorithms and kinase-substrate libraries 
 for the inference of kinase activities. For the benchmark, we use a set of kinase perturbation experiments to evaluate which combination
-is able to recapitulate the perturbed kinases from the phosphoproteomics data.
+is able to recapitulate the perturbed kinases from the phosphoproteomics data. Additionally, we propose a new benchmarking strategy based
+on multi-omics tumor data.
 
 If you want to test your own method try out our package [benchmarKIN](https://github.com/saezlab/benchmarKIN) and check out the 
 [documentation](https://benchmarkin.readthedocs.io/). 
+
+<p align="center" width="100%">
+<img src="man/figures/overview.png" align="center" width="550">
+</p>
 
 ## Kinase substrate libraries
 We have included the following kinase-substrate libraries:
@@ -25,20 +30,24 @@ Additionally have tested the combination with predicted targets including the Ki
 ## Methods
 We have included the following methods for the comparison:
 - fgsea
+- Fisher's exact test
 - KARP
+- KSEA
 - Kologomorov-Smirnov
-- linear model (RoKAI, decoupler)
+- linear model - RoKAI
+- Mann-Whitney-U test
 - mean
-- normalised mean
 - median
-- multivarite linear model
-- PC1
+- multivatiate linear model - decoupler
+- normalised mean
+- Principal Component Analysis
 - PTM-SEA
 - sum
+- univariate linear model - decoupler
 - upper quantile
-- viper
-- Wilcox
-- z-score (KSEA, RoKAI)
+- VIPER
+- z-score
+- X-square test
 
 ## Citation
 > Mueller-Dott, Sophia, Eric J. Jaehnig, Khoi Pham Munchic, Wen Jiang, Tomer M. Yaron-Barir, Sara R. Savage, Martin Garrido-Rodriguez, et al. 2024. “Comprehensive Evaluation of Phosphoproteomic-Based Kinase Activity Inference.” bioRxiv. [https://doi.org/10.1101/2024.06.27.601117](https://doi.org/10.1101/2024.06.27.601117).
