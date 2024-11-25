@@ -13,7 +13,7 @@ If you want to test your own method try out our package [benchmarKIN](https://gi
 [documentation](https://benchmarkin.readthedocs.io/). 
 
 <p align="center" width="100%">
-<img src="man/figures/overview.png" align="center" width="550">
+<img src="man/figures/overview.png" align="center" width="650">
 </p>
 
 ## Kinase substrate libraries
