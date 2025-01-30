@@ -15,7 +15,7 @@ rule priors:
 
 rule activity:
     input:
-        expand("results/02_activity_scores/dataset/scores/{prior}.rds", prior = config["perturbation"]["PKNs"], dataset = ["hernandez", "hijazi", "merged"])
+        expand("results/02_activity_scores/{dataset}/scores/{prior}.rds", prior = config["perturbation"]["PKNs"], dataset = ["tyrosine"]) #"hernandez", "hijazi", "merged"
 
 rule benchmark:
     input:
@@ -114,6 +114,12 @@ module processing_hijazi:
     snakefile: "rules/processing_hijazi.smk"
     config: config
 use rule * from processing_hijazi as processing_hijazi_*
+
+# Module for tyrosine processing
+module processing_tyrosine:
+    snakefile: "rules/processing_tyrosine.smk"
+    config: config
+use rule * from processing_tyrosine as processing_tyrosine_*
 
 # Module for activity estimation
 module activity_estimation:
