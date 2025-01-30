@@ -10,6 +10,18 @@ rule merge_scores:
         "../envs/phospho.yml"
     script:
         "../scripts/03_benchmark/00_merge_scores.R"
+        
+rule merge_scores2:
+    input:
+        rds =  "results/02_activity_scores/hijazi/scores/{PKN}.rds",
+        hernandez = "results/02_activity_scores/hernandez/scores/{PKN}.rds",
+        tyr = "results/02_activity_scores/tyrosine/scores/{PKN}.rds"
+    output:
+        output = "results/02_activity_scores/merged2/scores/{PKN}.rds"
+    conda:
+        "../envs/phospho.yml"
+    script:
+        "../scripts/03_benchmark/00_merge_scores_new.R"
 
 rule copy_scores:
     input:
@@ -31,6 +43,18 @@ rule merge_meta:
         "../envs/phospho.yml"
     script:
         "../scripts/03_benchmark/00_merge_meta.R"
+
+rule merge_meta2:
+    input:
+        meta = "results/01_processed_data/hijazi/data/benchmark_metadata.csv",
+        metah = "results/01_processed_data/hernandez/data/benchmark_metadata.csv",
+        metatyr = "results/01_processed_data/tyrosine/data/benchmark_metadata.csv"
+    output:
+        meta_out = "results/01_processed_data/merged2/data/benchmark_metadata.csv"
+    conda:
+        "../envs/phospho.yml"
+    script:
+        "../scripts/03_benchmark/00_merge_meta_new.R"
 
 rule prepare_benchmark:
     input:
