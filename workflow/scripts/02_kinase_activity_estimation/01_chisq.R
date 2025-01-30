@@ -10,10 +10,10 @@ if(exists("snakemake")){
   background <- snakemake@params$background
   cores <- snakemake@threads[[1]]
 }else{
-  dataset <- "results/01_processed_data/hernandez/data/benchmark_data.csv"
-  PKN <- "results/01_processed_data/hernandez/mapped_priors/phosphositeplus.tsv"
+  dataset <- "results/01_processed_data/tyrosine/data/benchmark_data.csv"
+  PKN <- "results/01_processed_data/tyrosine/mapped_priors/phosphositeplus.tsv"
   PKN_name <- "phosphositeplus"
-  output_file <- "results/02_activity_scores/hernandez/chisq/ptmsigdb.csv"
+  output_file <- "results/02_activity_scores/tyrosine/chisq/ptmsigdb.csv"
   scripts_method <- "workflow/scripts/methods/run_chisq.R"
   script_support <- "workflow/scripts/methods/support_functions.R"
   remove_auto <- T
@@ -52,6 +52,7 @@ plan(multisession, workers = cores)
 
 ## Kinase activity estimation ---------------------------
 results <- future_map_dfr(1:ncol(phospho), function(i){
+  print(i)
   mat_i <- phospho[, i, drop = FALSE] %>%
     drop_na()
 
@@ -59,20 +60,29 @@ results <- future_map_dfr(1:ncol(phospho), function(i){
   n_bottom <- sum(mat_i[ , 1] <= -1)
 
   # run activity estimation methods
-  up <- run_chisq(mat = as.matrix(mat_i), network = prior, minsize = minsize, n_background = background, n_up = n_up, n_bottom = 0) %>%
-    dplyr::select(c(source, condition, score, statistic)) %>%
-    dplyr::rename("method" = "statistic")
-
-  down <- run_chisq(mat = as.matrix(mat_i), network = prior, minsize = minsize, n_background = background, n_bottom = n_bottom, n_up = 0) %>%
+  if (n_up > 0){
+    up <- run_chisq(mat = as.matrix(mat_i), network = prior, minsize = minsize, n_background = background, n_up = n_up, n_bottom = 0) %>%
+        dplyr::select(c(source, condition, score, statistic)) %>%
+        dplyr::rename("method" = "statistic")
+  } else {
+    up <- data.frame(source = NA, condition = NA, score = NA, method = NA)
+  }
+  
+  if (n_bottom > 0){
+    down <- run_chisq(mat = as.matrix(mat_i), network = prior, minsize = minsize, n_background = background, n_bottom = n_bottom, n_up = 0) %>%
     dplyr::select(c(source, condition, score, statistic)) %>%
     dplyr::rename("method" = "statistic") %>%
     dplyr::mutate(score = -score)
+  } else {
+    down <- data.frame(source = NA, condition = NA, score = NA, method = NA)
+  }
 
   df <- rbind(up, down) %>%
     group_by(source, condition) %>%
     dplyr::filter(abs(score) == max(abs(score))) %>%# choose activity score with higher value
     ungroup() %>%
-    distinct()
+    distinct() %>%
+    drop_na()
   
   df[!duplicated(df[, c("source", "condition")]),]
 
