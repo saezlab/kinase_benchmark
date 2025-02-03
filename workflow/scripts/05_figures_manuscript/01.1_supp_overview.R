@@ -2,11 +2,25 @@ if(exists("snakemake")){
   meta_file <- snakemake@input$meta
   bench_files <- snakemake@input$bench
   rank_files <- snakemake@input$rank
+  ppsp_hernandez_file <- snakemake@input$ppspHer
+  hernandez_file <- snakemake@input$her
+  ppsp_hijazi_file <- snakemake@input$ppspHij
+  hijazi_file <- snakemake@input$hij
+  ppsp_tyrosine_file <- snakemake@input$ppspTyr
+  tyrosine_file <- snakemake@input$tyr
   overview_meta <- snakemake@output$ove
+  overview_meta_filtered <- snakemake@output$oveFil
   out_plot <- snakemake@output$out
 }else{
-  meta_file <- "results/01_processed_data/merged/data/benchmark_metadata.csv"
+  meta_file <- "results/01_processed_data/merged2/data/benchmark_metadata.csv"
   overview_meta <- "results/manuscript_figures/figure_1/supp/overview_kin.pdf"
+  overview_meta_filtered <- "results/manuscript_figures/figure_1/supp/overview_kin_filtered.pdf"
+  ppsp_hernandez_file <- "results/01_processed_data/hernandez/mapped_priors/phosphositeplus.tsv"
+  hernandez_file <- "results/01_processed_data/hernandez/data/benchmark_data.csv"
+  ppsp_hijazi_file <- "results/01_processed_data/hijazi/mapped_priors/phosphositeplus.tsv"
+  hijazi_file <- "results/01_processed_data/hijazi/data/benchmark_data.csv"
+  ppsp_tyrosine_file <- "results/01_processed_data/tyrosine/mapped_priors/phosphositeplus.tsv"
+  tyrosine_file <- "results/01_processed_data/tyrosine/data/benchmark_data.csv"
 
   bench_files <- list.files("results/03_benchmark/hijazi/02_benchmark_res/phosphositeplus",
                             pattern = "bench", recursive = TRUE, full.names = T)
@@ -61,6 +75,85 @@ kin_df %>% group_by(perturbation) %>% summarise(total = sum(Freq))
 
 pdf(overview_meta, width = 3, height = 8)
 kin_p
+dev.off()
+
+## Overview kinases phosphositeplus ---------------------------
+ppsp_hernandez <- read_tsv(ppsp_hernandez_file, col_types = cols())
+ppsp_hijazi <- read_tsv(ppsp_hijazi_file, col_types = cols())
+ppsp_tyrosine <- read_tsv(ppsp_tyrosine_file, col_types = cols())
+
+data_hernandez <- read_csv(hernandez_file, col_types = cols()) %>%
+  column_to_rownames("ID")
+data_hijazi <- read_csv(hijazi_file, col_types = cols()) %>%
+  column_to_rownames("ID")
+data_tyrosine <- read_csv(tyrosine_file, col_types = cols()) %>%
+  column_to_rownames("ID")
+
+filtered_overview <- map_dfr(unique(hernandez_meta$id), function(exp){
+  if (exp %in% colnames(data_hernandez)){
+    data_bench <- data_hernandez
+    ppsp <- ppsp_hernandez
+  } else if (exp %in% colnames(data_hijazi)){    
+    data_bench <- data_hijazi
+    ppsp <- ppsp_hijazi
+  } else if (exp %in% colnames(data_tyrosine)){
+    data_bench <- data_tyrosine
+    ppsp <- ppsp_tyrosine
+  }
+  targets <- hernandez_meta %>%
+    filter(id == exp) %>% 
+    pull(target)
+  mat <- data_bench[exp] %>%
+    drop_na()
+
+  coverage <- map_dbl(targets, function(target_id){
+    ppsp_exp <- ppsp %>%
+      filter(target %in% rownames(mat))
+    
+    ppsp_exp %>%
+      filter(source == target_id) %>%
+      nrow()
+  })
+
+  data.frame(id = exp, target = targets, measure_pps = coverage)
+})
+
+hernandez_meta_filtered <- hernandez_meta %>%
+  left_join(filtered_overview, by = c("id", "target")) %>%
+  filter(measure_pps >= 5)
+
+kin_df_filtered <- table(hernandez_meta_filtered$target, hernandez_meta_filtered$sign) %>%
+  as.data.frame() %>%
+  dplyr::rename("kinase" = Var1) %>%
+  dplyr::rename("perturbation" = Var2) %>%
+  mutate(perturbation = recode(perturbation,
+                               "1" = "up",
+                               "-1" = "down"))
+kin_order <- kin_df_filtered %>%
+  group_by(kinase) %>%
+  summarise(total = sum(Freq)) %>%
+  arrange(desc(total)) %>%
+  pull(kinase)
+kin_df_filtered$kinase <- factor(kin_df_filtered$kinase, levels = rev(kin_order))
+
+kin_p_filtered <- ggplot(kin_df_filtered, aes(x = kinase, y = Freq, fill = perturbation)) +
+  geom_bar(stat = "identity") +
+  coord_flip() +
+  theme_minimal() +
+  scale_fill_manual(values=c("#E9B133", "#4E79A7")) +
+  xlab("") +
+  ylab("# perturbations") +
+  theme(legend.key.size = unit(0.3, "cm"),
+        legend.title = element_text(size = 11),
+        legend.position = "bottom",
+        text = element_text(size = 10))
+
+length(unique(hernandez_meta_filtered$id))
+length(unique(kin_df_filtered$kinase))
+kin_df_filtered %>% group_by(perturbation) %>% summarise(total = sum(Freq))
+
+pdf(overview_meta_filtered, width = 3, height = 8)
+kin_p_filtered
 dev.off()
 
 ## Benchmark ------------------
