@@ -77,6 +77,7 @@ rule figures:
 rule supp_figures:
     input:
         "results/manuscript_figures/figure_1/supp/comparison_rank_subset.pdf",
+        "results/manuscript_figures/figure_1/supp/rank_class.pdf",
         "results/manuscript_figures/figure_1/supp/overview_kin.pdf",
         "results/manuscript_figures/figure_3/supp/upset_kin.pdf",
         "results/manuscript_figures/figure_3/supp/corrplot_pearson_priors.pdf",
