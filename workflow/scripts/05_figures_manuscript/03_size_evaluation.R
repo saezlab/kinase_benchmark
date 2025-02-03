@@ -70,7 +70,10 @@ rank_df <- rank_df %>%
                         "GSknown" = "curated",
                         "shuffled2" = "shuffled")) %>%
   left_join(kinase_strat, by = "targets") %>%
-  dplyr::filter(!is.na(strat))
+  dplyr::filter(!is.na(strat)) %>%
+  group_by(method, prior, targets, strat) %>% 
+  summarise(scaled_rank = mean(scaled_rank)) %>%
+  ungroup()
 
 order_net <- c("curated", "GPS gold", "PhosphoSitePlus", "PTMsigDB", "NetworKIN", "OmniPath", "iKiP-DB", "shuffled")
 rank_df$prior <- factor(rank_df$prior, levels = order_net)

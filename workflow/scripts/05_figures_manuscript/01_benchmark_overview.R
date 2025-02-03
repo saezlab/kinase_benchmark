@@ -9,9 +9,9 @@ if(exists("snakemake")){
   rank_plot <- snakemake@output$rank
   p_hit_plot <- snakemake@output$phit
 }else{
-  bench_files <- list.files("results/03_benchmark/merged/02_benchmark_res/phosphositeplus",
+  bench_files <- list.files("results/03_benchmark/merged2/02_benchmark_res/phosphositeplus",
                             pattern = "bench", recursive = TRUE, full.names = T)
-  rank_files <-  list.files("results/03_benchmark/merged/02_mean_rank/phosphositeplus",
+  rank_files <-  list.files("results/03_benchmark/merged2/02_mean_rank/phosphositeplus",
                             pattern = "csv", recursive = TRUE, full.names = T)
   k_phit_c <- c(5, 10, 20)
   auroc_plot <- "results/manuscript_figures/figure_1/auroc_phosphositeplus.pdf"
@@ -52,6 +52,9 @@ rank_df %>%
   unique()
 
 pHit <- map_dfr(k_phit_c, function(k){rank_df %>%
+  group_by(method, prior, targets) %>%
+  summarise(rank = mean(rank)) %>%
+  ungroup() %>%
   group_by(prior, method) %>%
   summarise(phit = (sum(rank <= k)/n())) %>%
   add_column(k_phit = k) %>%
@@ -93,6 +96,11 @@ bench_df <- bind_rows(bench_list) %>%
                          "wilcox" = "MWU test",
                          "zscore" = "z-score"))
 
+## Average scaled rank per kinase ---------------------------
+rank_df <- rank_df %>%
+  group_by(method, prior, targets) %>%
+  summarise(scaled_rank = mean(scaled_rank))
+
 ## Plot AUROC ---------------------------
 # Sorting methods by mean AUROC
 mean_auroc <- bench_df %>%
@@ -110,9 +118,8 @@ mean_rank <- rank_df %>%
 mean_rank
 
 mean_phit <- pHit %>%
-  group_by(method) %>%
-  summarize(mean_auroc = mean(phit)) %>%
-  arrange(desc(mean_auroc))
+  filter(k_phit == 20) %>%
+  arrange(desc(phit))
 
 mean_phit
 
