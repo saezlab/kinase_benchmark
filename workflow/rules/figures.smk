@@ -207,7 +207,7 @@ rule performance_priors_all_supp:
 rule supp_table_comparison:
     input:
         prior = expand("results/manuscript_figures/supp_files/prior_comparison_{bench}.csv", bench = ["act", "perturbation", "tumor"]),
-        method = expand("results/manuscript_figures/supp_files/method_file_comparison_{bench}.csv", bench = ["act", "perturbation", "tumor"])
+        method = expand("results/manuscript_figures/supp_files/method_comparison_{bench}.csv", bench = ["act", "perturbation", "tumor"])
     output:
         prior_out = "results/manuscript_figures/supp_files/prior_comparison.csv",
         method_out = "results/manuscript_figures/supp_files/method_comparison.csv"
