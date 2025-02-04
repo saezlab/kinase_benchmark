@@ -8,21 +8,21 @@ if(exists("snakemake")){
   performance_plot <- snakemake@output$plt
   overview_csv <- snakemake@output$csv
 }else{
-  bench_files <- list.files("results/03_benchmark/merged/02_benchmark_res",
+  bench_files <- list.files("results/03_benchmark/merged2/02_benchmark_res_subset/subset",
                             pattern = "bench", recursive = TRUE, full.names = T)
   bench_files <- bench_files[str_detect(bench_files, "/shuffled2/|/iKiPdb/|/GPS/|/omnipath/|/networkin/|/phosphositeplus/|/ptmsigdb/|/GSknown/")]
-  rank_files <- list.files("results/03_benchmark/merged/02_mean_rank",
+  rank_files <- list.files("results/03_benchmark/merged2/02_mean_rank_subset/subset",
                            pattern = "csv", recursive = TRUE, full.names = T)
   rank_files <- rank_files[str_detect(rank_files, "/shuffled2/|/iKiPdb/|/GPS/|/omnipath/|/networkin/|/phosphositeplus/|/ptmsigdb/|/GSknown/")]
-  activating_files <- list.files("data/results_cptac/overall_performance/actsiteBM/all_kins",
+  activating_files <- list.files("data/results_cptac/overall_performance/actsiteBM/same_kins",
                                  pattern = "table", full.names = T)
-  activating_files_kin <- list.files("data/results_cptac/overall_performance/actsiteBM/all_kins",
+  activating_files_kin <- list.files("data/results_cptac/overall_performance/actsiteBM/same_kins",
                                  pattern = "kins", full.names = T)
-  tumor_files <- list.files("data/results_cptac/overall_performance/protBM/all_kins",
+  tumor_files <- list.files("data/results_cptac/overall_performance/protBM/same_kins",
                                  pattern = "table", full.names = T)
-  tumor_files_kin <- list.files("data/results_cptac/overall_performance/protBM/all_kins",
+  tumor_files_kin <- list.files("data/results_cptac/overall_performance/protBM/same_kins",
                                  pattern = "kins", full.names = T)
-  performance_plot <- "results/manuscript_figures/figure_3/zscore.pdf"
+  performance_plot <- "results/manuscript_figures/figure_3/supp/zscore.pdf"
   overview_csv <- "results/manuscript_figures/supp_files/overview_benchmark.csv"
 }
 
@@ -189,6 +189,7 @@ mean_auroc <- bench_df %>%
   summarize(mean_auroc = mean(tmp_auroc)) %>%
   arrange(desc(mean_auroc))  # Sorting methods by mean AUROC
 
+
 # Update df to ensure methods are ordered based on mean AUROC
 bench_df <- bench_df %>%
   mutate(net = factor(net, levels = mean_auroc$net)) %>%
@@ -216,7 +217,7 @@ n_kinases_tumor <- n_kinases_tumor %>% filter(prior %in% unique(n_kinases$prior)
 kin_df <- rbind(n_kinases, n_kinases_tumor, n_kinases_act)
 kin_df$prior <- factor(kin_df$prior, levels = mean_auroc$net)
 kin_df$benchmark <- factor(kin_df$benchmark, levels = c("perturbation-based", "activating sites", "tumor-based"))
-
+print("test 4")
 if (any(str_detect(activating_files_kin, "same_kins"))){
   limits <- c(0,40)
   breaks <- seq(0, 50, by = 20)
@@ -255,13 +256,16 @@ bench_df %>% group_by(net) %>% summarise(score = mean(score)) %>% arrange(desc(s
 kin_df %>% filter(prior %in% c("curated"))
 kin_df %>% filter(prior %in% c("OmniPath", "iKiP-DB"))
 
-kin_csv <- kin_df %>%
-  mutate(benchmark = recode(benchmark,
-                            "tumor-based" = "protein-based",
-                            "activating sites" = "activating site-based")) %>%
-  rename("kinase-substrate library" = prior,
-         "unique kinases in GS set" = kinases,
-         "unique pairs in GS set" = TP,
-         "benchmark approach" = benchmark)
+if (!str_detect(performance_plot, "/supp/")){
+  kin_csv <- kin_df %>%
+    dplyr::mutate(benchmark = recode(benchmark,
+                              "tumor-based" = "protein-based",
+                              "activating sites" = "activating site-based")) %>%
+    dplyr::rename("kinase-substrate library" = prior,
+          "unique kinases in GS set" = kinases,
+          "unique pairs in GS set" = TP,
+          "benchmark approach" = benchmark)
 
-write_csv(kin_csv, overview_csv)
+  write_csv(kin_csv, overview_csv)
+}
+
