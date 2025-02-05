@@ -106,7 +106,8 @@ rule performance_priors:
         act = expand("data/results_cptac/overall_performance/actsiteBM/all_kins/actsiteBM_5perThr_{PKN_cptac}_roc_table.rds", PKN_cptac = config["figures"]["evaluation_cptac"]),
         act_kin = expand("data/results_cptac/overall_performance/actsiteBM/all_kins/actsiteBM_5perThr_{PKN_cptac}_roc_kins.rds", PKN_cptac = config["figures"]["evaluation_cptac"]),
         tumor = expand("data/results_cptac/overall_performance/protBM/all_kins/protBM_5perThr_{PKN_cptac}_roc_table.rds", PKN_cptac = config["figures"]["evaluation_cptac"]),
-        tumor_kin = expand("data/results_cptac/overall_performance/protBM/all_kins/protBM_5perThr_{PKN_cptac}_roc_kins.rds", PKN_cptac = config["figures"]["evaluation_cptac"])
+        tumor_kin = expand("data/results_cptac/overall_performance/protBM/all_kins/protBM_5perThr_{PKN_cptac}_roc_kins.rds", PKN_cptac = config["figures"]["evaluation_cptac"]),
+        kinclass = "resources/kinase_class.csv"
     output:
         plt="results/manuscript_figures/figure_3/zscore.pdf",
         csv="results/manuscript_figures/supp_files/overview_benchmark.csv"
@@ -204,6 +205,18 @@ rule performance_priors_all_supp:
     script:
         "../scripts/05_figures_manuscript/03.1_supp_combo_evaluation.R"
 
+rule performance_priors_class:
+    input:
+        rank = expand("results/03_benchmark/merged2/02_mean_rank/{PKN}/zscore-{PKN}.csv", PKN = config["figures"]["evaluation"]),
+        kinclass = "resources/kinase_class.csv"
+    output:
+        plt_ser = "results/manuscript_figures/figure_3/supp/ser_performance.pdf",
+        plt_tyr = "results/manuscript_figures/figure_3/supp/tyr_performance.pdf"
+    conda:
+        "../envs/figures.yml"
+    script:
+        "../scripts/05_figures_manuscript/03.1_supp_class_evaluation.R"
+
 rule supp_table_comparison:
     input:
         prior = expand("results/manuscript_figures/supp_files/prior_comparison_{bench}.csv", bench = ["act", "perturbation", "tumor"]),
@@ -224,7 +237,8 @@ rule performance_combinations:
         act_roc = expand("data/results_cptac/performance_combinations/GSknown/all_kins/actsiteBM_5perThr_combofig_{PKN_cptac}_roc_table.rds", PKN_cptac = config["figures"]["combination_cptac"]),
         act_kin = expand("data/results_cptac/performance_combinations/GSknown/all_kins/actsiteBM_5perThr_combofig_{PKN_cptac}_roc_kins.rds", PKN_cptac = config["figures"]["combination_cptac"]),
         tumor_roc = expand("data/results_cptac/performance_combinations/GSknown/all_kins/protBM_5perThr_combofig_{PKN_cptac}_roc_table.rds", PKN_cptac = config["figures"]["combination_cptac"]),
-        tumor_kin = expand("data/results_cptac/performance_combinations/GSknown/all_kins/protBM_5perThr_combofig_{PKN_cptac}_roc_kins.rds", PKN_cptac = config["figures"]["combination_cptac"])
+        tumor_kin = expand("data/results_cptac/performance_combinations/GSknown/all_kins/protBM_5perThr_combofig_{PKN_cptac}_roc_kins.rds", PKN_cptac = config["figures"]["combination_cptac"]),
+        kinclass = "resources/kinase_class.csv"
     output:
         plt="results/manuscript_figures/figure_4/combinations_zscore_perturbation.pdf",
         plt_act="results/manuscript_figures/figure_4/combinations_zscore_actsite.pdf",

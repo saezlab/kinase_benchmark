@@ -54,12 +54,30 @@ mean_auroc_tyr <- rank_df_class %>%
   summarize(mean_auroc = mean(scaled_rank)) %>%
   arrange(mean_auroc)  # Sorting methods by mean AUROC
 
+rank_df_class %>%
+  filter(class == "Tyrosine") %>% pull(targets) %>% unique() %>% length()
+
+mean_auroc_tyr %>%
+  filter(!method == "n targets") %>% 
+  pull(mean_auroc) %>% 
+  mean()
+
 mean_auroc_ser <- rank_df_class %>%
   filter(class == "Serine/Threonine") %>%
   group_by(method) %>%
   summarize(mean_auroc = mean(scaled_rank)) %>%
   arrange(mean_auroc) 
 
+rank_df_class %>%
+  filter(class == "Serine/Threonine") %>% pull(targets) %>% unique() %>% length()
+
+mean_auroc_ser %>%
+  filter(!method == "n targets") %>% 
+  pull(mean_auroc) %>% 
+  mean()
+
+full_perf <- left_join(mean_auroc_ser, mean_auroc_tyr, by = "method")
+cor.test(full_perf$mean_auroc.x, full_perf$mean_auroc.y)
 # Update df to ensure methods are ordered based on mean AUROC
 rank_df_tyr <- rank_df_class %>%
   filter(class == "Tyrosine") %>%

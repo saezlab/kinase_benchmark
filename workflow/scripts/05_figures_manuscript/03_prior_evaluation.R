@@ -5,6 +5,7 @@ if(exists("snakemake")){
   activating_files_kin <- snakemake@input$act_kin
   tumor_files <- snakemake@input$tumor
   tumor_files_kin <- snakemake@input$tumor_kin
+  kin_class_file <- snakemake@input$kinclass
   performance_plot <- snakemake@output$plt
   overview_csv <- snakemake@output$csv
 }else{
@@ -24,6 +25,7 @@ if(exists("snakemake")){
                                  pattern = "kins", full.names = T)
   performance_plot <- "results/manuscript_figures/figure_3/supp/zscore.pdf"
   overview_csv <- "results/manuscript_figures/supp_files/overview_benchmark.csv"
+  kin_class_file <- "resources/kinase_class.csv"
 }
 
 ## Libraries ---------------------------
@@ -32,6 +34,10 @@ library(ggpubr)
 library(patchwork)
 
 ## Benchmark ------------------
+kin_class <- read_csv(kin_class_file, col_types = cols())
+kin_ser <- kin_class %>% filter(class == "Serine/Threonine") %>% pull(source) %>% unique()
+kin_tyr <- kin_class %>% filter(class == "Tyrosine") %>% pull(source) %>% unique()
+kin_dual <- kin_class %>% filter(class == "Dual-specificity") %>% pull(source) %>% unique()
 ## Load AUROC ---------------------------
 rank_list <- map(rank_files, function(file){
   read_csv(file, col_types = cols())
@@ -57,6 +63,14 @@ n_kinases <- rank_df %>%
   summarise(TP = n(), kinases = length(unique(targets))) %>%
   filter(method == "zscore") %>%
   select(prior, kinases, TP) %>%
+  add_column(benchmark = "perturbation-based")
+
+n_kinases_class <- rank_df %>%
+  left_join(kin_class %>% dplyr::select(source, class), by = c("targets" = "source"), relationship = "many-to-many") %>%
+  group_by(prior, method, class) %>%
+  summarise(TP = n(), kinases = length(unique(targets))) %>%
+  filter(method == "zscore") %>%
+  select(prior, kinases, TP, class) %>%
   add_column(benchmark = "perturbation-based")
 
 if (any(str_detect(bench_files, "subset"))){
@@ -131,6 +145,27 @@ n_kinases_tumor <- map_dfr(tumor_files_kin, function(file_roc){
                       "known" = "curated",
                       "shuffled2" = "shuffled"))
 
+n_kinases_tumor_class <- map_dfr(tumor_files_kin, function(file_roc){
+  kin <- readRDS(file_roc) %>%
+    unlist()
+  net_id <- str_extract(file_roc, "(?<=5perThr_).*?(?=_roc_)")
+  data.frame(prior = net_id,
+             kinases = c(sum(unique(kin) %in% kin_ser), sum(unique(kin) %in% kin_tyr), sum(unique(kin) %in% kin_dual)),
+             TP = c(sum((kin) %in% kin_ser), sum((kin) %in% kin_tyr), sum((kin) %in% kin_dual)),
+             class = c("Serine/Threonine", "Tyrosine", "Dual-specificity"),
+             benchmark = "tumor-based")
+}) %>%
+  mutate(prior = recode(prior,
+                      "ikip" = "iKiP-DB",
+                      "gps" = "GPS gold",
+                      "omni" = "OmniPath",
+                      "nwkin" = "NetworKIN",
+                      "psp" = "PhosphoSitePlus",
+                      "ptmsig" = "PTMsigDB",
+                      "combo" = "extended combined",
+                      "known" = "curated",
+                      "shuffled2" = "shuffled"))
+
 ## activating sites benchmark
 df_act <- map_dfr(activating_files, function(file_roc){
     roc <- readRDS(file_roc)
@@ -168,6 +203,28 @@ n_kinases_act <- map_dfr(activating_files_kin, function(file_roc){
                       "combo" = "extended combined",
                       "known" = "curated",
                       "shuffled2" = "shuffled"))
+
+n_kinases_act_class <- map_dfr(activating_files_kin, function(file_roc){
+  kin <- readRDS(file_roc) %>%
+    unlist()
+  net_id <- str_extract(file_roc, "(?<=5perThr_).*?(?=_roc_)")
+  data.frame(prior = net_id,
+             kinases = c(sum(unique(kin) %in% kin_ser), sum(unique(kin) %in% kin_tyr), sum(unique(kin) %in% kin_dual)),
+             TP = c(sum((kin) %in% kin_ser), sum((kin) %in% kin_tyr), sum((kin) %in% kin_dual)),
+             class = c("Serine/Threonine", "Tyrosine", "Dual-specificity"),
+             benchmark = "activating sites")
+}) %>%
+  mutate(prior = recode(prior,
+                      "ikip" = "iKiP-DB",
+                      "gps" = "GPS gold",
+                      "omni" = "OmniPath",
+                      "nwkin" = "NetworKIN",
+                      "psp" = "PhosphoSitePlus",
+                      "ptmsig" = "PTMsigDB",
+                      "combo" = "extended combined",
+                      "known" = "curated",
+                      "shuffled2" = "shuffled"))
+
 
 
 ## Combine
@@ -256,14 +313,18 @@ bench_df %>% group_by(net) %>% summarise(score = mean(score)) %>% arrange(desc(s
 kin_df %>% filter(prior %in% c("curated"))
 kin_df %>% filter(prior %in% c("OmniPath", "iKiP-DB"))
 
+kin_df_class <- rbind(n_kinases_class, n_kinases_tumor_class, n_kinases_act_class)
+
 if (!str_detect(performance_plot, "/supp/")){
-  kin_csv <- kin_df %>%
+  kin_csv <- kin_df_class %>%
+    dplyr::select(-method) %>% 
     dplyr::mutate(benchmark = recode(benchmark,
                               "tumor-based" = "protein-based",
                               "activating sites" = "activating site-based")) %>%
     dplyr::rename("kinase-substrate library" = prior,
           "unique kinases in GS set" = kinases,
           "unique pairs in GS set" = TP,
+          "kinase class" = class,
           "benchmark approach" = benchmark)
 
   write_csv(kin_csv, overview_csv)
