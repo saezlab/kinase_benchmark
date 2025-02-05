@@ -83,6 +83,7 @@ rule supp_figures:
         "results/manuscript_figures/figure_3/supp/corrplot_pearson_priors.pdf",
         "results/manuscript_figures/figure_3/supp/zscore_supp.pdf",
         "results/manuscript_figures/figure_3/supp/median_auroc.pdf",
+        "results/manuscript_figures/figure_3/supp/ser_performance.pdf",
         "results/manuscript_figures/figure_4/supp/combinations_zscore_perturbation.pdf",
         "results/manuscript_figures/figure_4/supp/combinations_subset_zscore_perturbation.pdf"
 
