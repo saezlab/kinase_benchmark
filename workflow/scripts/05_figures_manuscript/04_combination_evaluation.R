@@ -12,18 +12,18 @@ if(exists("snakemake")){
 }else{
   bench_files <- list.files("results/03_benchmark/merged2/02_benchmark_res",
                             pattern = "bench", recursive = TRUE, full.names = T)
-  bench_files <- bench_files[str_detect(bench_files, "/GSknown/|/GSknown_johnson15/|/GSknown_phosformer15/")]
+  bench_files <- bench_files[str_detect(bench_files, "/GSknown/|/GSknown_networkin/|/combined/|/GSknown_iKiPdb/")]
   rank_files <- list.files("results/03_benchmark/merged2/02_mean_rank",
                            pattern = "csv", recursive = TRUE, full.names = T)
-  rank_files <- rank_files[str_detect(rank_files, "/GSknown/|/GSknown_johnson15/|/GSknown_phosformer15/")]
+  rank_files <- rank_files[str_detect(rank_files, "/GSknown/|/GSknown_networkin/|/combined/|/GSknown_iKiPdb/")]
   activating_files <- list.files("data/results_cptac/performance_combinations/GSknown/all_kins",
                                  pattern = "actsiteBM", full.names = T)
-  activating_files_roc <- activating_files[!str_detect(activating_files, "known_ikip|known_nwkin|kins.rds")]
-  activating_files_kin <- activating_files[!str_detect(activating_files, "known_ikip|known_nwkin|table.rds")]
+  activating_files_roc <- activating_files[!str_detect(activating_files, "known_KL|known_phosf|kins.rds")]
+  activating_files_kin <- activating_files[!str_detect(activating_files, "known_KL|known_phosf|table.rds")]
   tumor_files <- list.files("data/results_cptac/performance_combinations/GSknown/all_kins",
                                  pattern = "protBM", full.names = T)
-  tumor_files_roc <- tumor_files[!str_detect(tumor_files, "known_ikip|known_nwkin|kins.rds")]
-  tumor_files_kin <- tumor_files[!str_detect(tumor_files, "known_ikip|known_nwkin|table.rds")]
+  tumor_files_roc <- tumor_files[!str_detect(tumor_files, "known_KL|known_phosf|kins.rds")]
+  tumor_files_kin <- tumor_files[!str_detect(tumor_files, "known_KL|known_phosf|table.rds")]
   performance_plot <- "results/manuscript_figures/figure_4/combinations_zscore_perturbation.pdf"
   performance_plot_prot <- "results/manuscript_figures/figure_4/combinations_zscore_protein.pdf"
   performance_plot_act <- "results/manuscript_figures/figure_4/combinations_zscore_actsite.pdf"
@@ -35,10 +35,10 @@ library(ggpubr)
 library(patchwork)
 
 ## Benchmark ------------------
-kin_class <- read_csv(kin_class_file, col_types = cols())
-kin_ser <- kin_class %>% filter(class == "Serine/Threonine") %>% pull(source) %>% unique()
-kin_tyr <- kin_class %>% filter(class == "Tyrosine") %>% pull(source) %>% unique()
-kin_dual <- kin_class %>% filter(class == "Dual-specificity") %>% pull(source) %>% unique()
+#kin_class <- read_csv(kin_class_file, col_types = cols())
+#kin_ser <- kin_class %>% filter(class == "Serine/Threonine") %>% pull(source) %>% unique()
+#kin_tyr <- kin_class %>% filter(class == "Tyrosine") %>% pull(source) %>% unique()
+#kin_dual <- kin_class %>% filter(class == "Dual-specificity") %>% pull(source) %>% unique()
 ## Load AUROC ---------------------------
 method_selection <- c("z-score", "PTM-SEA", "mean", "VIPER", "fgsea", "KSEA", "n targets")
 rank_list <- map(rank_files, function(file){
@@ -76,35 +76,35 @@ n_kinases <- rank_df %>%
   select(prior, method, kinases) %>%
   add_column(benchmark = "perturbation-based")
 
-bind_rows(rank_list) %>%
-  filter(!is.na(rank)) %>%
-  dplyr::select(sample, prior, all_kinases_act) %>%
-  separate_rows(all_kinases_act, sep = ";") %>%
-  distinct() %>%
-  left_join(kin_class %>% dplyr::select(source, class), by = c("all_kinases_act" = "source"), relationship = "many-to-many") %>%
-  distinct() %>%
-  group_by(sample, prior, class) %>%
-  summarise(kinases = n()) %>%
-  group_by(prior, class) %>%
-  summarise(avg_kinases = mean(kinases))
+#bind_rows(rank_list) %>%
+#  filter(!is.na(rank)) %>%
+#  dplyr::select(sample, prior, all_kinases_act) %>%
+#  separate_rows(all_kinases_act, sep = ";") %>%
+#  distinct() %>%
+#  left_join(kin_class %>% dplyr::select(source, class), by = c("all_kinases_act" = "source"), relationship = "many-to-many") %>%
+#  distinct() %>%
+#  group_by(sample, prior, class) %>%
+#  summarise(kinases = n()) %>%
+#  group_by(prior, class) %>%
+#  summarise(avg_kinases = mean(kinases))
 
-bind_rows(rank_list) %>%
-  filter(!is.na(rank)) %>%
-  dplyr::select(prior, all_kinases_act) %>%
-  separate_rows(all_kinases_act, sep = ";") %>%
-  distinct() %>%
-  left_join(kin_class %>% dplyr::select(source, class), by = c("all_kinases_act" = "source"), relationship = "many-to-many") %>%
-  group_by(prior, class) %>%
-  distinct() %>%
-  summarise(kinases = n())
+#bind_rows(rank_list) %>%
+#  filter(!is.na(rank)) %>%
+#  dplyr::select(prior, all_kinases_act) %>%
+#  separate_rows(all_kinases_act, sep = ";") %>%
+#  distinct() %>%
+#  left_join(kin_class %>% dplyr::select(source, class), by = c("all_kinases_act" = "source"), relationship = "many-to-many") %>%
+#  group_by(prior, class) %>%
+# distinct() %>%
+# summarise(kinases = n())
 
-rank_df %>%
-  left_join(kin_class %>% dplyr::select(source, class), by = c("targets" = "source"), relationship = "many-to-many") %>%
-  group_by(prior, method, class) %>%
-  summarise(TP = n(), kinases = length(unique(targets))) %>%
-  filter(method == "z-score") %>%
-  select(prior, kinases, TP, class) %>%
-  add_column(benchmark = "perturbation-based")
+#rank_df %>%
+#  left_join(kin_class %>% dplyr::select(source, class), by = c("targets" = "source"), relationship = "many-to-many") %>%
+#  group_by(prior, method, class) %>%
+#  summarise(TP = n(), kinases = length(unique(targets))) %>%
+#  filter(method == "z-score") %>%
+#  select(prior, kinases, TP, class) %>%
+#  add_column(benchmark = "perturbation-based")
 
 if (any(str_detect(bench_files, "subset"))){
   net_id <- 6
@@ -197,16 +197,16 @@ n_kinases_tumor <- map_dfr(tumor_files_kin, function(file_roc){
                         "known_KL" = "curated + KinaseLibrary",
                         "known_phosf" = "curated + Phosformer"))
 
-map_dfr(tumor_files_kin, function(file_roc){
-  kin <- readRDS(file_roc) %>%
-    unlist()
-  net_id <- str_extract(file_roc, "(?<=5perThr_).*?(?=_roc_)")
-  data.frame(prior = net_id,
-             kinases = c(sum(unique(kin) %in% kin_ser), sum(unique(kin) %in% kin_tyr), sum(unique(kin) %in% kin_dual)),
-             TP = c(sum((kin) %in% kin_ser), sum((kin) %in% kin_tyr), sum((kin) %in% kin_dual)),
-             class = c("Serine/Threonine", "Tyrosine", "Dual-specificity"),
-             benchmark = "tumor-based")
-})
+#map_dfr(tumor_files_kin, function(file_roc){
+#  kin <- readRDS(file_roc) %>%
+#    unlist()
+#  net_id <- str_extract(file_roc, "(?<=5perThr_).*?(?=_roc_)")
+#  data.frame(prior = net_id,
+#             kinases = c(sum(unique(kin) %in% kin_ser), sum(unique(kin) %in% kin_tyr), sum(unique(kin) %in% kin_dual)),
+#             TP = c(sum((kin) %in% kin_ser), sum((kin) %in% kin_tyr), sum((kin) %in% kin_dual)),
+#             class = c("Serine/Threonine", "Tyrosine", "Dual-specificity"),
+#             benchmark = "tumor-based")
+#})
 
 ## activating sites benchmark
 df_act <- map_dfr(activating_files_roc, function(file_roc){
@@ -256,16 +256,16 @@ n_kinases_act <- map_dfr(activating_files_kin, function(file_roc){
                         "known_KL" = "curated + KinaseLibrary",
                         "known_phosf" = "curated + Phosformer"))
 
-map_dfr(activating_files_kin, function(file_roc){
-  kin <- readRDS(file_roc) %>%
-    unlist()
-  net_id <- str_extract(file_roc, "(?<=5perThr_).*?(?=_roc_)")
-  data.frame(prior = net_id,
-             kinases = c(sum(unique(kin) %in% kin_ser), sum(unique(kin) %in% kin_tyr), sum(unique(kin) %in% kin_dual)),
-             TP = c(sum((kin) %in% kin_ser), sum((kin) %in% kin_tyr), sum((kin) %in% kin_dual)),
-             class = c("Serine/Threonine", "Tyrosine", "Dual-specificity"),
-             benchmark = "tumor-based")
-})
+#map_dfr(activating_files_kin, function(file_roc){
+#  kin <- readRDS(file_roc) %>%
+#    unlist()
+#  net_id <- str_extract(file_roc, "(?<=5perThr_).*?(?=_roc_)")
+#  data.frame(prior = net_id,
+#             kinases = c(sum(unique(kin) %in% kin_ser), sum(unique(kin) %in% kin_tyr), sum(unique(kin) %in% kin_dual)),
+#             TP = c(sum((kin) %in% kin_ser), sum((kin) %in% kin_tyr), sum((kin) %in% kin_dual)),
+#             class = c("Serine/Threonine", "Tyrosine", "Dual-specificity"),
+#             benchmark = "tumor-based")
+#})
 
 ## Combine
 bench_df <- rbind(df_perturb, df_tumor, df_act)
@@ -347,6 +347,14 @@ kin_p <- ggplot(kin_df %>% filter(benchmark == "perturbation-based"), aes(x = me
   scale_fill_manual(values =  c("#ECF4F9", "#B3D3E8", "#7BB3D7", "#4292C6"))  +
   ggtitle("Number of Kinases in Evaluation Set")
 
+if (any(str_detect(rank_df$prior %>% unique(), "NetworKIN"))){
+  write_csv(bench_df %>% filter(benchmark == "perturbation-based"), "results/manuscript_data/fig4a_boxplot_all.csv")
+  write_csv(kin_df %>% filter(benchmark == "perturbation-based"), "results/manuscript_data/fig4a_barplot_all.csv")
+} else if (any(str_detect(rank_df$prior %>% unique(), "KinaseLibrary"))){
+  write_csv(bench_df %>% filter(benchmark == "perturbation-based"), "results/manuscript_data/suppfig11a_boxplot_all.csv")
+  write_csv(kin_df %>% filter(benchmark == "perturbation-based"), "results/manuscript_data/suppfig11a_barplot_all.csv")
+} 
+
 full_p <- ggarrange(kin_p, auroc_p, ncol = 1, common.legend = T, heights = c(3, 9))
 
 pdf(performance_plot, width = 3.9, height = 3.7)
@@ -406,6 +414,14 @@ kin_p <- ggplot(kin_df %>% filter(benchmark == "tumor-based"), aes(x = method, y
   scale_fill_manual(values =  c("#FFECEC", "#E1B8B7", "#CB8381", "#B54D4A"))   +
   ggtitle("Number of Kinases in Evaluation Set")
 
+if (any(str_detect(rank_df$prior %>% unique(), "NetworKIN"))){
+  write_csv(bench_df %>% filter(benchmark == "tumor-based"), "results/manuscript_data/fig4c_boxplot_all.csv")
+  write_csv(kin_df %>% filter(benchmark == "tumor-based"), "results/manuscript_data/fig4c_barplot_all.csv")
+} else if (any(str_detect(rank_df$prior %>% unique(), "KinaseLibrary"))){
+  write_csv(bench_df %>% filter(benchmark == "tumor-based"), "results/manuscript_data/suppfig11c_boxplot_all.csv")
+  write_csv(kin_df %>% filter(benchmark == "tumor-based"), "results/manuscript_data/suppfig11c_barplot_all.csv")
+} 
+
 full_p <- ggarrange(kin_p, auroc_p, ncol = 1, common.legend = T, heights = c(3, 9))
 
 pdf(performance_plot_prot, width = 3.9, height = 3.7)
@@ -463,6 +479,14 @@ kin_p <- ggplot(kin_df %>% filter(benchmark == "activating sites"), aes(x = meth
   )+
   scale_fill_manual(values =  c("#FEE6D8", "#E8C8B3", "#D79F7B", "#C67642"))   +
   ggtitle("Number of Kinases in Evaluation Set")
+
+if (any(str_detect(rank_df$prior %>% unique(), "NetworKIN"))){
+  write_csv(bench_df %>% filter(benchmark == "activating sites"), "results/manuscript_data/fig4b_boxplot_all.csv")
+  write_csv(kin_df %>% filter(benchmark == "activating sites"), "results/manuscript_data/fig4b_barplot_all.csv")
+} else if (any(str_detect(rank_df$prior %>% unique(), "KinaseLibrary"))){
+  write_csv(bench_df %>% filter(benchmark == "activating sites"), "results/manuscript_data/suppfig11b_boxplot_all.csv")
+  write_csv(kin_df %>% filter(benchmark == "activating sites"), "results/manuscript_data/suppfig11b_barplot_all.csv")
+} 
 
 full_p <- ggarrange(kin_p, auroc_p, ncol = 1, common.legend = T, heights = c(3, 9))
 

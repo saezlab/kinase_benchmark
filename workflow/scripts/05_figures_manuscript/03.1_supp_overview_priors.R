@@ -46,6 +46,31 @@ kin_list <- map(prior, function(df){
   df %>% pull(source) %>% unique()
 })
 kin_comb <- make_comb_mat(kin_list)
+m <- kin_comb
+set_df <- set_size(m) %>% as.data.frame() %>%
+  rownames_to_column("Library") %>%
+  dplyr::rename("size" = ".")
+
+comb_df <- map_dfr(comb_name(m), function(comb_i){
+  boolean_c <- c()
+  for (i in 1:nchar(comb_i)){
+    idx <- substr(comb_i, i, i) %>% as.numeric() %>% as.logical()
+    boolean_c <- append(boolean_c, idx)
+  }
+  comd <- extract_comb(m, comb_i)
+  df <- data.frame(comb = comb_i, part = set_name(m)[boolean_c], size = comb_size(m)[comb_i]) 
+  rownames(df) <- NULL
+  df
+}) %>%
+  add_column(counter = "X")
+  
+comb_df_wide <- comb_df %>%
+  pivot_wider(names_from = part, values_from = counter) %>%
+  dplyr::select(-comb)
+comb_df_wide[is.na(comb_df_wide)] <- ""
+
+write_csv(set_df, "results/manuscript_data/suppfig5a_set.csv")
+write_csv(comb_df_wide, "results/manuscript_data/suppfig5a_comb.csv")
 
 pdf(upset_kin, width = 5, height = 3)
 UpSet(kin_comb, pt_size = unit(2, "mm"), lwd = 1)
@@ -55,6 +80,32 @@ edge_list <- map(prior, function(df){
   df %>% mutate(edge = paste0(source, ":", target)) %>% pull(edge) %>% unique()
 })
 edge_comb <- make_comb_mat(edge_list)
+
+m <- edge_comb
+set_df <- set_size(m) %>% as.data.frame() %>%
+  rownames_to_column("Library") %>%
+  dplyr::rename("size" = ".")
+
+comb_df <- map_dfr(comb_name(m), function(comb_i){
+  boolean_c <- c()
+  for (i in 1:nchar(comb_i)){
+    idx <- substr(comb_i, i, i) %>% as.numeric() %>% as.logical()
+    boolean_c <- append(boolean_c, idx)
+  }
+  comd <- extract_comb(m, comb_i)
+  df <- data.frame(comb = comb_i, part = set_name(m)[boolean_c], size = comb_size(m)[comb_i]) 
+  rownames(df) <- NULL
+  df
+}) %>%
+  add_column(counter = "X")
+  
+comb_df_wide <- comb_df %>%
+  pivot_wider(names_from = part, values_from = counter) %>%
+  dplyr::select(-comb)
+comb_df_wide[is.na(comb_df_wide)] <- ""
+
+write_csv(set_df, "results/manuscript_data/suppfig5c_set.csv")
+write_csv(comb_df_wide, "results/manuscript_data/suppfig5c_comb.csv")
 
 pdf(upset_edge, width = 5.5, height = 3)
 UpSet(edge_comb, pt_size = unit(2, "mm"), lwd = 1)
@@ -94,6 +145,8 @@ jaccard_m <- jaccard_df %>%
   summarise(mean_jaccard = mean(jaccard, na.rm = T)) %>%
   pivot_wider(names_from = prior_2, values_from = mean_jaccard) %>%
   column_to_rownames("prior_1")
+
+write_csv(jaccard_m, "results/manuscript_data/suppfig5e.csv")
 
 pdf(jaccard_pdf, height = 3, width = 3)
 corrplot(as.matrix(jaccard_m), is.corr = F, method = 'color', col = COL1('Purples', 100)[20:100],
@@ -145,6 +198,8 @@ kintype_p <- ggplot(kin_type, aes(x = resource, y = n, fill = kinase)) +
         text = element_text(size = 10),
         legend.key.size = unit(0.2, 'cm'))
 
+write_csv(kin_type %>% dplyr::select(resource, kinase, n), "results/manuscript_data/suppfig5b.csv")
+
 pdf(kintype_pdf, height = 3, width = 4.2)
 kintype_p
 dev.off()
@@ -168,6 +223,8 @@ regulonsize_p <- ggplot(set_size, aes(x = prior, y = n_targets)) +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1),
         text = element_text(size = 10),
         legend.key.size = unit(0.2, 'cm'))
+
+write_csv(set_size, "results/manuscript_data/suppfig5d.csv")
 
 pdf(regulonsize_pdf, height = 3, width = 2.8)
 regulonsize_p

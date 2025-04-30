@@ -180,6 +180,12 @@ p_hit_p <- ggplot(pHit, aes(x = method, y = phit, fill = k_phit)) +
   xlab("") +
   ylab(bquote(P[Hit](k)))
 
+write_csv(pHit %>% dplyr::select(method, phit, k_phit) %>% arrange(k_phit, desc(phit)), "results/manuscript_data/fig1d.csv")
+write_csv(rank_df %>% ungroup() %>% dplyr::select(-prior), "results/manuscript_data/fig1e.csv")
+write_csv(bench_df %>% dplyr::select(method, score), "results/manuscript_data/fig1f.csv")
+
+rank_df %>% group_by(method) %>% summarise(n = n())
+bench_df %>% group_by(method) %>% summarise(n = n())
 
 pdf(auroc_plot, width = 4, height = 2.5)
 auroc_p

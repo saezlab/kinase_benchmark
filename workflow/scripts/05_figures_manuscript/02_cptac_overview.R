@@ -71,6 +71,9 @@ auroc_p <- ggplot(df_tumor, aes(x = method, y = score)) +
   ) +
   xlab("")
 
+write_csv(df_tumor %>% dplyr::select(-net), "results/manuscript_data/fig2d.csv")
+df_tumor %>% group_by(method) %>% summarise(n = n())
+
 pdf(auroc_plot, width = 4, height = 2.5)
 auroc_p
 dev.off()
@@ -123,6 +126,9 @@ auroc_p <- ggplot(df_tumor, aes(x = method, y = score)) +
     axis.title.x = element_text(family = "Helvetica", size = 10)
   ) +
   xlab("")
+
+write_csv(df_tumor %>% dplyr::select(-net), "results/manuscript_data/fig2e.csv")
+df_tumor %>% group_by(method) %>% summarise(n = n())
 
 pdf(auroc_plot_act, width = 4, height = 2.5)
 auroc_p
@@ -187,6 +193,9 @@ norm_prot_plt <- df_norm_prot %>%
   ) +
   xlab("")
 
+write_csv(df_norm_prot, "results/manuscript_data/fig2f.csv")
+df_norm_prot %>% group_by(method, normalisation) %>% summarise(n = n())
+
 pdf(norm_plot, width = 4, height = 3)
 norm_prot_plt
 dev.off()
@@ -250,6 +259,9 @@ norm_act_plt <- df_norm_act %>%
     axis.title.x = element_text(family = "Helvetica", size = 10)
   ) +
   xlab("")
+
+write_csv(df_norm_act, "results/manuscript_data/fig2g.csv")
+df_norm_act %>% group_by(method, normalisation) %>% summarise(n = n())
 
 pdf(norm_plot_act, width = 4, height = 3)
 norm_act_plt

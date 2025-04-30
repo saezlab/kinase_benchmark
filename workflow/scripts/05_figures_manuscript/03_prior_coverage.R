@@ -80,6 +80,8 @@ kin_p <- ggplot(data=coverage %>% filter(class == "kinase"), aes(x=value, y=PKN,
   scale_x_continuous(expand = c(0, 0)) +
   theme_minimal()
 
+write_csv(coverage %>% filter(class == "kinase") %>% dplyr::select(-class), "results/manuscript_data/fig3a.csv")
+
 edges_p <- ggplot(coverage %>% filter(class == "edges")) +
   aes(x = value, y = PKN) +
   geom_bar(stat="identity", color="black", position=position_dodge(), fill = "#AD477A", width=0.7)+
@@ -90,6 +92,8 @@ edges_p <- ggplot(coverage %>% filter(class == "edges")) +
         axis.title.x = element_text(family = "Helvetica", size = 10)) +
   scale_x_continuous(expand = c(0, 0)) +
   theme_minimal()
+
+write_csv(coverage %>% filter(class == "edges") %>% dplyr::select(-class, -type), "results/manuscript_data/fig3b.csv")
 
 
 ## Kinase overview ------------------

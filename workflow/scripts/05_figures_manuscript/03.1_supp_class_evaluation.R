@@ -144,8 +144,12 @@ pdf(performance_pert_ser, width = 3.9, height = 3.5)
 full_p_ser
 dev.off()
 
+write_csv(rank_df_class_ser %>% dplyr::select(prior, targets, scaled_rank), "results/manuscript_data/suppfig10a_boxplot.csv")
+write_csv(n_kinases_ser, "results/manuscript_data/suppfig10a_barplot.csv")
+
 auroc_p_tyr <- ggplot(rank_df_class_tyr, aes(x = prior, y = scaled_rank)) +
-  geom_boxplot(linewidth = 0.3, outlier.size = 0.1) +# Muted scientific color palette
+  geom_boxplot(linewidth = 0.3, outlier.size = 0.1) +
+  geom_jitter(color="black", size=0.4, alpha=0.9) +# Muted scientific color palette
   theme_bw() +
   theme(
     axis.text.x = element_text(angle = 45, hjust = 1),
@@ -184,3 +188,6 @@ full_p_tyr <- ggarrange(kin_p_tyr, auroc_p_tyr, ncol = 1, common.legend = T, hei
 pdf(performance_pert_tyr, width = 3.9, height = 3.5)
 full_p_tyr
 dev.off()
+
+write_csv(rank_df_class_tyr %>% dplyr::select(prior, targets, scaled_rank), "results/manuscript_data/suppfig10b_boxplot.csv")
+write_csv(n_kinases_tyr, "results/manuscript_data/suppfig10b_barplot.csv")

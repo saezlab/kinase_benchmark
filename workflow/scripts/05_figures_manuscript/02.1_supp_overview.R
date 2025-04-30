@@ -105,6 +105,8 @@ pdf(overview_pairs, width = 2.7, height = 3)
 pair_p
 dev.off()
 
+write_csv(kin_full %>% dplyr::select(GS, n_pairs, benchmark), "results/manuscript_data/suppfig4a.csv")
+write_csv(kin_full %>% dplyr::select(GS, n_kin, benchmark), "results/manuscript_data/suppfig4b.csv")
 ## Most kinases ---------------------------
 kin_df <- full_gs %>%
     group_by(GS, kinase) %>%
@@ -135,6 +137,7 @@ kin_p <- ggplot(kin_df, aes(x = kinase, y = Freq, fill = GS)) +
 pdf(kin_overview_prot, width = 3, height = 6)
 kin_p
 dev.off()
+write_csv(kin_df, "results/manuscript_data/suppfig4c.csv")
 
 kin_df <- full_act_gs %>%
     group_by(GS, kinase) %>%
@@ -165,6 +168,9 @@ kin_p <- ggplot(kin_df, aes(x = kinase, y = Freq, fill = GS)) +
 pdf(kin_overview_act, width = 3, height = 6)
 kin_p
 dev.off()
+
+write_csv(kin_df, "results/manuscript_data/suppfig4d.csv")
+
 
 ## Jaccard gold standards ---------------------------
 kinases_full <- unique(c(full_act_gs$kinase, full_gs$kinase))

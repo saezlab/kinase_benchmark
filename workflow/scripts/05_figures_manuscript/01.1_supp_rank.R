@@ -99,3 +99,5 @@ tmp$mean_nonpert %>% range()
 pdf(performance_plot, width = 5, height = 4.8)
 scaled_p
 dev.off()
+
+write_csv(rank_overview %>% filter(metric == "mean") %>% dplyr::select(kinase, scaled_rank, benchmark), "results/manuscript_data/suppfig2c.csv")

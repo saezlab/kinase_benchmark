@@ -90,7 +90,7 @@ rank_df_ser <- rank_df_class %>%
 
 ser_p <- ggplot(rank_df_ser, aes(x = method, y = scaled_rank)) +
   geom_boxplot(linewidth = 0.3, outlier.size = 0.5) +
-  scale_fill_manual(values = c("#4292C6", "#AA42C6")) +  # Muted scientific color palette
+  scale_fill_manual(values = c("#4292C6", "#AA42C6")) + # Muted scientific color palette
   theme_bw() +
   theme(
     legend.position = "none",
@@ -106,7 +106,8 @@ ser_p <- ggplot(rank_df_ser, aes(x = method, y = scaled_rank)) +
 
 tyr_p <- ggplot(rank_df_tyr, aes(x = method, y = scaled_rank)) +
   geom_boxplot(linewidth = 0.3, outlier.size = 0.5) +
-  scale_fill_manual(values = c("#4292C6", "#AA42C6")) +  # Muted scientific color palette
+  scale_fill_manual(values = c("#4292C6", "#AA42C6")) +
+  geom_jitter(color="black", size=0.4, alpha=0.9) +  # Muted scientific color palette
   theme_bw() +
   theme(
     legend.position = "none",
@@ -124,6 +125,9 @@ pdf(out_plot, width = 4, height = 3.8)
 ser_p
 tyr_p
 dev.off()
+
+write_csv(rank_df_ser %>% dplyr::select(method, targets, scaled_rank), "results/manuscript_data/suppfig2a.csv")
+write_csv(rank_df_tyr %>% dplyr::select(method, targets, scaled_rank), "results/manuscript_data/suppfig2b.csv")
 
 ## pHit ---------------------------
 pHit <- map_dfr(c(10), function(k){rank_df_class %>%

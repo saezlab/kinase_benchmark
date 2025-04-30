@@ -77,6 +77,8 @@ pdf(overview_meta, width = 3, height = 8)
 kin_p
 dev.off()
 
+write_csv(kin_df, "results/manuscript_data/suppfig1a.csv")
+
 ## Overview kinases phosphositeplus ---------------------------
 ppsp_hernandez <- read_tsv(ppsp_hernandez_file, col_types = cols())
 ppsp_hijazi <- read_tsv(ppsp_hijazi_file, col_types = cols())
@@ -156,6 +158,7 @@ pdf(overview_meta_filtered, width = 3, height = 8)
 kin_p_filtered
 dev.off()
 
+write_csv(kin_df_filtered, "results/manuscript_data/suppfig1b.csv")
 ## Benchmark ------------------
 ## Load AUROC ---------------------------
 rank_list <- map(rank_files, function(file){
@@ -277,3 +280,6 @@ full_p <- ggarrange(kin_p, auroc_p, ncol = 1, common.legend = T, heights = c(3.3
 pdf(out_plot, width = 4, height = 3.8)
 full_p
 dev.off()
+
+write_csv(df_perturb, "results/manuscript_data/suppfig1c_boxplot.csv")
+write_csv(kin_df %>% group_by(method, bench) %>% summarise(kinases = mean(kinases)), "results/manuscript_data/suppfig1c_barplot.csv")

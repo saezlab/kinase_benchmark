@@ -263,6 +263,14 @@ kin_p <- ggplot(kin_df %>% filter(benchmark == "perturbation-based"), aes(x = me
 
 full_p <- ggarrange(kin_p, auroc_p, ncol = 1, common.legend = T, heights = c(3, 9))
 
+if (any(str_detect(rank_df$prior %>% unique(), "NetworKIN"))){
+  write_csv(bench_df %>% filter(benchmark == "perturbation-based"), "results/manuscript_data/fig4a_boxplot_subset.csv")
+  write_csv(kin_df %>% filter(benchmark == "perturbation-based") %>% group_by(prior, method) %>% summarise(kinases = mean(kinases)), "results/manuscript_data/fig4a_barplot_subset.csv")
+} else if (any(str_detect(rank_df$prior %>% unique(), "KinaseLibrary"))){
+  write_csv(bench_df %>% filter(benchmark == "perturbation-based"), "results/manuscript_data/suppfig11a_boxplot_subset.csv")
+  write_csv(kin_df %>% filter(benchmark == "perturbation-based") %>% group_by(prior, method) %>% summarise(kinases = mean(kinases)), "results/manuscript_data/suppfig11a_barplot_subset.csv")
+} 
+
 pdf(performance_plot, width = 3.9, height = 3.7)
 full_p
 dev.off()
@@ -310,6 +318,15 @@ kin_p <- ggplot(kin_df %>% filter(benchmark == "tumor-based"), aes(x = method, y
   )+
   scale_fill_manual(values =  c("#FFECEC", "#E1B8B7", "#CB8381", "#B54D4A"))   +
   ggtitle("Number of Kinases in Evaluation Set")
+
+
+if (any(str_detect(rank_df$prior %>% unique(), "NetworKIN"))){
+  write_csv(bench_df %>% filter(benchmark == "tumor-based"), "results/manuscript_data/fig4c_boxplot_subset.csv")
+  write_csv(kin_df %>% filter(benchmark == "tumor-based") %>% group_by(prior, method) %>% summarise(kinases = mean(kinases)), "results/manuscript_data/fig4c_barplot_subset.csv")
+} else if (any(str_detect(rank_df$prior %>% unique(), "KinaseLibrary"))){
+  write_csv(bench_df %>% filter(benchmark == "tumor-based"), "results/manuscript_data/suppfig11c_boxplot_subset.csv")
+  write_csv(kin_df %>% filter(benchmark == "tumor-based") %>% group_by(prior, method) %>% summarise(kinases = mean(kinases)), "results/manuscript_data/suppfig11c_barplot_subset.csv")
+} 
 
 full_p <- ggarrange(kin_p, auroc_p, ncol = 1, common.legend = T, heights = c(3, 9))
 
@@ -360,6 +377,14 @@ kin_p <- ggplot(kin_df %>% filter(benchmark == "activating sites"), aes(x = meth
   )+
   scale_fill_manual(values =  c("#FEE6D8", "#E8C8B3", "#D79F7B", "#C67642"))   +
   ggtitle("Number of Kinases in Evaluation Set")
+
+if (any(str_detect(rank_df$prior %>% unique(), "NetworKIN"))){
+  write_csv(bench_df %>% filter(benchmark == "activating sites"), "results/manuscript_data/fig4b_boxplot_subset.csv")
+  write_csv(kin_df %>% filter(benchmark == "activating sites") %>% group_by(prior, method) %>% summarise(kinases = mean(kinases)), "results/manuscript_data/fig4b_barplot_subset.csv")
+} else if (any(str_detect(rank_df$prior %>% unique(), "KinaseLibrary"))){
+  write_csv(bench_df %>% filter(benchmark == "activating sites"), "results/manuscript_data/suppfig11b_boxplot_subset.csv")
+  write_csv(kin_df %>% filter(benchmark == "activating sites") %>% group_by(prior, method) %>% summarise(kinases = mean(kinases)), "results/manuscript_data/suppfig11b_barplot_subset.csv")
+} 
 
 full_p <- ggarrange(kin_p, auroc_p, ncol = 1, common.legend = T, heights = c(3, 9))
 

@@ -100,6 +100,8 @@ Heatmap(med_mat, row_split = 4, column_split = 5,border = TRUE, rect_gp = gpar(c
           grid.text(sprintf("%.2f", med_mat[i, j]), x, y, gp = gpar(fontsize = 6))})
 dev.off()
 
+write_csv(data.frame(med_mat) %>% rownames_to_column("prior"), "results/manuscript_data/suppfig8a.csv")
+
 ## tumor bench ---------------------------
 df_tumor <- map_dfr(tumor_files, function(file_roc){
     roc <- readRDS(file_roc)
@@ -156,7 +158,7 @@ Heatmap(med_mat, row_split = 4, column_split = 5,border = TRUE, rect_gp = gpar(c
           grid.text(sprintf("%.2f", med_mat[i, j]), x, y, gp = gpar(fontsize = 6))})
 dev.off()
 
-
+write_csv(data.frame(med_mat) %>% rownames_to_column("prior"), "results/manuscript_data/suppfig8c.csv")
 ## activating site
 # activating sites benchmark
 df_act <- map_dfr(activating_files, function(file_roc){
@@ -212,6 +214,7 @@ Heatmap(med_mat, row_split = 4, column_split = 5,border = TRUE, rect_gp = gpar(c
           grid.text(sprintf("%.2f", med_mat[i, j]), x, y, gp = gpar(fontsize = 6))})
 dev.off()
 
+write_csv(data.frame(med_mat) %>% rownames_to_column("prior"), "results/manuscript_data/suppfig8b.csv")
 ## Exploration -----------
 comb_df <- rbind(bench_df, df_tumor, df_act) %>%
   group_by(method, net, benchmark) %>%

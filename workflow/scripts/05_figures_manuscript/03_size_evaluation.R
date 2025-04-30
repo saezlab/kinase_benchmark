@@ -9,8 +9,8 @@ if(exists("snakemake")){
   rank_files <- list.files("results/03_benchmark/merged/02_mean_rank",
                            pattern = "csv", recursive = TRUE, full.names = T)
   rank_files <- rank_files[str_detect(rank_files, "/iKiPdb/|/GPS/|/omnipath/|/networkin/|/phosphositeplus/|/ptmsigdb/|/GSknown/")]
-  activating_strat <- list.files("data/results_cptac/stratified_kinases/all_kins/actsiteBM", full.names = T)
-  tumor_strat <- list.files("data/results_cptac/stratified_kinases/all_kins/protBM", full.names = T)
+  activating_strat <- list.files("data/results_cptac/stratified_kinases/all_kins/actsiteBM", full.names = T, pattern = "Rds")
+  tumor_strat <- list.files("data/results_cptac/stratified_kinases/all_kins/protBM", full.names = T, pattern = "Rds")
   performance_pert <- "results/manuscript_figures/figure_3/regulon_perturbation.pdf"
   performance_act <- "results/manuscript_figures/figure_3/regulon_activatingsites.pdf"
   performance_tumor <- "results/manuscript_figures/figure_3/regulon_tumor.pdf"
@@ -105,6 +105,8 @@ auroc_p <- ggplot(rank_df, aes(x = prior, y = scaled_rank, fill = strat)) +
   xlab("") +
   ylab("scaled rank")
 
+write_csv(rank_df %>% filter(method == "zscore") %>% dplyr::select(-method), "results/manuscript_data/fig3d_boxplot_perturbation.csv")
+rank_df %>% filter(method == "zscore") %>% group_by(prior, strat) %>% summarise(n = n())
 
 kin_p <- ggplot(n_kinases, aes(x = prior, y = kinases, fill = strat)) +
   geom_bar(stat="identity", position=position_dodge(), width = 0.4)+ # Line connecting the dots
@@ -126,6 +128,8 @@ kin_p <- ggplot(n_kinases, aes(x = prior, y = kinases, fill = strat)) +
   scale_fill_manual(values = c("#96c3df", "#4292C6", "#265c7f")) +
   ggtitle("Number of Kinases in Evaluation Set")
 
+write_csv(n_kinases %>% filter(method == "zscore") %>% group_by(prior, strat) %>% summarise(kinases = mean(kinases)), "results/manuscript_data/fig3d_barplot_perturbation.csv")
+
 full_p <- ggarrange(kin_p, auroc_p, ncol = 1, common.legend = T, heights = c(3.1, 9))
 
 pdf(performance_pert, width = 3.9, height = 3.5)
@@ -137,6 +141,9 @@ dev.off()
 df_act <-  map_dfr(activating_strat, function(act_file){
   res <- readRDS(act_file)
   roc_list <- lapply(res$ROC_results, "[[", "sample_AUROCs")
+  if (length(roc_list) < 1){
+    roc_list$zscore <- res$sample_auroc
+  }
   net_id <- str_extract(act_file, "(?<=BM_).*?(?=_)")
   strat_id <- str_extract(act_file, paste0("(?<=", net_id, "_).*?(?=_roc)"))
 
@@ -165,10 +172,18 @@ df_act$strat <- factor(df_act$strat, levels = c("small", "medium", "large"))
 
 n_kinases <-  map_dfr(activating_strat, function(act_file){
   res <- readRDS(act_file)
-  kin <- res$evaluation_kinases %>%
-    unlist() %>%
-    unique() %>%
-    length()
+  if ("evaluation_kinases" %in% names(res)){
+    kin <- res$evaluation_kinases %>%
+      unlist() %>%
+      unique() %>%
+      length()
+  } else {
+    kin <- res$kins %>%
+      unlist() %>%
+      unique() %>%
+      length()
+  }
+  
 
   net_id <- str_extract(act_file, "(?<=BM_).*?(?=_)")
   strat_id <- str_extract(act_file, paste0("(?<=", net_id, "_).*?(?=_roc)"))
@@ -233,6 +248,10 @@ kin_p <- ggplot(n_kinases, aes(x = prior, y = kinases, fill = strat)) +
   scale_fill_manual(values = c("#e2b99e", "#C67642", "#58331a")) +
   ggtitle("Number of Kinases in Evaluation Set")
 
+write_csv(df_act %>% filter(method == "z-score") %>% dplyr::select(-method), "results/manuscript_data/fig3d_boxplot_actsite.csv")
+df_act %>% filter(method == "z-score") %>% group_by(prior, strat) %>% summarise(n = n())
+write_csv(n_kinases %>% filter(method == "z-score") %>% group_by(prior, strat) %>% summarise(kinases = mean(kinases)), "results/manuscript_data/fig3d_barplot_actsite.csv")
+
 full_p <- ggarrange(kin_p, auroc_p, ncol = 1, common.legend = T, heights = c(3.1, 9))
 
 pdf(performance_act, width = 3.9, height = 3.5)
@@ -244,6 +263,9 @@ dev.off()
 df_prot <-  map_dfr(tumor_strat, function(act_file){
   res <- readRDS(act_file)
   roc_list <- lapply(res$ROC_results, "[[", "sample_AUROCs")
+  if (length(roc_list) < 1){
+    roc_list$zscore <- res$sample_auroc
+  }
   net_id <- str_extract(act_file, "(?<=BM_).*?(?=_)")
   strat_id <- str_extract(act_file, paste0("(?<=", net_id, "_).*?(?=_roc)"))
 
@@ -272,10 +294,18 @@ df_prot$strat <- factor(df_prot$strat, levels = c("small", "medium", "large"))
 
 n_kinases_prot <-  map_dfr(tumor_strat, function(act_file){
   res <- readRDS(act_file)
-  kin <- res$evaluation_kinases %>%
-    unlist() %>%
-    unique() %>%
-    length()
+  if ("evaluation_kinases" %in% names(res)){
+    kin <- res$evaluation_kinases %>%
+      unlist() %>%
+      unique() %>%
+      length()
+  } else {
+    kin <- res$kins %>%
+      unlist() %>%
+      unique() %>%
+      length()
+  }
+  
 
   net_id <- str_extract(act_file, "(?<=BM_).*?(?=_)")
   strat_id <- str_extract(act_file, paste0("(?<=", net_id, "_).*?(?=_roc)"))
@@ -339,6 +369,10 @@ kin_p <- ggplot(n_kinases_prot, aes(x = prior, y = kinases, fill = strat)) +
   )+
   scale_fill_manual(values = c("#d9a4a2", "#b54d4a", "#572523")) +
   ggtitle("Number of Kinases in Evaluation Set")
+
+write_csv(df_prot %>% filter(method == "z-score") %>% dplyr::select(-method), "results/manuscript_data/fig3d_boxplot_protein.csv")
+df_prot %>% filter(method == "z-score") %>% group_by(prior, strat) %>% summarise(n = n())
+write_csv(n_kinases_prot %>% filter(method == "z-score") %>% group_by(prior, strat) %>% summarise(kinases = mean(kinases)), "results/manuscript_data/fig3d_barplot_protein.csv")
 
 full_p <- ggarrange(kin_p, auroc_p, ncol = 1, common.legend = T, heights = c(3.1, 9))
 

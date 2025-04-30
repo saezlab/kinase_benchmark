@@ -81,6 +81,7 @@ corrplot(mean_correlation,
          tl.col = 'black', order = 'hclust', cl.pos = 'r', col = COL1('Blues'))
 dev.off()
 
+write_csv(data.frame(mean_correlation), "results/manuscript_data/suppfig7a_pearson.csv")
 tmp <- mean_correlation %>%
   as.numeric()
 tmp[!tmp == 1] %>%
@@ -118,6 +119,8 @@ corrplot(mean_correlation,
          is.corr = FALSE, type = 'lower',
          tl.col = 'black', order = 'hclust', cl.pos = 'r', col = COL1('Reds'))
 dev.off()
+
+write_csv(data.frame(mean_correlation), "results/manuscript_data/suppfig7a_spearman.csv")
 
 tmp <- mean_correlation %>%
   as.numeric()
@@ -158,6 +161,9 @@ corrplot(mean_correlation,
          tl.col = 'black', order = 'hclust', cl.pos = 'r', col = COL1('Purples'))
 dev.off()
 
+write_csv(data.frame(mean_correlation), "results/manuscript_data/suppfig7a_jaccup.csv")
+
+
 tmp <- mean_correlation %>%
   as.numeric()
 tmp[!tmp == 1] %>%
@@ -196,6 +202,9 @@ corrplot(mean_correlation,
          tl.col = 'black', order = 'hclust', cl.pos = 'r', col = COL1('Purples'))
 dev.off()
 
+write_csv(data.frame(mean_correlation), "results/manuscript_data/suppfig7a_jaccdown.csv")
+
+
 tmp <- mean_correlation %>%
   as.numeric()
 tmp[!tmp == 1] %>%
@@ -233,6 +242,7 @@ corrplot(mean_correlation,
          is.corr = FALSE, type = 'lower',
          tl.col = 'black', order = 'hclust', cl.pos = 'r', col = COL1('Blues'))
 dev.off()
+write_csv(data.frame(mean_correlation), "results/manuscript_data/suppfig7b_pearson.csv")
 
 tmp <- mean_correlation %>%
   as.numeric()
@@ -266,6 +276,7 @@ corrplot(mean_correlation,
          is.corr = FALSE, type = 'lower',
          tl.col = 'black', order = 'hclust', cl.pos = 'r', col = COL1('Reds'))
 dev.off()
+write_csv(data.frame(mean_correlation), "results/manuscript_data/suppfig7b_spearman.csv")
 
 tmp <- mean_correlation %>%
   as.numeric()
@@ -300,6 +311,8 @@ corrplot(mean_correlation,
          is.corr = FALSE, type = 'lower',
          tl.col = 'black', order = 'hclust', cl.pos = 'r', col = COL1('Purples'))
 dev.off()
+write_csv(data.frame(mean_correlation), "results/manuscript_data/suppfig7b_jaccup.csv")
+
 
 tmp <- mean_correlation %>%
   as.numeric()
@@ -336,6 +349,7 @@ corrplot(mean_correlation,
          is.corr = FALSE, type = 'lower',
          tl.col = 'black', order = 'hclust', cl.pos = 'r', col = COL1('Purples'))
 dev.off()
+write_csv(data.frame(mean_correlation), "results/manuscript_data/suppfig7b_jaccdown.csv")
 
 tmp <- mean_correlation %>%
   as.numeric()
