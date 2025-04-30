@@ -1,0 +1,1005 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
+
+```{r}
+plot(cars)
+```
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+
+
+```{r}
+library(readxl)
+library(tidyverse)
+library(Hmisc)
+library(hrbrthemes)
+library(purrr)
+library(tibble)
+# @import tidyr
+library(stats)
+```
+
+load cell line phospho data and clean up
+```{r}
+nci60_site_desc <- as.data.frame(read_xlsx("41467_2020_17336_MOESM5_ESM.xlsx", sheet = 2))
+rownames(nci60_site_desc) <- nci60_site_desc$ID
+nci60_site_data <- as.data.frame(read_xlsx("41467_2020_17336_MOESM5_ESM.xlsx", sheet = 3))
+all.equal(sub("\\s.*","",nci60_site_data$ID), sub("\\s.*", "", nci60_site_desc$ID))
+rownames(nci60_site_data) <- nci60_site_desc$ID
+#this file must have been opened and saved in Excel at some point; the gene names for genes begining with "MARC" and "SEPT" have been replaced by #s >> fix
+nci60_site_desc$`Gene names`[grepl("MARC\\d", nci60_site_desc$ID)] <- gsub(".*\\s","",nci60_site_desc$ID[grepl("MARC\\d", nci60_site_desc$ID)])
+nci60_site_desc$`Gene names`[grepl("MARCH\\d", nci60_site_desc$ID)] <- gsub(".*\\s","",nci60_site_desc$ID[grepl("MARCH\\d", nci60_site_desc$ID)])
+nci60_site_desc$`Gene names`[grepl("SEPT\\d", nci60_site_desc$ID)] <- gsub(".*\\s","",nci60_site_desc$ID[grepl("SEPT\\d", nci60_site_desc$ID)])
+nci60_site_desc <- nci60_site_desc[!is.na(nci60_site_desc$`Gene names`), ]
+#extract flanking seq; fifteenmer for known targets; 11mer for NetworKIN
+nci60_site_desc$fifteenmer <- substr(nci60_site_desc$`Sequence window`, start = 9, stop = 23)
+nci60_site_desc$elevenmer <- substr(nci60_site_desc$`Sequence window`, start = 11, stop = 21)
+
+#identify sites with >1 sequence window; split and get corresponding 15mers & 11mers
+multi_prot_list <- sapply(strsplit(nci60_site_desc$`Sequence window`[which(lengths(strsplit(nci60_site_desc$`Sequence window`, ";")) > 1)], ";"), substr, 9, 23)
+names(multi_prot_list) <- nci60_site_desc$ID[which(lengths(strsplit(nci60_site_desc$`Sequence window`, ";")) > 1)]
+#get unique 15mers (15mers may still be same even in sequence window is not)
+multi_prot_list <- lapply(multi_prot_list, unique)
+multi_prot_list2 <- lapply(multi_prot_list, substr, 3, 13)
+multi_prot_list2 <- lapply(multi_prot_list2, unique)
+multi_prot_list <- lapply(multi_prot_list, paste, collapse = ";")
+multi_prot_list2 <- lapply(multi_prot_list2, paste, collapse = ";")
+#get list of sites with multiple 15mers and use to update the 15mer column; for those that don't, no need to update 15mer as it should have already been extracted above from the first window
+multi_fifteenmer_list <- multi_prot_list[grepl(";", multi_prot_list)]
+nci60_site_desc[names(multi_fifteenmer_list), "fifteenmer"] <- unlist(multi_fifteenmer_list)
+multi_elevenmer_list <- multi_prot_list2[grepl(";", multi_prot_list2)]
+nci60_site_desc[names(multi_elevenmer_list), "elevenmer"] <- unlist(multi_elevenmer_list)
+
+#update site id to format needed for to identify kinase targets (gene|15mer); require exact gene+15mer match for target sites
+nci60_site_desc$id2 <- paste0(nci60_site_desc$`Gene names`, "|", nci60_site_desc$fifteenmer)
+sum(duplicated(nci60_site_desc$id2))
+nci60_site_desc$id <- paste0(nci60_site_desc$`Gene names`, "|", nci60_site_desc$elevenmer)
+sum(duplicated(nci60_site_desc$id))
+nci60_site_data <- nci60_site_data[nci60_site_desc$ID, ]
+all.equal(rownames(nci60_site_data), rownames(nci60_site_desc))
+nci60_site_data$id2 <- nci60_site_desc$id2
+nci60_site_data$id <- nci60_site_desc$id
+
+#identify sites with duplicate gene|15mer ids
+unique(nci60_site_desc$id2[duplicated(nci60_site_desc$id2)]) -> dups
+#remove sites with duplicate ids
+nci60_site_data1 <- nci60_site_data[!nci60_site_data$id2 %in% dups, ]
+#for duplicated sites, take row with most complete data and add to the unique site table
+for(i in 1:length(dups)){
+  dup_sub <- nci60_site_data[nci60_site_data$id2 == dups[i], ]
+  dup_sub_best <- dup_sub[rowSums(!is.na(dup_sub))==max(rowSums(!is.na(dup_sub))), , drop=F]
+  nci60_site_data1 <- rbind(nci60_site_data1, dup_sub_best)
+}
+
+#there were some ties where >1 sites had same number of missing values; collapse by mean
+sum(duplicated(nci60_site_data1$id2))
+dups <- unique(nci60_site_data1$id2[duplicated(nci60_site_data1$id2)])
+#$View(nci60_site_data1[nci60_site_data1$id2 %in% dups, ])
+#again remove sites that are duplicated
+nci60_site_data2 <- nci60_site_data1[!nci60_site_data1$id2 %in% dups, ]
+sum(duplicated(nci60_site_data2$id2))
+#add back 1 row for each duplicated site that is the mean of the duplicates
+for(i in 1:length(dups)){
+  dup_sub <- nci60_site_data1[nci60_site_data1$id2 == dups[i], ]
+  dup_sub_best <- dup_sub[1, , drop=F]
+  dup_sub_best[ , 2:61] <- colMeans(dup_sub[ , 2:61], na.rm = F)
+  nci60_site_data2 <- rbind(nci60_site_data2, dup_sub_best)
+}
+sum(duplicated(nci60_site_data2$id2))
+sum(duplicated(nci60_site_data2$id))
+#dups <- unique(nci60_site_data1$id2[duplicated(nci60_site_data1$id2)])
+rownames(nci60_site_data2) <- nci60_site_data2$id2
+nci60_site_data2 <- nci60_site_data2[ , -(ncol(nci60_site_data2)-1)]
+nci60_site_data2 <- nci60_site_data2[ , -1]
+nci60_site_data2 <- nci60_site_data2[ , c(ncol(nci60_site_data2), 1:(ncol(nci60_site_data2)-1))]
+```
+
+#filter to sites with at least 20 measurements & center the rows by median
+```{r}
+nci60_site_data_filt <- nci60_site_data2[rowSums(!is.na(nci60_site_data2)) > 19, ]
+max(rowSums(is.na(nci60_site_data_filt[ , 2:ncol(nci60_site_data_filt)])))
+nci60_site_data_filt[ , 2:ncol(nci60_site_data_filt)] <- t(scale(t(nci60_site_data_filt[ , 2:ncol(nci60_site_data_filt)]), scale = F, center = apply(nci60_site_data_filt[ , 2:ncol(nci60_site_data_filt)], 1, median, na.rm=T))) %>% as.data.frame
+```
+
+```{r}
+write.table(cbind(RefinedId=rownames(nci60_site_data2), nci60_site_data2), "nci60_phosphosite_data_IDmapped2PSPnwkin.tab", sep="\t", quote = F, row.names = F)
+write.table(cbind(RefinedId=rownames(nci60_site_data_filt), nci60_site_data_filt), "nci60_phosphosite_data_IDmapped2PSPnwkin_medianCentered_20plusNonMissing.tsv", sep="\t", quote = F, row.names = F)
+```
+
+get KS tables and align site id's for targets to site id's for data
+
+curated + NetworKin targets (update this to start with 11mer!!!)
+```{r}
+KS_table <- read.csv("../../../kinase_activity_benchmarking_shared/revisions/kinase-substrate libraries/raw/GSknown_networkin.tsv", sep = "\t")
+#format target site id same way as it is for data (note: this doesn't work for the NetworKin targets as I realized later on that the sequence is for 11mer in those cases; solution is to split targets into known and NetworKin targets address these targets separately at the end)
+KS_table$site <- paste0(KS_table$target_protein, "|", KS_table$sequence)
+colnames(KS_table)[1] <- "Kinase"
+KS_table_known <- KS_table[lengths(strsplit(KS_table$sequence, ""))==15, ]
+KS_table_nwkin <- KS_table[lengths(strsplit(KS_table$sequence, ""))==11, ]
+#KS_table$sequence2 <- substr(KS_table$sequence, 3, 13)
+#KS_table$site2 <- paste0(KS_table$target_protein, "|", KS_table$sequence2)
+KS_table_known$sequence2 <- substr(KS_table_known$sequence, 3, 13)
+KS_table_known$site2 <- paste0(KS_table_known$target_protein, "|", KS_table_known$sequence2)
+KS_table_nwkin$sequence2 <- KS_table_nwkin$sequence
+KS_table_nwkin$site2 <- KS_table_nwkin$site
+KS_table2 <- rbind(KS_table_known, KS_table_nwkin)
+
+nci60_site_data_filt$site <- sub("[^\\|]*\\|", "", rownames(nci60_site_data_filt))
+nci60_site_data_filt$site2 <- sub("[^\\|]*\\|", "", (nci60_site_data_filt$id))#substr(nci60_site_data_filt$site, 3, 13)
+nci60_site_data_filt$prot <- sub("\\|.*", "", rownames(nci60_site_data_filt))
+nci60_site_data_filt$id2 <- paste0(nci60_site_data_filt$prot, "|", nci60_site_data_filt$site)
+sum(duplicated(nci60_site_data_filt$id2))
+sum(duplicated(nci60_site_data_filt$id))
+```
+
+NOTE: this needs to be modified each time the KS database changes!
+multiple rows are duplicates containing the same data (same peptide assigned to multiple sites appear to be duplicated); strategy for dealing with this is to pick one because it is really only one measurement assigned to multiple possible sites and having duplicate measurements can affect the score; for sites that are not in the target database, we will just randomly select; but for sites that are in the database, make sure that all possible targets are represented in the site id
+```{r}
+#there are duplicate rows in the data assigned to different sites; if one site is in the KS table, pick that site and discard rest; if none are in the KS table, keep 1 at random and remove rest; if multiple sites in table or site is assigned to multiple proteins or 15/11mers, review manually
+#can use rowSums to keep track of these
+all.equal(which(duplicated(nci60_site_data_filt[ , 2:61])),  which(duplicated(rowSums(nci60_site_data_filt[ , 2:61], na.rm = T)))) 
+nci60_site_data_filt$rowTot <- rowSums(nci60_site_data_filt[ , 2:61], na.rm = T)
+dups <- unique(nci60_site_data_filt$rowTot[duplicated(nci60_site_data_filt$rowTot)])
+nci60_site_data_filt2 <- nci60_site_data_filt[!(nci60_site_data_filt$rowTot %in% dups), ]
+man_resolve <- list()
+for(i in 1:length(dups)){
+  dup_x <- nci60_site_data_filt$id[nci60_site_data_filt$rowTot == dups[i]]
+  names(dup_x) <- rownames(nci60_site_data_filt)[nci60_site_data_filt$rowTot == dups[i]]
+  #print(dup_x)
+  #print(dup_x %in% KS_table$site2)
+  if(sum(grepl(";", dup_x)) > 0){
+    man_resolve[[as.character(dups[i])]] <- dup_x
+  } else if(sum(dup_x %in% KS_table2$site2)==0){
+    nci60_site_data_filt2 <- rbind(nci60_site_data_filt2, nci60_site_data_filt[names(dup_x)[1], , drop=F])
+  } else if(sum(dup_x %in% KS_table2$site2)==1){
+    site_x <- names(dup_x)[dup_x %in% KS_table$site2]
+    nci60_site_data_filt2 <- rbind(nci60_site_data_filt2, nci60_site_data_filt[site_x, , drop=F])
+  } else {
+    man_resolve[[as.character(dups[i])]] <- dup_x
+  }
+}
+  
+#23 sites to manually resolve
+
+#first is a multiple gene site that is not in KS table at all; in the future, if we consider other target tables, this should be revisited
+View(KS_table2[KS_table2$target_protein %in% unlist(strsplit(sub("\\|.*", "", man_resolve[[1]]), ";")) & KS_table2$sequence2 %in% unlist(strsplit(sub(".*\\|", "", man_resolve[[1]]), ";")), ])
+nci60_site_data_filt2 <- rbind(nci60_site_data_filt2, nci60_site_data_filt[names(man_resolve[[1]][1]), , drop=F])
+
+#View(KS_table2[KS_table2$site2 %in% man_resolve[[2]], ])
+View(KS_table2[KS_table2$target_protein %in% unlist(strsplit(sub("\\|.*", "", man_resolve[[2]]), ";")) & KS_table2$sequence2 %in% unlist(strsplit(sub(".*\\|", "", man_resolve[[2]]), ";")), ])
+#both are known targets of same kinase, so keep 1
+nci60_site_data_filt2 <- rbind(nci60_site_data_filt2, nci60_site_data_filt[names(man_resolve[[2]][1]), , drop=F])
+
+View(KS_table2[KS_table2$target_protein %in% unlist(strsplit(sub("\\|.*", "", man_resolve[[3]]), ";")) & KS_table2$sequence2 %in% unlist(strsplit(sub(".*\\|", "", man_resolve[[3]]), ";")), ])
+#also a multiple gene site that is not in KS table at all; in the future, if we consider other target tables, this should be revisited
+nci60_site_data_filt2 <- rbind(nci60_site_data_filt2, nci60_site_data_filt[names(man_resolve[[3]][1]), , drop=F])
+
+View(KS_table2[KS_table2$target_protein %in% unlist(strsplit(sub("\\|.*", "", man_resolve[[4]]), ";")) & KS_table2$sequence2 %in% unlist(strsplit(sub(".*\\|", "", man_resolve[[4]]), ";")), ])
+#also a multiple gene site that is not in KS table at all; in the future, if we consider other target tables, this should be revisited
+nci60_site_data_filt2 <- rbind(nci60_site_data_filt2, nci60_site_data_filt[names(man_resolve[[4]][1]), , drop=F])
+
+View(KS_table2[KS_table2$target_protein %in% unlist(strsplit(sub("\\|.*", "", man_resolve[[5]]), ";")) & KS_table2$sequence2 %in% unlist(strsplit(sub(".*\\|", "", man_resolve[[5]]), ";")), ])
+#also a multiple gene site that is not in KS table at all; in the future, if we consider other target tables, this should be revisited
+nci60_site_data_filt2 <- rbind(nci60_site_data_filt2, nci60_site_data_filt[names(man_resolve[[5]][1]), , drop=F])
+
+View(KS_table2[KS_table2$target_protein %in% unlist(strsplit(sub("\\|.*", "", man_resolve[[6]]), ";")) & KS_table2$sequence2 %in% unlist(strsplit(sub(".*\\|", "", man_resolve[[6]]), ";")), ])
+#looks like 2 very similar sites (exact 11mer match) from same gene; only 1 has targets > keep that one
+nci60_site_data_filt2 <- rbind(nci60_site_data_filt2, nci60_site_data_filt["TSC2|SFRARSTSLNERPKS", , drop=F])
+
+View(KS_table2[KS_table2$target_protein %in% unlist(strsplit(sub("\\|.*", "", man_resolve[[7]]), ";")) & KS_table2$sequence2 %in% unlist(strsplit(sub(".*\\|", "", man_resolve[[7]]), ";")), ])
+#3 similar sites on same protein; all targets of same kinase; keep 1
+nci60_site_data_filt2 <- rbind(nci60_site_data_filt2, nci60_site_data_filt[names(man_resolve[[7]][1]), , drop=F])
+
+View(KS_table2[KS_table2$target_protein %in% unlist(strsplit(sub("\\|.*", "", man_resolve[[8]]), ";")) & KS_table2$sequence2 %in% unlist(strsplit(sub(".*\\|", "", man_resolve[[8]]), ";")), ])
+#2 similar sites on same protein; all targets of same kinase; keep 1
+nci60_site_data_filt2 <- rbind(nci60_site_data_filt2, nci60_site_data_filt[names(man_resolve[[8]][1]), , drop=F])
+
+View(KS_table2[KS_table2$target_protein %in% unlist(strsplit(sub("\\|.*", "", man_resolve[[9]]), ";")) & KS_table2$sequence2 %in% unlist(strsplit(sub(".*\\|", "", man_resolve[[9]]), ";")), ])
+#TRA2B S264 is target of CLK2; keep this but rename site because same site assigned to multiple genes and we only need one
+nci60_site_data_filt2 <- rbind(nci60_site_data_filt2, nci60_site_data_filt[names(man_resolve[[9]][1]), , drop=F])
+nci60_site_data_filt2$id[nrow(nci60_site_data_filt2)] <- "TRA2B|IYRRRSPSPYY"
+rownames(nci60_site_data_filt2)[nrow(nci60_site_data_filt2)] <- "TRA2B|DQIYRRRSPSPYYSR"
+
+View(KS_table2[KS_table2$target_protein %in% unlist(strsplit(sub("\\|.*", "", man_resolve[[10]]), ";")) & KS_table2$sequence2 %in% unlist(strsplit(sub(".*\\|", "", man_resolve[[10]]), ";")), ])
+#TRA2B S266 is target of CLK2; keep this but rename site because same site assigned to multiple genes and we only need one
+nci60_site_data_filt2 <- rbind(nci60_site_data_filt2, nci60_site_data_filt[names(man_resolve[[10]][1]), , drop=F])
+nci60_site_data_filt2$id[nrow(nci60_site_data_filt2)] <- "TRA2B|RRRSPSPYYSR"
+rownames(nci60_site_data_filt2)[nrow(nci60_site_data_filt2)] <- "TRA2B|IYRRRSPSPYYSRGG"
+
+View(KS_table2[KS_table2$target_protein %in% unlist(strsplit(sub("\\|.*", "", man_resolve[[11]]), ";")) & KS_table2$sequence2 %in% unlist(strsplit(sub(".*\\|", "", man_resolve[[11]]), ";")), ])
+#2 similar sites on same protein; all targets of same kinase; keep 1
+nci60_site_data_filt2 <- rbind(nci60_site_data_filt2, nci60_site_data_filt[names(man_resolve[[11]][1]), , drop=F])
+
+View(KS_table2[KS_table2$target_protein %in% unlist(strsplit(sub("\\|.*", "", man_resolve[[12]]), ";")) & KS_table2$sequence2 %in% unlist(strsplit(sub(".*\\|", "", man_resolve[[12]]), ";")), ])
+#this is most challenging; both are the same 11mer on two different proteins and all upstream kinases are in the inhibitor set >> take 1 row and add both to site id >> this is a unique situation that will be special attention when mapping targets later
+nci60_site_data_filt2 <- rbind(nci60_site_data_filt2, nci60_site_data_filt[names(man_resolve[[12]][1]), , drop=F])
+nci60_site_data_filt2$id2[nrow(nci60_site_data_filt2)] <- "ARHGEF6;ARHGEF7|LSASPRMSGFIYQGK"
+nci60_site_data_filt2$id[nrow(nci60_site_data_filt2)] <- "ARHGEF6;ARHGEF7|ASPRMSGFIYQ"
+
+View(KS_table2[KS_table2$target_protein %in% unlist(strsplit(sub("\\|.*", "", man_resolve[[13]]), ";")) & KS_table2$sequence2 %in% unlist(strsplit(sub(".*\\|", "", man_resolve[[13]]), ";")), ])
+#also a multiple gene site that is not in KS table at all; in the future, if we consider other target tables, this should be revisited
+nci60_site_data_filt2 <- rbind(nci60_site_data_filt2, nci60_site_data_filt[names(man_resolve[[13]][1]), , drop=F])
+
+View(KS_table2[KS_table2$target_protein %in% unlist(strsplit(sub("\\|.*", "", man_resolve[[14]]), ";")) & KS_table2$sequence2 %in% unlist(strsplit(sub(".*\\|", "", man_resolve[[14]]), ";")), ])
+#also a multiple gene site that is not in KS table at all; in the future, if we consider other target tables, this should be revisited
+nci60_site_data_filt2 <- rbind(nci60_site_data_filt2, nci60_site_data_filt[names(man_resolve[[14]][1]), , drop=F])
+
+View(KS_table2[KS_table2$target_protein %in% unlist(strsplit(sub("\\|.*", "", man_resolve[[15]]), ";")) & KS_table2$sequence2 %in% unlist(strsplit(sub(".*\\|", "", man_resolve[[15]]), ";")), ])
+#also a multiple gene site that is not in KS table at all; in the future, if we consider other target tables, this should be revisited
+nci60_site_data_filt2 <- rbind(nci60_site_data_filt2, nci60_site_data_filt[names(man_resolve[[15]][1]), , drop=F])
+
+View(KS_table2[KS_table2$target_protein %in% unlist(strsplit(sub("\\|.*", "", man_resolve[[16]]), ";")) & KS_table2$sequence2 %in% unlist(strsplit(sub(".*\\|", "", man_resolve[[16]]), ";")), ])
+#also a multiple gene site that is not in KS table at all; in the future, if we consider other target tables, this should be revisited
+nci60_site_data_filt2 <- rbind(nci60_site_data_filt2, nci60_site_data_filt[names(man_resolve[[16]][1]), , drop=F])
+
+View(KS_table2[KS_table2$target_protein %in% unlist(strsplit(sub("\\|.*", "", man_resolve[[17]]), ";")) & KS_table2$sequence2 %in% unlist(strsplit(sub(".*\\|", "", man_resolve[[17]]), ";")), ])
+#this is most challenging; both are the same 11mer for two different sites on same protein and all upstream kinases are in the inhibitor set >> take 1 row and add both to site id >> this is a unique situation that will be special attention when mapping targets later
+nci60_site_data_filt2 <- rbind(nci60_site_data_filt2, nci60_site_data_filt[names(man_resolve[[17]][1]), , drop=F])
+nci60_site_data_filt2$id2[nrow(nci60_site_data_filt2)] <- "AXIN1|LRTPGRQSPGPGHRS;HVQRVLRTPGRQSPG"
+nci60_site_data_filt2$id[nrow(nci60_site_data_filt2)] <- "AXIN1|TPGRQSPGPGH;QRVLRTPGRQS"
+
+View(KS_table2[KS_table2$target_protein %in% unlist(strsplit(sub("\\|.*", "", man_resolve[[18]]), ";")) & KS_table2$sequence2 %in% unlist(strsplit(sub(".*\\|", "", man_resolve[[18]]), ";")), ])
+#also a multiple gene site that is not in KS table at all; in the future, if we consider other target tables, this should be revisited
+nci60_site_data_filt2 <- rbind(nci60_site_data_filt2, nci60_site_data_filt[names(man_resolve[[18]][1]), , drop=F])
+
+View(KS_table2[KS_table2$target_protein %in% unlist(strsplit(sub("\\|.*", "", man_resolve[[19]]), ";")) & KS_table2$sequence2 %in% unlist(strsplit(sub(".*\\|", "", man_resolve[[19]]), ";")), ])
+#also a multiple gene site that is not in KS table at all; in the future, if we consider other target tables, this should be revisited
+nci60_site_data_filt2 <- rbind(nci60_site_data_filt2, nci60_site_data_filt[names(man_resolve[[19]][1]), , drop=F])
+
+View(KS_table2[KS_table2$target_protein %in% unlist(strsplit(sub("\\|.*", "", man_resolve[[20]]), ";")) & KS_table2$sequence2 %in% unlist(strsplit(sub(".*\\|", "", man_resolve[[20]]), ";")), ])
+#this is most challenging; both are the same 11mer on two different proteins and all upstream kinases are in the inhibitor set >> take 1 row and add both to site id >> this is a unique situation that will be special attention when mapping targets later
+nci60_site_data_filt2 <- rbind(nci60_site_data_filt2, nci60_site_data_filt[names(man_resolve[[20]][1]), , drop=F])
+nci60_site_data_filt2$id2[nrow(nci60_site_data_filt2)] <- "CDK1;CDK2|IEKIGEGTYGVVYKG;VEKIGEGTYGVVYKA"
+nci60_site_data_filt2$id[nrow(nci60_site_data_filt2)] <- "CDK1;CDK2|KIGEGTYGVVY"
+
+View(KS_table2[KS_table2$target_protein %in% unlist(strsplit(sub("\\|.*", "", man_resolve[[21]]), ";")) & KS_table2$sequence2 %in% unlist(strsplit(sub(".*\\|", "", man_resolve[[21]]), ";")), ])
+#this is most challenging; both are the same 11mer on two different proteins and all upstream kinases are in the inhibitor set >> take 1 row and add both to site id >> this is a unique situation that will be special attention when mapping targets later
+nci60_site_data_filt2 <- rbind(nci60_site_data_filt2, nci60_site_data_filt[names(man_resolve[[21]][1]), , drop=F])
+nci60_site_data_filt2$id2[nrow(nci60_site_data_filt2)] <- "BCLAF1;THRAP3|EEWDPEYTPKSKKYF;EEWDPEYTPKSKKYY"
+nci60_site_data_filt2$id[nrow(nci60_site_data_filt2)] <- "BCLAF1;THRAP3|WDPEYTPKSKK"
+
+View(KS_table2[KS_table2$target_protein %in% unlist(strsplit(sub("\\|.*", "", man_resolve[[22]]), ";")) & KS_table2$sequence2 %in% unlist(strsplit(sub(".*\\|", "", man_resolve[[22]]), ";")), ])
+#this is most challenging; both are the same 11mer on two different proteins and all upstream kinases are in the inhibitor set >> take 1 row and add both to site id >> this is a unique situation that will be special attention when mapping targets later
+nci60_site_data_filt2$id2[nrow(nci60_site_data_filt2)] <- "CDK1;CDK2|EKIGEGTYGVVYKGR;EKIGEGTYGVVYKAR"
+nci60_site_data_filt2$id[nrow(nci60_site_data_filt2)] <- "CDK1;CDK2|IGEGTYGVVYK"
+
+View(KS_table2[KS_table2$target_protein %in% unlist(strsplit(sub("\\|.*", "", man_resolve[[23]]), ";")) & KS_table2$sequence2 %in% unlist(strsplit(sub(".*\\|", "", man_resolve[[23]]), ";")), ])
+#also a multiple gene site that is not in KS table at all; in the future, if we consider other target tables, this should be revisited
+nci60_site_data_filt2 <- rbind(nci60_site_data_filt2, nci60_site_data_filt[names(man_resolve[[23]][1]), , drop=F])
+
+sum(duplicated(nci60_site_data_filt2$id2))
+sum(duplicated(nci60_site_data_filt2$id))
+rownames(nci60_site_data_filt2) <- nci60_site_data_filt2$id2
+
+#this is the final version of the data we will use; next update the id's in the table of known targets to match the id's in the data when that id includes multiple genes/15mers
+```
+
+```{r}
+#extract data for sites that don't map to single gene plus fifteenmer and check if any combinations of gene|fifteenmer are in the KS table (known targets); save any that are in a list (combo_in_KS)
+rownames(nci60_site_data_filt2)[grepl(";", rownames(nci60_site_data_filt2))]
+nci60_site_data_1to1 <- nci60_site_data_filt2[!grepl(";", rownames(nci60_site_data_filt2)), ]
+nci60_site_data_multi <- nci60_site_data_filt2[grepl(";", rownames(nci60_site_data_filt2)), ]
+#1400 sites in 1to1 data are known targets of 218 kinases
+intersect(KS_table_known$site2, nci60_site_data_1to1$id)
+table(KS_table_known$Kinase[KS_table_known$site %in% nci60_site_data_1to1$id2])
+length(table(KS_table_known$Kinase[KS_table_known$site %in% nci60_site_data_1to1$id2]))
+
+combo_in_KS <- list()
+combo_not_in_KS <- list()
+for(i in 1:nrow(nci60_site_data_multi)){
+  genes_i <- unlist(strsplit(nci60_site_data_multi$prot[i], ";"))
+  sites_i <- unlist(strsplit(nci60_site_data_multi$site[i], ";"))
+  for(j in 1:length(genes_i)){
+    for(k in 1:length(sites_i)){
+      if(paste0(genes_i[j], "|", sites_i[k]) %in% KS_table_known$site){
+        combo_in_KS[[rownames(nci60_site_data_multi)[i]]] <- c(combo_in_KS[[rownames(nci60_site_data_multi)[i]]], paste0(genes_i[j], "|", sites_i[k]))
+      } else {
+        combo_not_in_KS[[rownames(nci60_site_data_multi)[i]]] <- c(combo_not_in_KS[[rownames(nci60_site_data_multi)[i]]], paste0(genes_i[j], "|", sites_i[k]))
+      }
+    }
+  }
+}
+
+#for sites with mapping to the KS table for known targets, replace the id in the KS table with the corresponding site id from the data
+for(i in 1:length(combo_in_KS)){
+  KS_table_known$site[KS_table_known$site %in% combo_in_KS[[i]]] <- names(combo_in_KS)[i]
+}
+
+#now repeat for the NetworKin KS table; there are ~2000 predicted targets for 135 kinases
+all_nwkin_targets <- intersect(KS_table_nwkin$site, nci60_site_data_filt2$id)
+table(KS_table_nwkin$Kinase[KS_table_nwkin$site %in% nci60_site_data_filt2$id])
+length(table(KS_table_nwkin$Kinase[KS_table_nwkin$site %in% nci60_site_data_filt2$id]))
+
+#for each of these targets, first replace site id in KS table for NetworKin targets with corresponding rowname
+for(i in 1:length(all_nwkin_targets)){
+  new_site <- rownames(nci60_site_data_filt2)[nci60_site_data_filt2$id == all_nwkin_targets[i]]
+  if(length(new_site)==1){
+    KS_table_nwkin$site[KS_table_nwkin$site==all_nwkin_targets[i]] <- new_site
+  } else {
+    to_add <- KS_table_nwkin[KS_table_nwkin$site == all_nwkin_targets[i], ]
+    KS_table_nwkin$site[KS_table_nwkin$site==all_nwkin_targets[i]] <- new_site[1]
+    for(j in 2:length(new_site)){
+      to_add$site <- new_site[j]
+      KS_table_nwkin <- rbind(KS_table_nwkin, to_add)
+    }
+  }
+}
+
+#now consider the sites that were assigned >1 gene or 15mer; these all have unique 11mer id's, so we can just repeat approach applied above but use the 11mer id (id) to identify the sites and replace with the corresponding 15mer id (rowname/id2)
+sum(duplicated(nci60_site_data_multi$id))
+combo_in_KS <- list()
+combo_not_in_KS <- list()
+for(i in 1:nrow(nci60_site_data_multi)){
+  genes_i <- unlist(strsplit(nci60_site_data_multi$prot[i], ";"))
+  sites_i <- unlist(strsplit(nci60_site_data_multi$site2[i], ";"))
+  for(j in 1:length(genes_i)){
+    for(k in 1:length(sites_i)){
+      if(paste0(genes_i[j], "|", sites_i[k]) %in% KS_table_nwkin$site){
+        combo_in_KS[[rownames(nci60_site_data_multi)[i]]] <- c(combo_in_KS[[rownames(nci60_site_data_multi)[i]]], paste0(genes_i[j], "|", sites_i[k]))
+      } else {
+        combo_not_in_KS[[rownames(nci60_site_data_multi)[i]]] <- c(combo_not_in_KS[[rownames(nci60_site_data_multi)[i]]], paste0(genes_i[j], "|", sites_i[k]))
+      }
+    }
+  }
+}
+
+for(i in 1:length(combo_in_KS)){
+  KS_table_nwkin$site[KS_table_nwkin$site %in% combo_in_KS[[i]]] <- names(combo_in_KS)[i]
+}
+
+KS_table_known <- KS_table_known[KS_table_known$site %in% rownames(nci60_site_data_filt2), ]
+KS_table_nwkin <- KS_table_nwkin[KS_table_nwkin$site %in% rownames(nci60_site_data_filt2), ]
+KS_table_combined <- rbind(KS_table_known[ , c("Kinase", "site")], KS_table_nwkin[ , c("Kinase", "site")])
+KS_table_combined <- KS_table_combined[!duplicated(KS_table_combined), ]
+sum(!KS_table_combined$site %in% rownames(nci60_site_data_filt2))
+KS_table_known <- KS_table_known[ , c("Kinase", "site")]
+colnames(KS_table_known)[1:2] <- c("source","target")
+colnames(KS_table_combined)[1:2] <- c("source","target")
+sum(table(KS_table_known$source)>4)
+sum(table(KS_table_combined$source)>4)
+```
+
+
+calculate kinase activity
+
+functions to use
+```{r}
+ksea <- function(x, set_sites, col_y=1){
+  x <- data.matrix(x)
+  x <- x[!is.na(x[ , col_y]), col_y, drop=F]
+  set_sites <- intersect(rownames(x), set_sites)
+  return(((mean(x[set_sites, ], na.rm=T) - mean(x, na.rm=T)) * (length(set_sites))^0.5)/sd(x, na.rm = T))
+}
+
+rokaiZ <- function(x, set_sites, col_y=1){
+  x <- data.matrix(x)
+  x <- x[!is.na(x[ , col_y]), col_y, drop=F]
+  set_sites <- intersect(rownames(x), set_sites)
+  return(mean(x[set_sites, ], na.rm=T) * (sqrt(length(set_sites))/sd(x, na.rm = T)))
+}
+
+calculate_Kinase_Activity <- function(phospho_df, kin_sub_tab, col="source", col2="target", min_sites=5, samps=colnames(phospho_df)){
+  phospho_df <- data.matrix(phospho_df[ , samps])
+  kins <- unique(unlist(kin_sub_tab[ , col]))
+  kin_sub_tab <- kin_sub_tab[!duplicated(paste0(kin_sub_tab[ , col], kin_sub_tab[, col2])), ]
+  mean_scores <- matrix(NA, nrow = length(kins), ncol = ncol(phospho_df), dimnames = list(kins, colnames(phospho_df)))
+  num_targets <- mean_scores
+  ksea_scores <- mean_scores
+  rokaiZ_scores <- mean_scores
+  for(i in 1:length(kins)){
+    #print(i)
+    targets <- intersect(rownames(phospho_df), unlist(kin_sub_tab[kin_sub_tab[ , col]==kins[i], col2]))
+    if(length(targets) >= min_sites){
+      mean_scores[kins[i], ] <- colMeans(phospho_df[targets, ], na.rm = T)
+      ksea_scores[kins[i], ] <- apply(phospho_df, MARGIN = 2, ksea, targets)
+      rokaiZ_scores[kins[i], ] <- apply(phospho_df, MARGIN = 2, rokaiZ, targets)
+      for(j in 1:ncol(phospho_df)){
+        target_num <- sum(!is.na(phospho_df[targets, j]))
+        num_targets[kins[i], j] <- target_num
+        if(target_num < min_sites){
+          mean_scores[kins[i], j] <- NA
+          ksea_scores[kins[i], j] <- NA
+          rokaiZ_scores[kins[i], j] <- NA
+        }
+      }
+    } else {
+      mean_scores <- mean_scores[rownames(mean_scores) != kins[i], ]
+      ksea_scores <- ksea_scores[rownames(ksea_scores) != kins[i], ]
+      rokaiZ_scores <- rokaiZ_scores[rownames(rokaiZ_scores) != kins[i], ]
+      num_targets <- num_targets[rownames(num_targets) != kins[i], ]
+    }
+  }
+  num_targets[is.na(num_targets)] <- 0
+  all_scores <- list(mean_scores, ksea_scores, rokaiZ_scores, num_targets)
+  names(all_scores) <- c("mean", "KSEA", "rokaiZ", "number_of_targets")
+  return(all_scores)
+}
+```
+
+use to calculate activity using either known substrates or known+predicted substrates from PS+
+```{r}
+#known + predicted
+nci60_kinase_target_scoresold <- calculate_Kinase_Activity(nci60_site_data_filt2[ , 2:61], kin_sub_tab = KS_table_combined)
+#known
+nci60_kinase_target_scoresold_known <- calculate_Kinase_Activity(nci60_site_data_filt[ , 2:61], kin_sub_tab = KS_table_known)
+```
+
+```{r}
+saveRDS(nci60_site_data_filt2[ , 2:61], "nci60_phosphosite_data_rev.Rds")
+saveRDS(KS_table_known, "KS_table_curated_rev.Rds")
+saveRDS(KS_table_combined, "KS_table_combined_rev.Rds")
+saveRDS(nci60_kinase_target_scoresold_known, "nci60_kinase_activity_scores_curated_targets_rev.Rds")
+saveRDS(nci60_kinase_target_scoresold, "nci60_kinase_activity_scores_combined_targets_rev.Rds")
+```
+
+```{r}
+write.table(cbind(kinase=rownames(nci60_kinase_target_scoresold$rokaiZ), nci60_kinase_target_scoresold$rokaiZ), "nci60_kinase_activity_scores_v7_roKAIz_combined_rev.tsv", sep = "\t", quote = F)
+write.table(cbind(kinase=rownames(nci60_kinase_target_scoresold_known$rokaiZ), nci60_kinase_target_scoresold_known$rokaiZ), "nci60_kinase_activity_scores_v7_roKAIz_curated_rev.tsv", sep = "\t", quote = F)
+```
+
+```{r}
+save.image("nci60_kinase_activity_cp1_v7_rev.rda")
+```
+```{r}
+load("nci60_kinase_activity_cp1_v7_rev.rda")
+```
+
+update cell line names
+```{r}
+#first cell line meta data
+metadat <- read.csv("sample_info.csv", stringsAsFactors = F)
+#renames cell lines in this table to match phospho data
+metadat$stripped_cell_line_name[metadat$alias=="SR"] <- "SR"
+metadat$stripped_cell_line_name[metadat$stripped_cell_line_name=="UO31"] <- "U031"
+setdiff(colnames(nci60_site_data_filt), metadat$stripped_cell_line_name)
+#omit remaining unmatched cell lines (see https://dtp.cancer.gov/discovery_development/nci-60/cell_list.htm for justification)
+cell_lines <- intersect(colnames(nci60_site_data_filt), metadat$stripped_cell_line_name)
+metadat_filt <- metadat[metadat$stripped_cell_line_name %in% cell_lines, ]
+rownames(metadat_filt) <- metadat_filt$DepMap_ID
+```
+
+load the drug response data; identify kinase drug targets; map cell line id's to names used for phosphoproteomics and filter to those cell lines and drugs that target kinases with activity scores (focus on kinases with known targets, so we can compare scores from known targets to those from known+NetworKin targets); finally, focus on drugs that show variable responses across cell lines (use max - min response; the final difference of at least 0.3 was what we used in the end)
+```{r}
+sanger_resp <- read.csv("sanger-GDSC-dose-response.csv")
+sanger_resp <- sanger_resp[sanger_resp$ARXSPAN_ID %in% rownames(metadat_filt), ]
+drugTargs <- read_tsv("drugs_and_targets.txt")
+drugTargKins <- intersect(drugTargs$target_BCM_gene_symbol, rownames(nci60_kinase_target_scoresold_known$mean))
+drugTargs <- drugTargs[drugTargs$target_BCM_gene_symbol %in% drugTargKins, ]
+drugs <- intersect(toupper(drugTargs$drug_name), sanger_resp$DRUG_NAME)
+sanger_resp_gdsc1 <- sanger_resp[(sanger_resp$DRUG_NAME %in% drugs) & (sanger_resp$DATASET == "GDSC1"), ]
+sanger_resp_gdsc2 <- sanger_resp[(sanger_resp$DRUG_NAME %in% drugs) & (sanger_resp$DATASET == "GDSC2"), ]
+#for two drugs, there are at least two experiments containing the same cell lines (duplicated drug name x cell line id)
+dup_drug_cells <- paste0(sanger_resp_gdsc1$DRUG_NAME, sanger_resp_gdsc1$ARXSPAN_ID)[(duplicated(paste0(sanger_resp_gdsc1$DRUG_NAME, sanger_resp_gdsc1$ARXSPAN_ID)))]
+dup_gdsc1_exp <- sanger_resp_gdsc1[paste0(sanger_resp_gdsc1$DRUG_NAME, sanger_resp_gdsc1$ARXSPAN_ID) %in% dup_drug_cells, ]
+table(dup_gdsc1_exp$DRUG_NAME)
+#for now, just skip these; may look at each experiment ()
+sanger_resp_gdsc1_unique <- sanger_resp_gdsc1[!sanger_resp_gdsc1$DRUG_NAME %in% dup_gdsc1_exp$DRUG_NAME, ]
+sanger_resp_gdsc1_unique$cell_line <- metadat_filt[sanger_resp_gdsc1_unique$ARXSPAN_ID, "stripped_cell_line_name"]
+resp_mat <- matrix(NA, nrow = length(unique(sanger_resp_gdsc1_unique$DRUG_NAME)), ncol = length(unique(sanger_resp_gdsc1_unique$cell_line)), dimnames = list(unique(sanger_resp_gdsc1_unique$DRUG_NAME), unique(sanger_resp_gdsc1_unique$cell_line)))
+for(i in 1:length(rownames(resp_mat))){
+  for(j in 1:length(colnames(resp_mat))){
+    if(length(sanger_resp_gdsc1_unique$AUC_PUBLISHED[sanger_resp_gdsc1_unique$DRUG_NAME==rownames(resp_mat)[i] & sanger_resp_gdsc1_unique$cell_line==colnames(resp_mat)[j]])==1){
+      resp_mat[i, j] <- sanger_resp_gdsc1_unique[sanger_resp_gdsc1_unique$DRUG_NAME==rownames(resp_mat)[i] & sanger_resp_gdsc1_unique$cell_line==colnames(resp_mat)[j], "AUC_PUBLISHED"]
+    }
+  }
+}
+rowSums(!is.na(resp_mat))
+apply(resp_mat, 1, range, na.rm=T)
+apply(resp_mat, 1, function(x) max(x,na.rm = T) - min(x, na.rm = T))
+x1 <- rownames(resp_mat)[apply(resp_mat, 1, function(x) max(x,na.rm = T) - min(x, na.rm = T)) > 0.2]
+apply(resp_mat, 1, var, na.rm=T)
+x2 <- rownames(resp_mat)[apply(resp_mat, 1, var, na.rm=T) > 0.01]
+x3 <- rownames(resp_mat)[apply(resp_mat, 1, function(x) max(x,na.rm = T) - min(x, na.rm = T)) > 0.3]
+```
+
+set up analogous pipeline for GDSC2 data
+```{r}
+dup_drug_cells2 <- paste0(sanger_resp_gdsc2$DRUG_NAME, sanger_resp_gdsc2$ARXSPAN_ID)[(duplicated(paste0(sanger_resp_gdsc2$DRUG_NAME, sanger_resp_gdsc2$ARXSPAN_ID)))]
+dup_gdsc2_exp <- sanger_resp_gdsc2[paste0(sanger_resp_gdsc2$DRUG_NAME, sanger_resp_gdsc2$ARXSPAN_ID) %in% dup_drug_cells, ]
+table(dup_gdsc2_exp$DRUG_NAME)
+#for now, just skip these; may look at each experiment ()
+sanger_resp_gdsc2_unique <- sanger_resp_gdsc2[!sanger_resp_gdsc2$DRUG_NAME %in% dup_gdsc2_exp$DRUG_NAME, ]
+sanger_resp_gdsc2_unique$cell_line <- metadat_filt[sanger_resp_gdsc2_unique$ARXSPAN_ID, "stripped_cell_line_name"]
+resp_mat2 <- matrix(NA, nrow = length(unique(sanger_resp_gdsc2_unique$DRUG_NAME)), ncol = length(unique(sanger_resp_gdsc2_unique$cell_line)), dimnames = list(unique(sanger_resp_gdsc2_unique$DRUG_NAME), unique(sanger_resp_gdsc2_unique$cell_line)))
+for(i in 1:length(rownames(resp_mat2))){
+  for(j in 1:length(colnames(resp_mat2))){
+    if(length(sanger_resp_gdsc2_unique$AUC_PUBLISHED[sanger_resp_gdsc2_unique$DRUG_NAME==rownames(resp_mat2)[i] & sanger_resp_gdsc2_unique$cell_line==colnames(resp_mat2)[j]])==1){
+      resp_mat2[i, j] <- sanger_resp_gdsc2_unique[sanger_resp_gdsc2_unique$DRUG_NAME==rownames(resp_mat2)[i] & sanger_resp_gdsc2_unique$cell_line==colnames(resp_mat2)[j], "AUC_PUBLISHED"]
+    }
+  }
+}
+rowSums(!is.na(resp_mat2))
+apply(resp_mat2, 1, range, na.rm=T)
+apply(resp_mat2, 1, function(x) max(x,na.rm = T) - min(x, na.rm = T))
+x1_2 <- rownames(resp_mat2)[apply(resp_mat2, 1, function(x) max(x,na.rm = T) - min(x, na.rm = T)) > 0.2]
+apply(resp_mat2, 1, var, na.rm=T)
+x2_2 <- rownames(resp_mat2)[apply(resp_mat2, 1, var, na.rm=T) > 0.01]
+x3_2 <- rownames(resp_mat2)[apply(resp_mat2, 1, function(x) max(x,na.rm = T) - min(x, na.rm = T)) > 0.3]
+```
+
+
+to compare kinase activity to protein, load protein data from Kuster lab
+```{r}
+protdat <- as.data.frame(read_xlsx("Proteomics_41467_2020_17336_MOESM6_ESM.xlsx", sheet = 3))
+#final_kin_list <- 
+protdat$geneSymbol <- sub("\\d+ ", "", protdat$ID)
+protkins <- intersect(drugTargKins, protdat$geneSymbol)
+#intersect(colnames(protdat), cell_lines)
+#setdiff(cell_lines, colnames(protdat))
+protdat <- protdat[protdat$geneSymbol %in% protkins, c("ID", cell_lines, "geneSymbol")]
+dup_prots <- protdat$geneSymbol[duplicated(protdat$geneSymbol)]
+protdat2 <- protdat[!protdat$geneSymbol %in% dup_prots, ]
+for(i in 1:length(dup_prots)){
+  prot_sub <- protdat[protdat$geneSymbol == dup_prots[i], ]
+  prot_sub <- prot_sub[rowSums(!is.na(prot_sub)) == max(rowSums(!is.na(prot_sub))), , drop=F]
+  protdat2 <- rbind(protdat2, prot_sub)
+}
+rownames(protdat2) <- protdat2$geneSymbol
+protdat2 <- protdat2[ , cell_lines]
+```
+
+
+for each inhibitor in resp_mat, eval correlation with kinase targets: a) kinase activity score (each method) b) kinase protein level
+
+start by filtering to common kinases and cell lines for all 3 datasets (kinase activity scores, response, and protein data); we will start with protdat because, even though fewer cell lines are included, the data looks more complete
+
+GDSC1
+```{r}
+protkins %in% rownames(nci60_kinase_target_scoresold_known$rokaiZ)
+protcells <- intersect(colnames(protdat), colnames(resp_mat))
+ksea_auc_corr <- list()
+prot_auc_corr <- list()
+mean_auc_corr <- list()
+rokai_auc_corr <- list()
+kseaPred_auc_corr <- list()
+meanPred_auc_corr <- list()
+rokaiPred_auc_corr <- list()
+
+for(i in 1:nrow(resp_mat)){
+  targets <- unlist(strsplit(unique(drugTargs$target_BCM_gene_symbol[toupper(drugTargs$drug_name)==rownames(resp_mat)[i]]), ", "))
+  targets <- targets[targets %in% protkins]
+  if(length(targets) > 0){
+    for(j in 1:length(targets)){
+      drug_target <- paste0(rownames(resp_mat)[i], "_", targets[j])
+      ksea_auc_corr[[drug_target]] <- rcorr(as.numeric(nci60_kinase_target_scoresold_known$KSEA[targets[j], protcells]), as.numeric(resp_mat[i, protcells])) 
+      mean_auc_corr[[drug_target]] <- rcorr(as.numeric(nci60_kinase_target_scoresold_known$mean[targets[j], protcells]), as.numeric(resp_mat[i, protcells]))
+      rokai_auc_corr[[drug_target]] <- rcorr(as.numeric(nci60_kinase_target_scoresold_known$rokaiZ[targets[j], protcells]), as.numeric(resp_mat[i, protcells]))
+      kseaPred_auc_corr[[drug_target]] <- rcorr(as.numeric(nci60_kinase_target_scoresold$KSEA[targets[j], protcells]), as.numeric(resp_mat[i, protcells]))
+      meanPred_auc_corr[[drug_target]] <- rcorr(as.numeric(nci60_kinase_target_scoresold$mean[targets[j], protcells]), as.numeric(resp_mat[i, protcells]))
+      rokaiPred_auc_corr[[drug_target]] <- rcorr(as.numeric(nci60_kinase_target_scoresold$rokaiZ[targets[j], protcells]), as.numeric(resp_mat[i, protcells]))
+      prot_auc_corr[[drug_target]] <- rcorr(as.numeric(protdat2[targets[j], protcells]), as.numeric(resp_mat[i, protcells])) 
+    }
+  }
+}
+corr_sum_tab <- matrix(NA, nrow = length(prot_auc_corr), ncol = 21, dimnames = list(names(prot_auc_corr), c("protein_Rho", "protein_p", "protein_n", "KSEA_Rho", "KSEA_p", "KSEA_n", "mean_Rho", "mean_p", "mean_n","rokai_Rho", "rokai_p", "rokai_n", "KSEAaddPred_Rho", "KSEAaddPred_p", "KSEAaddPred_n", "meanaddPred_Rho", "meanaddPred_p", "meanaddPred_n", "rokaiaddPred_Rho", "rokaiaddPred_p", "rokaiaddPred_n")))
+for(i in 1:nrow(corr_sum_tab)){
+  corr_sum_tab[i, 1] <- prot_auc_corr[[rownames(corr_sum_tab)[i]]]$r[1,2]
+  corr_sum_tab[i, 2] <- prot_auc_corr[[rownames(corr_sum_tab)[i]]]$P[1,2]
+  corr_sum_tab[i, 3] <- prot_auc_corr[[rownames(corr_sum_tab)[i]]]$n[1,2]
+  corr_sum_tab[i, 4] <- ksea_auc_corr[[rownames(corr_sum_tab)[i]]]$r[1,2]
+  corr_sum_tab[i, 5] <- ksea_auc_corr[[rownames(corr_sum_tab)[i]]]$P[1,2]
+  corr_sum_tab[i, 6] <- ksea_auc_corr[[rownames(corr_sum_tab)[i]]]$n[1,2]
+  corr_sum_tab[i, 7] <- mean_auc_corr[[rownames(corr_sum_tab)[i]]]$r[1,2]
+  corr_sum_tab[i, 8] <- mean_auc_corr[[rownames(corr_sum_tab)[i]]]$P[1,2]
+  corr_sum_tab[i, 9] <- mean_auc_corr[[rownames(corr_sum_tab)[i]]]$n[1,2]
+  corr_sum_tab[i, 10] <- rokai_auc_corr[[rownames(corr_sum_tab)[i]]]$r[1,2]
+  corr_sum_tab[i, 11] <- rokai_auc_corr[[rownames(corr_sum_tab)[i]]]$P[1,2]
+  corr_sum_tab[i, 12] <- rokai_auc_corr[[rownames(corr_sum_tab)[i]]]$n[1,2]
+  corr_sum_tab[i, 13] <- kseaPred_auc_corr[[rownames(corr_sum_tab)[i]]]$r[1,2]
+  corr_sum_tab[i, 14] <- kseaPred_auc_corr[[rownames(corr_sum_tab)[i]]]$P[1,2]
+  corr_sum_tab[i, 15] <- kseaPred_auc_corr[[rownames(corr_sum_tab)[i]]]$n[1,2]
+  corr_sum_tab[i, 16] <- meanPred_auc_corr[[rownames(corr_sum_tab)[i]]]$r[1,2]
+  corr_sum_tab[i, 17] <- meanPred_auc_corr[[rownames(corr_sum_tab)[i]]]$P[1,2]
+  corr_sum_tab[i, 18] <- meanPred_auc_corr[[rownames(corr_sum_tab)[i]]]$n[1,2]
+  corr_sum_tab[i, 19] <- rokaiPred_auc_corr[[rownames(corr_sum_tab)[i]]]$r[1,2]
+  corr_sum_tab[i, 20] <- rokaiPred_auc_corr[[rownames(corr_sum_tab)[i]]]$P[1,2]
+  corr_sum_tab[i, 21] <- rokaiPred_auc_corr[[rownames(corr_sum_tab)[i]]]$n[1,2]
+}
+```
+
+GDSC2
+```{r}
+protcells2 <- intersect(colnames(protdat), colnames(resp_mat2))
+ksea_auc_corr2 <- list()
+prot_auc_corr2 <- list()
+mean_auc_corr2 <- list()
+rokai_auc_corr2 <- list()
+kseaPred_auc_corr2 <- list()
+meanPred_auc_corr2 <- list()
+rokaiPred_auc_corr2 <- list()
+
+for(i in 1:nrow(resp_mat2)){
+  targets <- unlist(strsplit(unique(drugTargs$target_BCM_gene_symbol[toupper(drugTargs$drug_name)==rownames(resp_mat2)[i]]), ", "))
+  targets <- targets[targets %in% protkins]
+  if(length(targets) > 0){
+    for(j in 1:length(targets)){
+      drug_target <- paste0(rownames(resp_mat2)[i], "_", targets[j])
+      ksea_auc_corr2[[drug_target]] <- rcorr(as.numeric(nci60_kinase_target_scoresold_known$KSEA[targets[j], protcells2]), as.numeric(resp_mat2[i, protcells2])) 
+      mean_auc_corr2[[drug_target]] <- rcorr(as.numeric(nci60_kinase_target_scoresold_known$mean[targets[j], protcells2]), as.numeric(resp_mat2[i, protcells2]))
+      rokai_auc_corr2[[drug_target]] <- rcorr(as.numeric(nci60_kinase_target_scoresold_known$rokaiZ[targets[j], protcells2]), as.numeric(resp_mat2[i, protcells2]))
+      kseaPred_auc_corr2[[drug_target]] <- rcorr(as.numeric(nci60_kinase_target_scoresold$KSEA[targets[j], protcells2]), as.numeric(resp_mat2[i, protcells2]))
+      meanPred_auc_corr2[[drug_target]] <- rcorr(as.numeric(nci60_kinase_target_scoresold$mean[targets[j], protcells2]), as.numeric(resp_mat2[i, protcells2]))
+      rokaiPred_auc_corr2[[drug_target]] <- rcorr(as.numeric(nci60_kinase_target_scoresold$rokaiZ[targets[j], protcells2]), as.numeric(resp_mat2[i, protcells2]))
+      prot_auc_corr2[[drug_target]] <- rcorr(as.numeric(protdat2[targets[j], protcells2]), as.numeric(resp_mat[i, protcells2])) 
+    }
+  }
+}
+corr_sum_tab2 <- matrix(NA, nrow = length(prot_auc_corr2), ncol = 21, dimnames = list(names(prot_auc_corr2), c("protein_Rho", "protein_p", "protein_n", "KSEA_Rho", "KSEA_p", "KSEA_n", "mean_Rho", "mean_p", "mean_n","rokai_Rho", "rokai_p", "rokai_n", "KSEAaddPred_Rho", "KSEAaddPred_p", "KSEAaddPred_n", "meanaddPred_Rho", "meanaddPred_p", "meanaddPred_n", "rokaiaddPred_Rho", "rokaiaddPred_p", "rokaiaddPred_n")))
+for(i in 1:nrow(corr_sum_tab2)){
+  corr_sum_tab2[i, 1] <- prot_auc_corr2[[rownames(corr_sum_tab2)[i]]]$r[1,2]
+  corr_sum_tab2[i, 2] <- prot_auc_corr2[[rownames(corr_sum_tab2)[i]]]$P[1,2]
+  corr_sum_tab2[i, 3] <- prot_auc_corr2[[rownames(corr_sum_tab2)[i]]]$n[1,2]
+  corr_sum_tab2[i, 4] <- ksea_auc_corr2[[rownames(corr_sum_tab2)[i]]]$r[1,2]
+  corr_sum_tab2[i, 5] <- ksea_auc_corr2[[rownames(corr_sum_tab2)[i]]]$P[1,2]
+  corr_sum_tab2[i, 6] <- ksea_auc_corr2[[rownames(corr_sum_tab2)[i]]]$n[1,2]
+  corr_sum_tab2[i, 7] <- mean_auc_corr2[[rownames(corr_sum_tab2)[i]]]$r[1,2]
+  corr_sum_tab2[i, 8] <- mean_auc_corr2[[rownames(corr_sum_tab2)[i]]]$P[1,2]
+  corr_sum_tab2[i, 9] <- mean_auc_corr2[[rownames(corr_sum_tab2)[i]]]$n[1,2]
+  corr_sum_tab2[i, 10] <- rokai_auc_corr2[[rownames(corr_sum_tab2)[i]]]$r[1,2]
+  corr_sum_tab2[i, 11] <- rokai_auc_corr2[[rownames(corr_sum_tab2)[i]]]$P[1,2]
+  corr_sum_tab2[i, 12] <- rokai_auc_corr2[[rownames(corr_sum_tab2)[i]]]$n[1,2]
+  corr_sum_tab2[i, 13] <- kseaPred_auc_corr2[[rownames(corr_sum_tab2)[i]]]$r[1,2]
+  corr_sum_tab2[i, 14] <- kseaPred_auc_corr2[[rownames(corr_sum_tab2)[i]]]$P[1,2]
+  corr_sum_tab2[i, 15] <- kseaPred_auc_corr2[[rownames(corr_sum_tab2)[i]]]$n[1,2]
+  corr_sum_tab2[i, 16] <- meanPred_auc_corr2[[rownames(corr_sum_tab2)[i]]]$r[1,2]
+  corr_sum_tab2[i, 17] <- meanPred_auc_corr2[[rownames(corr_sum_tab2)[i]]]$P[1,2]
+  corr_sum_tab2[i, 18] <- meanPred_auc_corr2[[rownames(corr_sum_tab2)[i]]]$n[1,2]
+  corr_sum_tab2[i, 19] <- rokaiPred_auc_corr2[[rownames(corr_sum_tab2)[i]]]$r[1,2]
+  corr_sum_tab2[i, 20] <- rokaiPred_auc_corr2[[rownames(corr_sum_tab2)[i]]]$P[1,2]
+  corr_sum_tab2[i, 21] <- rokaiPred_auc_corr2[[rownames(corr_sum_tab2)[i]]]$n[1,2]
+}
+```
+
+filter to kinases with at least 20 measurements for activity + inhibitor response
+
+GDSC1
+```{r}
+corr_sum_tab_filt <- corr_sum_tab[(corr_sum_tab[ , 3] > 19) & (corr_sum_tab[ , 6] > 19), ] %>% as.data.frame
+corr_sum_tab_filt$cat <- as.factor(rownames(corr_sum_tab_filt))
+#colnames(corr_sum_tab_filt)[1] <- "drug_target"
+hist(as.numeric(corr_sum_tab_filt[, 1]), xlim = c(-1, 1), breaks = 20)
+hist(as.numeric(corr_sum_tab_filt[, 4]), xlim = c(-1, 1), breaks = 20)
+hist(as.numeric(corr_sum_tab_filt[, 13]), xlim = c(-1, 1), breaks = 20)
+corr_sum_tab_filt2 <- as.tibble(corr_sum_tab_filt[ , c(colnames(corr_sum_tab_filt)[grepl("Rho", colnames(corr_sum_tab_filt))], "cat")])
+#corr_sum_tab_filt <- corr_sum_tab_filt2[ , c(1,2,5,6)]
+```
+
+GDSC2
+```{r}
+corr_sum_tab2_filt <- corr_sum_tab2[(corr_sum_tab2[ , 3] > 19) & (corr_sum_tab2[ , 6] > 19), ] %>% as.data.frame
+corr_sum_tab2_filt$cat <- as.factor(rownames(corr_sum_tab2_filt))
+#colnames(corr_sum_tab2_filt)[1] <- "drug_target"
+hist(as.numeric(corr_sum_tab2_filt[, 1]), xlim = c(-1, 1), breaks = 20)
+hist(as.numeric(corr_sum_tab2_filt[, 4]), xlim = c(-1, 1), breaks = 20)
+hist(as.numeric(corr_sum_tab2_filt[, 13]), xlim = c(-1, 1), breaks = 20)
+corr_sum_tab2_filt2 <- as.tibble(corr_sum_tab2_filt[ , c(colnames(corr_sum_tab2_filt)[grepl("Rho", colnames(corr_sum_tab2_filt))], "cat")])
+#corr_sum_tab_filt <- corr_sum_tab_filt2[ , c(1,2,5,6)]
+```
+
+dumbell plot of results
+
+all methods for all kinases; GDSC1
+```{r}
+options(hrbrthemes.loadfonts = TRUE)
+
+#pdf(file = 'my_plot.pdf')
+#par(mar = c(4.1, 4.4, 4.1, 1.9))#, xaxs="i", yaxs="i")
+ggplot() +
+  # reshape the data frame & get min value so you can draw an eye-tracking line (this is one geom)
+  geom_segment(
+    data = gather(corr_sum_tab_filt2, measure, val, -cat) %>% 
+      group_by(cat) %>% 
+      top_n(-1) %>% 
+      dplyr::slice(1) %>%
+      ungroup(),
+    aes(x = 0, xend = val, y = cat, yend = cat),
+    linetype = "dotted", size = 0.5, color = "gray80"
+  ) +
+  # reshape the data frame & get min/max category values so you can draw the segment (this is another geom)
+  geom_segment(
+    data = gather(corr_sum_tab_filt2, measure, val, -cat) %>% 
+      group_by(cat) %>% 
+      summarise(start = range(val)[1], end = range(val)[2]) %>% 
+      ungroup(),
+    aes(x = start, xend = end, y = cat, yend = cat),
+    color = "gray80", size = 1
+  ) +
+  # reshape the data frame & plot the points
+  geom_point(
+    data = gather(corr_sum_tab_filt2, measure, value, -cat),
+    aes(value, cat, color = measure), 
+    size = 3
+  ) +
+  # i just extended the scale a bit + put axis on top; choose aesthetics that work 
+  # for you
+  scale_x_comma(position = "top", limits = c(-1, 1)) +
+  scale_color_ordinal(name = "Method") +
+  labs(
+    x = "Spearman Rho", y = NULL,
+    title = ""
+  ) +
+  theme_ipsum_rc(grid = "X") +
+  theme(legend.position = "top")
+#dev.off()
+```
+focus on relevant comparisons (protein, RoKAI Z-activity scores using either known or known+NwKin targets)
+```{r}
+corr_sum_tab_filt3 <- corr_sum_tab_filt2[ , c(1,4,7,8)]
+colnames(corr_sum_tab_filt3)[1:3] <- c("Protein", "RoKAI-Z (known targets)", "RoKAI-Z (known+NetworKin targets)")
+```
+```{r}
+corr_sum_tab2_filt3 <- corr_sum_tab2_filt2[ , c(1,4,7,8)]
+colnames(corr_sum_tab2_filt3)[1:3] <- c("Protein", "RoKAI-Z (known targets)", "RoKAI-Z (known+NetworKin targets)")
+```
+```{r}
+options(hrbrthemes.loadfonts = TRUE)
+
+#pdf(file = 'my_plot.pdf')
+#par(mar = c(4.1, 4.4, 4.1, 1.9))#, xaxs="i", yaxs="i")
+ggplot() +
+  # reshape the data frame & get min value so you can draw an eye-tracking line (this is one geom)
+  geom_segment(
+    data = gather(corr_sum_tab_filt3, measure, val, -cat) %>% 
+      group_by(cat) %>% 
+      top_n(-1) %>% 
+      dplyr::slice(1) %>%
+      ungroup(),
+    aes(x = 0, xend = val, y = cat, yend = cat),
+    linetype = "dotted", size = 0.5, color = "gray80"
+  ) +
+  # reshape the data frame & get min/max category values so you can draw the segment (this is another geom)
+  geom_segment(
+    data = gather(corr_sum_tab_filt3, measure, val, -cat) %>% 
+      group_by(cat) %>% 
+      summarise(start = range(val)[1], end = range(val)[2]) %>% 
+      ungroup(),
+    aes(x = start, xend = end, y = cat, yend = cat),
+    color = "gray80", size = 1
+  ) +
+  # reshape the data frame & plot the points
+  geom_point(
+    data = gather(corr_sum_tab_filt3, measure, value, -cat),
+    aes(value, cat, color = measure), 
+    size = 3
+  ) +
+  # i just extended the scale a bit + put axis on top; choose aesthetics that work 
+  # for you
+  scale_x_comma(position = "top", limits = c(-1, 1)) +
+  scale_color_ordinal(name = "Method") +
+  labs(
+    x = "Spearman Rho", y = NULL,
+    title = ""
+  ) +
+  theme_ipsum_rc(grid = "X") +
+  theme(legend.position = "top")
+#dev.off()
+```
+
+
+#filter to drugs with better range of responses across all cell lines
+
+use x3 (AUC difference of at least 0.3 between min and max)
+
+Figure 5b (GDSC1); note: colors were updated using illustrator
+```{r}
+corr_sum_tab_filt_x3 <- corr_sum_tab_filt3[sub("_.*","", corr_sum_tab_filt3$cat) %in% x3, ]
+corr_sum_tab_filt_x3$cat <- as.factor(as.character(corr_sum_tab_filt_x3$cat))
+#colnames(corr_sum_tab_filt_x3)[2:3] <- c("RoKAI-Z known targets", "RoKAI-Z known plus NetworKin targets")
+#restore line below to save to file 
+#pdf(file = 'gdsc1_auc_activity_corr_dumbell_rev_x3.pdf', width = 5, height = 2.8)#, family = "Helvetica")
+par(mar = c(0.5, 4.4, 0.5, 1.9), xaxs="i", yaxs="i", pin=c(5, 5))
+ggplot() +
+  # reshape the data frame & get min value so you can draw an eye-tracking line (this is one geom)
+  geom_segment(
+    data = gather(corr_sum_tab_filt_x3, measure, val, -cat) %>% 
+      group_by(cat) %>% 
+      #arrange(cat) %>% 
+      top_n(-1) %>% 
+      dplyr::slice(1) %>%
+      ungroup(),
+    aes(x = 0, xend = val, y = cat, yend = cat),
+    linetype = "dotted", size = 0.5, color = "gray80"
+  ) +
+  # reshape the data frame & get min/max category values so you can draw the segment (this is another geom)
+  geom_segment(
+    data = gather(corr_sum_tab_filt_x3, measure, val, -cat) %>% 
+      group_by(cat) %>% 
+      summarise(start = range(val)[1], end = range(val)[2]) %>% 
+      ungroup(),
+    aes(x = start, xend = end, y = cat, yend = cat),
+    color = "gray80", size = 1
+  ) +
+  # reshape the data frame & plot the points
+  geom_point(
+    data = gather(corr_sum_tab_filt_x3, measure, value, -cat),
+    aes(value, cat, color = measure), 
+    size = 3
+  ) +
+  # i just extended the scale a bit + put axis on top; choose aesthetics that work 
+  # for you
+  scale_y_discrete(limits=rev(levels(as.factor(corr_sum_tab_filt_x3$cat)))) +
+  scale_x_comma(position = "bottom", limits = c(-0.6, 0.6), labels = c("-0.6", "-0.3", "0", "0.3", "0.6")) +
+  scale_color_ordinal(name = "Metric") +
+  labs(
+    x = "Spearman Rho", y = NULL,
+    title = ""
+  ) +
+  theme_ipsum_rc(grid = "X") +
+  theme_light(base_family = "Helvetica") +
+  theme(legend.position = "top", text=element_text(family="Helvetica", size = 10)) 
+#restore line below to save to file  
+#dev.off()
+```
+
+Figure 5b (GDSC2)
+```{r}
+corr_sum_tab2_filt_x3 <- corr_sum_tab2_filt3[sub("_.*","", corr_sum_tab2_filt3$cat) %in% x3_2, ]
+corr_sum_tab2_filt_x3$cat <- as.factor(as.character(corr_sum_tab2_filt_x3$cat))
+#colnames(corr_sum_tab2_filt_x3)[2:3] <- c("RoKAI-Z known targets", "RoKAI-Z known plus NetworKin targets")
+#restore line below to save to file 
+#pdf(file = 'gdsc2_auc_activity_corr_dumbell_rev_x3.pdf', width = 5, height = 2.8)#, family = "Helvetica")
+par(mar = c(4.1, 4.4, 4.1, 1.9), xaxs="i", yaxs="i", pin=c(5, 5))
+ggplot() +
+  # reshape the data frame & get min value so you can draw an eye-tracking line (this is one geom)
+  geom_segment(
+    data = gather(corr_sum_tab2_filt_x3, measure, val, -cat) %>% 
+      group_by(cat) %>% 
+      #arrange(cat) %>% 
+      top_n(-1) %>% 
+      dplyr::slice(1) %>%
+      ungroup(),
+    aes(x = 0, xend = val, y = cat, yend = cat),
+    linetype = "dotted", size = 0.5, color = "gray80"
+  ) +
+  # reshape the data frame & get min/max category values so you can draw the segment (this is another geom)
+  geom_segment(
+    data = gather(corr_sum_tab2_filt_x3, measure, val, -cat) %>% 
+      group_by(cat) %>% 
+      summarise(start = range(val)[1], end = range(val)[2]) %>% 
+      ungroup(),
+    aes(x = start, xend = end, y = cat, yend = cat),
+    color = "gray80", size = 1
+  ) +
+  # reshape the data frame & plot the points
+  geom_point(
+    data = gather(corr_sum_tab2_filt_x3, measure, value, -cat),
+    aes(value, cat, color = measure), 
+    size = 3
+  ) +
+  # i just extended the scale a bit + put axis on top; choose aesthetics that work 
+  # for you
+  scale_y_discrete(limits=rev(levels(as.factor(corr_sum_tab2_filt_x3$cat)))) +
+  scale_x_comma(position = "bottom", limits = c(-0.6, 0.6), labels = c("-0.6", "-0.3", "0", "0.3", "0.6")) +
+  scale_color_ordinal(name = "Metric") +
+  labs(
+    x = "Spearman Rho", y = NULL,
+    title = ""
+  ) +
+  theme_ipsum_rc(grid = "X") +
+  theme_light(base_family = "Helvetica") +
+  theme(legend.position = "top", text=element_text(family="Helvetica", size = 10)) 
+#restore line below to save to file  
+#dev.off()
+```
+
+save source data (Figure 5b)
+```{r}
+write.table(rbind(corr_sum_tab_filt_x3[ , c(4, 1:3)], corr_sum_tab2_filt_x3[ , c(4, 1:3)]), "fig5Bsource.tsv", sep = "\t", quote = F, row.names = F)
+```
+
+
+make combined summary table for GDSC1 and 2 (require Rho < -0.1 for best)
+```{r}
+n_best_prot_x3 <- 0
+n_best_rokai_known_x3 <- 0
+n_best_rokai_combo_x3 <- 0
+#n_best _rokaiPred <- 0
+for(i in 1:nrow(corr_sum_tab2_filt_x3)){
+  if((corr_sum_tab2_filt_x3[i, 1] == min(corr_sum_tab2_filt_x3[i, 1:3])) & (corr_sum_tab2_filt_x3[i, 1] < 0)){
+    n_best_prot_x3 <- n_best_prot_x3 + 1
+  } else if((corr_sum_tab2_filt_x3[i, 2] == min(corr_sum_tab2_filt_x3[i, 1:3])) & (corr_sum_tab2_filt_x3[i, 2] < 0)){
+    n_best_rokai_known_x3 <- n_best_rokai_known_x3 + 1
+  } else if(corr_sum_tab2_filt_x3[i , 3] < 0){
+    n_best_rokai_combo_x3 <- n_best_rokai_combo_x3 + 1
+  }
+}
+for(i in 1:nrow(corr_sum_tab_filt_x3)){
+  if((corr_sum_tab_filt_x3[i, 1] == min(corr_sum_tab_filt_x3[i, 1:3])) & (corr_sum_tab_filt_x3[i, 1] < 0)){
+    n_best_prot_x3 <- n_best_prot_x3 + 1
+  } else if((corr_sum_tab_filt_x3[i, 2] == min(corr_sum_tab_filt_x3[i, 1:3])) & (corr_sum_tab_filt_x3[i, 2] < 0)){
+    n_best_rokai_known_x3 <- n_best_rokai_known_x3 + 1
+  } else if(corr_sum_tab_filt_x3[i , 3] < 0){
+    n_best_rokai_combo_x3 <- n_best_rokai_combo_x3 + 1
+  }
+}
+```
+
+```{r}
+n_worst_prot_x3 <- 0
+n_worst_rokai_known_x3 <- 0
+n_worst_rokai_combo_x3 <- 0
+for(i in 1:nrow(corr_sum_tab2_filt_x3)){
+  if(corr_sum_tab2_filt_x3[i, 1] == max(corr_sum_tab2_filt_x3[i, 1:3])){
+    n_worst_prot_x3 <- n_worst_prot_x3 + 1
+  } else if(corr_sum_tab2_filt_x3[i, 2] == max(corr_sum_tab2_filt_x3[i, 1:3])){
+    n_worst_rokai_known_x3 <- n_worst_rokai_known_x3 + 1
+  } else {
+    n_worst_rokai_combo_x3 <- n_worst_rokai_combo_x3 + 1
+  }
+}
+for(i in 1:nrow(corr_sum_tab_filt_x3)){
+  if(corr_sum_tab_filt_x3[i, 1] == max(corr_sum_tab_filt_x3[i, 1:3])){
+    n_worst_prot_x3 <- n_worst_prot_x3 + 1
+  } else if(corr_sum_tab_filt_x3[i, 2] == max(corr_sum_tab_filt_x3[i, 1:3])){
+    n_worst_rokai_known_x3 <- n_worst_rokai_known_x3 + 1
+  } else {
+    n_worst_rokai_combo_x3 <- n_worst_rokai_combo_x3 + 1
+  }
+}
+```
+
+
+plot of CDK4/6 inhibitor response vs CDK4 scores
+
+CDK4 (Figure 5A)
+```{r}
+palbo_mat <- cbind(resp_mat["PALBOCICLIB", ], as.numeric(protdat2["CDK4", colnames(resp_mat)]), as.numeric(nci60_kinase_target_scoresold_known$rokaiZ["CDK4", colnames(resp_mat)]), as.numeric(nci60_kinase_target_scoresold$rokaiZ["CDK4", colnames(resp_mat)])) %>% as.data.frame
+colnames(palbo_mat) <- c("AUC", "Protein", "RoKAI-Z (known)", "RoKAI-Z (known+NetworKin)")
+rownames(palbo_mat) <- colnames(resp_mat)
+palbo_mat <- palbo_mat[!is.na(palbo_mat[,1]), ]
+#palbo_mat <- as.data.frame(palbo_mat)
+palbo_mat$Protein <- as.numeric(scale(palbo_mat$Protein))
+palbo_mat$`RoKAI-Z (known)` <- as.numeric(scale(palbo_mat$`RoKAI-Z (known)`))
+palbo_mat$`RoKAI-Z (known+NetworKin)` <- as.numeric(scale(palbo_mat$`RoKAI-Z (known+NetworKin)`))
+colnames(palbo_mat) <- c("AUC", "Protein", "RoKAI-Z (known)", "RoKAI-Z (known+NetworKin)")
+plot(palbo_mat[,1], palbo_mat[,2], xlim = c(0.5, 1), ylim = c(-3.5, 3.5), pch=16, col="blue", cex=1.5, xlab = "AUC", ylab = "Z-score", main="CDK4")
+par(new=T)
+#plot(palbo_mat[,1], palbo_mat[,3], xlim = c(0.5, 1), ylim = c(-3.5, 3.5), pch=16, col="pink")
+#par(new=T)
+plot(palbo_mat[,1], palbo_mat[,4], xlim = c(0.5, 1), ylim = c(-3.5, 3.5), pch=16, col="red", cex=1.5, xlab = "", ylab = "")
+prot_lm <- lm(formula = Protein ~ AUC, data = palbo_mat)
+newx = seq(0.5, 1.01, by=0.0106)
+prot_ci <- predict.lm(prot_lm, newdata = data.frame(AUC=newx), interval = "confidence", level = 0.95)
+#plot(palbo_mat[,1], scale(palbo_mat[,2]), xlim = c(0.5, 1), ylim = c(-3.5, 3.5), pch=16, col="blue")
+lines(newx, prot_ci[,1], col="blue", lwd=2)
+lines(newx, prot_ci[,2], col="blue", lty=2, lwd=2)
+lines(newx, prot_ci[,3], col="blue", lty=2, lwd=2)
+ro_lm <- lm(formula = `RoKAI-Z (known)` ~ AUC, data = palbo_mat)
+ro_ci <- predict.lm(ro_lm, newdata = data.frame(AUC=newx), interval = "confidence", level = 0.95)
+#plot(palbo_mat[,1], scale(palbo_mat[,2]), xlim = c(0.5, 1), ylim = c(-3.5, 3.5), pch=16, col="blue")
+lines(newx, ro_ci[,1], col="red", lwd=2)
+lines(newx, ro_ci[,2], col="red", lty=2, lwd=2)
+lines(newx, ro_ci[,3], col="red", lty=2, lwd=2)
+#ro_lm <- lm(formula = `RoKAI-Z (known)` ~ AUC, data = palbo_mat)
+#ronw_lm <- lm(formula = `RoKAI-Z (known+NetworKin)` ~ AUC, data = palbo_mat)
+#ronw_ci <- predict.lm(ronw_lm, newdata = data.frame(AUC=newx), interval = "confidence", level = 0.95)
+#plot(palbo_mat[,1], scale(palbo_mat[,2]), xlim = c(0.5, 1), ylim = c(-3.5, 3.5), pch=16, col="blue")
+#lines(newx, ronw_ci[,1], col="pink")
+#lines(newx, ronw_ci[,2], col="pink", lty=2)
+#lines(newx, ronw_ci[,3], col="pink", lty=2)
+rcorr(palbo_mat[,1], palbo_mat[,2], type = "spearman")
+rcorr(palbo_mat[,1], palbo_mat[,3], type = "spearman")
+```
+
+save source data for figure
+```{r}
+write.table(cbind(cell_line=rownames(palbo_mat), palbo_mat[ , c(1,2,4)]), "fig5Asource.tsv", sep = "\t", quote = F, row.names = F)
+```
+
+```{r}
+save.image("nci60_kinase_activity_v7_cp2_clean_rev.rda")
+```
+```{r}
+load("nci60_kinase_activity_v7_cp2_clean_rev.rda")
+```
+
