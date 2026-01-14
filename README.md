@@ -12,6 +12,8 @@ on multi-omics tumor data.
 If you want to test your own method try out our package [benchmarKIN](https://github.com/saezlab/benchmarKIN) and check out the 
 [documentation](https://benchmarkin.readthedocs.io/). 
 
+If you would like to access any of the files used in our publication, please check out our [Zenodo repository](https://zenodo.org/records/14824013).
+
 <p align="center" width="100%">
 <img src="man/figures/overview.png" align="center" width="650">
 </p>
